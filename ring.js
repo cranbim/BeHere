@@ -432,7 +432,7 @@ function Ring(name, io){ //have to pass io to have access to sockets object
 			next=0;
 			newStartX=self.deviceShadows[pos-1].endX;
 		}else{
-			next=pos+1
+			next=pos+1;
 			newStartX=self.deviceShadows[next].startX;
 		}
 		shadow.setStartX(newStartX);

@@ -1,5 +1,6 @@
 //Main node executable for PlasmaRIng
 //DJW, Cranbim, November 2016
+//
 
 var express = require('express');
 var ringMod= require('./ring.js');
@@ -32,6 +33,18 @@ io.sockets.on('connection', newConnection);
 
 var h=setInterval(beat,1000);//set one second heartbeat
 
+function beat(){
+	heartbeat++;
+	console.log("heartbeat "+heartbeat);
+	if(sessions.length>0) io.sockets.emit('heartbeat',{beat:heartbeat});
+	ring.run(heartbeat);
+	sendConsoleData();
+}
+
+/*******************************************
+  This function and subsidiaries handles the 
+  socket connection and i/o
+*********************************************/
 
 function newConnection(socket){
   var session=new Session(socket);
@@ -72,11 +85,6 @@ function newConnection(socket){
 		ring.offerAccepted(data);
   }
   
-  // function blobMsg(data){
-		// 	//console.log(data.x +' from '+socket.id);
-		// 	socket.broadcast.emit('blob', data);
-  // }
-
   function attacher(data){
 		ring.attachRequested(data);
   }
@@ -108,15 +116,9 @@ function newConnection(socket){
 		sessions.splice(i,1);
 		console.log("Removed disconnected session: "+session.id+" socket:"+session.socket.id);
 		console.log("Num sessions:"+sessions.length);
+		ring.unjoinRing(session.id);
+		console.log("disconnected device unjoined from ring");
 	}
-}
-
-function beat(){
-	heartbeat++;
-	console.log("heartbeat "+heartbeat);
-	if(sessions.length>0) io.sockets.emit('heartbeat',{beat:heartbeat});
-	ring.run(heartbeat);
-	sendConsoleData();
 }
 
 function sendConsoleData(){

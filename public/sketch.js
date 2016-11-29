@@ -1,3 +1,6 @@
+
+//too many global vars
+
 var socket;
 var id;
 var posX=0;
@@ -19,14 +22,16 @@ var myBlobs=new MyBlobs();
 var statusBar;
 var hideMeta=false;
 
+//should these be global, or in the noisefield object?
 var noisePerWorldPixel=0.005;
 var noiseSegsX=20;
 var noiseField;
+
 var attached=false;
 var currentBeat; //heartbeat received from server
 
 
-
+//need some sort of subfunction to setup some of these
 
 function setup() {
   createCanvas(400,200);
@@ -74,6 +79,26 @@ function draw() {
   }
 }
 
+//this is OK
+function connected(){
+  console.log("Connected ("+socket.id+")");
+  statusMessage.html("Connected");
+  // geometry.html("Width ${myWidth} startX:${myStartX} endX:${myEndX}");
+  geometry.html("Width "+myWidth+" startX:"+myStartX+" endX:"+myEndX);
+  button.mouseClicked(joinMe);
+  attachButton.mouseClicked(attachMe);
+//  socket.on('blob', incomingBlob);
+  socket.on('heartbeat',beat);
+  socket.on('rfpermit',requestForPermit);
+  socket.on('attached',attachedToRing);
+  socket.on('offer',processOffer);
+  socket.on('ringpos',updateRingPos);
+  socket.on('startX', setStartX);
+  socket.on('blobData',handleBlobData);
+  socket.on('notifyAttached',notifyAttached);
+  socket.on('notifyDetached',notifyDetached);
+}
+
 
 function mouseClicked(){
   if(mouseX>=0 &&
@@ -101,6 +126,7 @@ function keyPressed(){
   else metaDiv.show();
 }
 
+//should we just have a run function that takes care of this kind of thing
 
 function dataRefreshPoll(){
   offers.forEach(function(o){
@@ -112,24 +138,7 @@ function dataRefreshPoll(){
   // myBlobs.run();
 }
 
-function connected(){
-  console.log("Connected ("+socket.id+")");
-  statusMessage.html("Connected");
-  // geometry.html("Width ${myWidth} startX:${myStartX} endX:${myEndX}");
-  geometry.html("Width "+myWidth+" startX:"+myStartX+" endX:"+myEndX);
-  button.mouseClicked(joinMe);
-  attachButton.mouseClicked(attachMe);
-//  socket.on('blob', incomingBlob);
-  socket.on('heartbeat',beat);
-  socket.on('rfpermit',requestForPermit);
-  socket.on('attached',attachedToRing);
-  socket.on('offer',processOffer);
-  socket.on('ringpos',updateRingPos);
-  socket.on('startX', setStartX);
-  socket.on('blobData',handleBlobData);
-  socket.on('notifyAttached',notifyAttached);
-  socket.on('notifyDetached',notifyDetached);
-}
+
 
 function notifyAttached(){
   statusBar.trigger('attached',5);
@@ -185,20 +194,6 @@ function processOffer(data){
   offers.push(offerTemp);
   //should really clean up and recreate this each time
   console.log("Offer "+data.id+" received, between: "+data.prev+","+data.next);
-  // if(!offersList){
-  //   console.log("create offers list");
-  //   offersList=createElement('ul');
-  //   offersList.parent(offersDiv);
-  // }
-  // var offerString="Offer to attach between "+data.prev+" and "+data.next+" expires in:"+(data.expires-Date.now());
-  // var li=createElement('li');
-  // li.parent(offersList);
-  // var el=createP(offerString);
-  // var acceptOfferButton=createButton("accept offer");
-  // li.child(el);
-  // li.child(acceptOfferButton);
-  // acceptOfferButton.mouseClicked(handleAcceptOffer);
-  // acceptOfferButton.attribute("data-offer",data.id);
   statusBar.trigger("offer");
 }
 
@@ -237,23 +232,14 @@ function renderOffers(){
 
 function handleAcceptOffer(){
   console.log("Accept Offer");
-  // console.log("Accect button text: ");
-  // console.log("b:"+this.html());
-  // console.log("b id:"+this.attribute("data-offer"));
-  // console.log(offers.length);
-  // console.log(offers);
   var offer;
   var buttonOfferID=parseInt(this.attribute("data-offer"));
   //find offer assocaited with the clicked button
   offers.forEach(function(o){
-    //console.log("o:"+o.button.html());
-    //console.log("o id:"+this.attribute("data-offer"));
     if(o.id===buttonOfferID) {
-      // console.log("it's a match "+o.id+" "+buttonOfferID);
       offer=o;
-      // console.log(offer);
     } else {
-      // console.log("not a match "+o.id+" "+buttonOfferID);
+      //nothing
     }
   });
   //process clicked offer
@@ -317,7 +303,8 @@ function requestForPermit(){
   statusBar.trigger("permit");
 }
 
-function joinMe(){
+//early implementation and seems to mix up the mvc
+function joinMe(){ 
   if(connectionStatus===0){
     button.html('un-Join');
     connectionStatus=1;
@@ -334,6 +321,7 @@ function joinMe(){
     attachButton.hide();
   }
 }
+
 function attachMe(){
   socket.emit('attach',{id: id});
   console.log("requested attachement to ring");
@@ -341,21 +329,14 @@ function attachMe(){
   statusBar.trigger("request");
 }
 
-// function incomingBlob(data){
-// 	//console.log("incoming "+data);
-// 	noFill();
-//   stroke(100,80,60);
-//   ellipse(data.x, height/4,10,10);
-// }
-
 function beat(data){
   console.log(data.beat);
   currentBeat=data.beat;
-  //send back echo of the hearbeat to show I'm still listening
-  //socket.emit('echo',{device: id, beat: data.beat});
-  // syncTime=Date.now();
-  // noiseField.syncOffset();
 }
+
+/*****************************************
+  Click response code
+  ******************************************/
 
 function runClicks(){
   for(var i=clicks.length-1; i>=0; i--){
@@ -365,17 +346,21 @@ function runClicks(){
 }
 
 function newClick(x,y){
-  var c=new Click(x,y);
+  var c=new Click(x-myStartX,y);
   clicks.push(c);
   statusBar.trigger("blob");
   socket.emit("newBlob",{device:id, x:x, y:y});
 }
 
+/*****************************************
+  Click object constructor
+  ******************************************/
+
 function Click(x,y){
   var r=5;
   var rInc=1;
   var alpha=255;
-  var ttl=600;
+  var ttl=60;
 
   this.show=function(){
     push();
@@ -392,10 +377,14 @@ function Click(x,y){
   this.update=function(){
     r+=rInc;
     ttl--;
-    alpha=map(ttl,100,0,255,20);
+    alpha=map(ttl,60,0,255,20);
     return ttl>0;
   };
 }
+
+/*****************************************
+  MyBlobs and integral Blob objects
+  ******************************************/
 
 function MyBlobs(){
   blobs=[];
@@ -466,6 +455,10 @@ function MyBlobs(){
   }
 }
 
+/*****************************************
+  status bar object constructor
+  ******************************************/
+
 function StatusBar(){
   this.flashes=0;
   this.x=0;
@@ -530,64 +523,4 @@ function StatusBar(){
   };
 }
 
-// noisePerWorldPixel=0.0005;
-// var noiseSegsX=20;
 
-function NoiseField(){
-  var step,w,h;
-  var noiseOffX=0;
-  var noiseOffY=0;
-  var field=[];
-  var shiftXinc=0.01;
-  var shiftYinc=0.001;
-  var shiftX=0;
-  var shiftY=0;
-  var noiseSyncFrame=frameCount;
-
-  this.setField=function(devWidth, startX, noiseSegsX, noisePerWorldPixel){
-    step=floor(devWidth/noiseSegsX);
-    w=noiseSegsX;
-    h=floor(devHeight/step);
-    noiseOffX=startX*noisePerWorldPixel;
-    noiseSeed(10);
-    generate();
-    console.log("field offset" +noiseOffX);
-  };
-
-  this.update=function(){
-    //shiftX+=shiftXinc;
-    //shiftY+=shiftYinc;
-    shiftX=(frameCount-noiseSyncFrame)*shiftXinc;
-    generate();
-  };
-
-  function generate(){
-    for(var y=0; y<h; y++){
-      var noiseRow=[];
-      for(var x=0; x<w; x++){
-        noiseRow[x]=noise(shiftX+noiseOffX+x*step*noisePerWorldPixel,shiftY+noiseOffY+y*step*noisePerWorldPixel);
-      }
-      field[y]=noiseRow;
-    }
-  }
-
-  this.syncOffset=function(){
-    shiftX=0;
-    shiftY=0;
-  };
-
-  this.calcOffset=function(startX){
-    noiseSyncFrame=frameCount;
-    noiseOffX=startX*noisePerWorldPixel;
-  };
-
-  this.show=function(){
-    for(var y=0; y<field.length; y++){
-      for(var x=0; x<field[y].length; x++){
-        fill(map(field[y][x],0,1,0,255),150);
-        noStroke();
-        rect(x*step, y*step,step,step);
-      }
-    }
-  };
-}
