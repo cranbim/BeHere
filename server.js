@@ -121,6 +121,8 @@ function newConnection(socket){
 	}
 }
 
+
+
 function sendConsoleData(){
 	if(consoleSession){
 		console.log("Send console data");

@@ -1,80 +1,98 @@
 
-//too many global vars
 
-var socket;
-var id;
-var posX=0;
-var count=0;
-var connectionStatus=0; //0=connected, 1=unattached, 2=attached
-var button, attachButton, detachButton, permitButton, statusMessage, position, idnum;
+
+//html/display vars
+var p5div,p5canvas;
 var metaDiv;
+var idBar;
+var buttonBar;
 var geometry;
 var offersDiv;
-var offersList;
-var offers=[];
-var dataRefresh;
-var clicks=[];
+var button, attachButton, detachButton, permitButton;
+var statusMessage, position, idnum;
+var offersList; //HTML offers
+var hideMeta=false;
+
+
+//Core vars
+var logger; //object to log to console of file
+var deviceData; // store current contect data
+var offers=[]; //actual offers
+var dataRefresh; //timer for updating the display
+var clicks=[]; //stores recent mouse click echoes
 var myWidth=400;
 var devHeight=200;
 var myStartX=null;
 var myEndX=null;
 var myBlobs=new MyBlobs();
-var statusBar;
-var hideMeta=false;
-var p5Hidden;
+var statusBar; //stores the visual cue to actions
+var socket;
+var id;
 
-//should these be global, or in the noisefield object?
+
+//noisefield vars - camn these be held elsewhere?
 var noisePerWorldPixel=0.005;
 var noiseSegsX=20;
 var noiseField;
 
-var attached=false;
-var currentBeat; //heartbeat received from server
-var p5div,p5canvas;
 
 //need some sort of subfunction to setup some of these
 
 function setup() {
+  //setup html/display sections
+  setupCanvas();
+  setupMeta();
+  setupButtons();
+  noiseField=new NoiseField();
+  statusBar=new StatusBar();
+  logger=new Logger();
+  deviceData=new DeviceData();
+
+  socket=io.connect('/');
+  //socket=io.connect('http://192.168.0.5:4000');
+  socket.on('connect', connected);
+  dataRefresh=setInterval(dataRefreshPoll, 1000);
+  //initial display
+  refreshHTMLStatus();
+  refreshHTMLGeometry();
+}
+
+function setupCanvas(){
   p5div=select('#p5');
   p5canvas=createCanvas(400,200);
   p5canvas.parent(p5div);
   p5canvas.hide();
   p5Hidden=true;
-  statusBar=new StatusBar();
-    metaDiv=select('#meta');
-    button = select('#join');
-    attachButton = select('#attach');
-    attachButton.hide();
-    detachButton = select('#detach');
-    detachButton.hide();
-    permitButton = select('#permit');
-    permitButton.hide();
-    statusMessage = select('#status');
-    geometry = select('#geometry');
-    position = select('#position');
-    offersDiv = select('#attach_offers');
-    offersDiv.html('My Offers');
-    idnum = select('#idnum');
-  socket=io.connect('http://192.168.0.5:4000');
-  socket.on('connect', connected);
-  socket.on('id',setID);
-  socket.on('disconnect', function(){
-    console.log("Disconnected from server ("+socket.id+")");
-    button.html("Nothing");
-  });
-  noiseField=new NoiseField();
-  //noiseField.setField(myWidth, myStartX, noiseSegsX, noisePerWorldPixel);
-
-  dataRefresh=setInterval(dataRefreshPoll, 1000);
 }
 
-function MetaBar(){
+function setupButtons(){
+  buttonBar=select('#buttons');
+  button = select('#join');
+  attachButton = select('#attach');
+  attachButton.hide();
+  detachButton = select('#detach');
+  detachButton.hide();
+  permitButton = select('#permit');
+  permitButton.hide();
+  statusMessage = select('#status');
+  button.mouseClicked(joinMe);
+  attachButton.mouseClicked(attachMe);
+  detachButton.mouseClicked(detachFromRing);
+  permitButton.mouseClicked(permitAttacher);
+}
 
+function setupMeta(){
+  idBar=select('#idbar');
+  metaDiv=select('#meta');
+  geometry = select('#geometry');
+  position = select('#position');
+  offersDiv = select('#attach_offers');
+  idnum = select('#idnum');
 }
 
 function draw() {
   background(80);
-  if(attached){
+  if(deviceData.status=="attached"){
     noiseField.show();
     noiseField.update();
   }
@@ -82,21 +100,25 @@ function draw() {
   myBlobs.run();
   statusBar.show();
   statusBar.run();
+  //send a heartbeat echo every 0.5-1 frame
+  echoHeartBeat();
+}
+
+function echoHeartBeat(){
   if(frameCount%30===0){ //assume slower framerate
-    //console.log("send echo beat: "+currentBeat);
-    socket.emit('echo',{device: id, beat: currentBeat});
+    socket.emit('echo',{device: id, beat: deviceData.currentBeat});
   }
 }
 
 //this is OK
 function connected(){
-  console.log("Connected ("+socket.id+")");
-  statusMessage.html("Connected");
-  // geometry.html("Width ${myWidth} startX:${myStartX} endX:${myEndX}");
-  geometry.html("Width "+myWidth+" startX:"+myStartX+" endX:"+myEndX);
-  button.mouseClicked(joinMe);
-  attachButton.mouseClicked(attachMe);
-//  socket.on('blob', incomingBlob);
+  logger.log("f connected()", "Connected ("+socket.id+")");
+  deviceData.status="connected";
+  refreshHTMLStatus();
+  refreshHTMLGeometry();
+
+  socket.on('id',setID);
+  socket.on('disconnect', disconnected);
   socket.on('heartbeat',beat);
   socket.on('rfpermit',requestForPermit);
   socket.on('attached',attachedToRing);
@@ -108,8 +130,18 @@ function connected(){
   socket.on('notifyDetached',notifyDetached);
 }
 
+function disconnected(){
+  console.log("Disconnected from server ("+socket.id+")");
+  deviceData.status="nothing";
+  refreshHTMLStatus();
+  refreshHTMLGeometry();
+}
+
 
 function mouseClicked(){
+  //click also triggers a touch. why?
+  logger.log("f mouseClicked","clicked");
+
   if(mouseX>=0 &&
     mouseX<=width &&
     mouseY>=0 &&
@@ -119,32 +151,30 @@ function mouseClicked(){
 }
 
 function touchEnded(){
+  logger.log("f touchEnded","touched");
   if(touchX>=0 &&
     touchX<=width &&
     touchY>=0 &&
     touchY<=height){
       newClick(touchX+myStartX, touchY);
   }
+  // return false;
 }
 
 function keyPressed(){
   if(key=='h' || key=='H'){
     hideMeta=!hideMeta;
   }
-  if(hideMeta) metaDiv.hide();
-  else metaDiv.show();
-}
+  changeHTMLMetaDisplay();
+ }
 
 //should we just have a run function that takes care of this kind of thing
-
 function dataRefreshPoll(){
   offers.forEach(function(o){
     console.log("Offer "+o.id+" expires in "+floor((o.expires-Date.now())/1000));
   });
-  //remove expired offer
   checkOffers();
   renderOffers();
-  // myBlobs.run();
 }
 
 
@@ -155,7 +185,6 @@ function notifyAttached(){
 
 function handleBlobData(data){
   console.log("Incoming blob data "+data.blobs.length);
-  // if(data.blobs.length>0) console.log(data.blobs[0].id+" "+data.blobs[0].x);
   processBlobData(data.blobs);
 }
 
@@ -183,13 +212,17 @@ function setStartX(data){
     myStartX=null;
     myEndX=null;
   }
-  geometry.html("Width "+myWidth+" startX:"+myStartX+" endX:"+myEndX);
+  deviceData.geometry.startX=myStartX;
+  deviceData.geometry.endX=myEndX;
+  refreshHTMLGeometry();
   console.log("new StartX post: "+myStartX+" "+myEndX);
   noiseField.calcOffset(myStartX);
 }
 
 function updateRingPos(data){
-  position.html(data.pos);
+  deviceData.geometry.position=data.pos;
+  console.log("new ring pos "+deviceData.geometry.position);
+  refreshHTMLGeometry();
 }
 
 function processOffer(data){
@@ -198,51 +231,28 @@ function processOffer(data){
     prev: data.prev,
     next: data.next,
     expires: data.expires
-    //button: acceptOfferButton
   };
   offers.push(offerTemp);
   //should really clean up and recreate this each time
   console.log("Offer "+data.id+" received, between: "+data.prev+","+data.next);
   statusBar.trigger("offer");
+  deviceData.offersChanged=true;
 }
 
 function checkOffers(){
   for(var i=offers.length-1; i>=0; i--){
     if((offers[i].expires-Date.now())<10){
       offers.splice(i,1);
+      deviceData.offersChanged=true;
     }
   }
-}
-
-function renderOffers(){
-  if(!offersList){
-    console.log("create offers list");
-    offersList=createElement('ul');
-    offersList.parent(offersDiv);
-  }
-  var oListTemp=selectAll('li',offersList);
-  oListTemp.forEach(function(li){
-    li.remove();
-  });
-  offers.forEach(function (offer){
-    var offerString="Offer to attach between "+offer.prev+" and "+offer.next+" expires in:"+(offer.expires-Date.now());
-    var li=createElement('li');
-    li.parent(offersList);
-    var el=createP(offerString);
-    var acceptOfferButton=createButton("accept offer");
-    li.child(el);
-    li.child(acceptOfferButton);
-    acceptOfferButton.mouseClicked(handleAcceptOffer);
-    acceptOfferButton.attribute("data-offer",offer.id);
-  });
-
 }
 
 
 function handleAcceptOffer(){
   console.log("Accept Offer");
   var offer;
-  var buttonOfferID=parseInt(this.attribute("data-offer"));
+  var buttonOfferID=parseInt(this.attribute("data-offer"),0);
   //find offer assocaited with the clicked button
   offers.forEach(function(o){
     if(o.id===buttonOfferID) {
@@ -260,15 +270,10 @@ function handleAcceptOffer(){
 
 function attachedToRing(data){
   console.log("Successfully attached to ring: "+data.ring);
-  statusMessage.html('Attached to Ring '+data.ring);
-  // attachButton.html('detach');
-  detachButton.show();
-  attachButton.hide();
-  permitButton.show();
-  detachButton.mouseClicked(detachFromRing);
-  permitButton.mouseClicked(permitAttacher);
+  deviceData.status="attached";
+  refreshHTMLStatus();
+  refreshHTMLGeometry();
   statusBar.trigger("attach");
-  attached=true;
   noiseField.setField(myWidth, myStartX, noiseSegsX, noisePerWorldPixel);
   attachedFrame=frameCount;
 }
@@ -285,13 +290,8 @@ function notifyDetached(){
 
 function processDetach(){
   statusBar.trigger("detach");
-  statusMessage.html('Joined, but detached');
-  // attachButton.html('detach');
-  detachButton.hide();
-  permitButton.hide();
-  attachButton.show();
-  geometry.html("Width "+myWidth);
-  attached=false;
+  deviceData.status="joined";
+  refreshHTMLStatus();
   console.log("Been detached");
 }
 
@@ -303,7 +303,8 @@ function permitAttacher(){
 
 function setID(data){
   id=data.id;
-  idnum.html(id);
+  deviceData.id=id;
+  refreshHTMLStatus();
   console.log("My ID="+id);
 }
 
@@ -313,38 +314,29 @@ function requestForPermit(){
 }
 
 //early implementation and seems to mix up the mvc
-function joinMe(){ 
-  if(connectionStatus===0){
-    p5Hidden=false;
-    p5canvas.show();
-    button.html('un-Join');
-    connectionStatus=1;
-    statusMessage.html('Joined');
+function joinMe(){
+  if(deviceData.status=="connected"){
+    deviceData.status="joined";
+    refreshHTMLStatus();
     socket.emit('join',{id: id, width:myWidth});
-    attachButton.show();
     console.log("request join to unattached");
-  }else if(connectionStatus===1){
-    p5Hidden=true;
-    p5canvas.hide();
-    button.html('Join');
-    connectionStatus=0;
-    statusMessage.html('Connected');
+  }else if(deviceData.status=="joined"){
+    deviceData.status="connected";
+    refreshHTMLStatus();
     socket.emit('unjoin',{id: id});
     console.log("request unjoin from unattached");
-    attachButton.hide();
   }
 }
 
 function attachMe(){
   socket.emit('attach',{id: id});
   console.log("requested attachement to ring");
-  statusMessage.html('Requested attachment to Ring');
   statusBar.trigger("request");
 }
 
 function beat(data){
   console.log(data.beat);
-  currentBeat=data.beat;
+  deviceData.currentBeat=data.beat;
 }
 
 /*****************************************
@@ -378,11 +370,11 @@ function Click(x,y){
   this.show=function(){
     push();
     translate(x,y);
-    stroke(200,20,20, alpha);
-    strokeWeight(5);
+    stroke(0,150,230, alpha);
+    strokeWeight(10);
     noFill();
     ellipse(0,0,r*2,r*2);
-    strokeWeight(2);
+    strokeWeight(5);
     ellipse(0,0,r,r);
     pop();
   };
@@ -390,7 +382,7 @@ function Click(x,y){
   this.update=function(){
     r+=rInc;
     ttl--;
-    alpha=map(ttl,60,0,255,20);
+    alpha=map(ttl,60,0,150,20);
     return ttl>0;
   };
 }
@@ -534,6 +526,134 @@ function StatusBar(){
       }
     }
   };
+}
+
+function Logger(){
+  const CONSOLE=0;
+  const LOGFILE=1;
+  const BOTH=2;
+  var logFile;
+  var logMode=CONSOLE;
+
+  this.log=function(func, message){
+    if(logMode==CONSOLE || logMode==BOTH){
+      var logString=Date.now()+"; "+func+"; "+message;
+      console.log(logString);
+    }
+  };
+}
+
+//*********************************
+// Object to store status data 
+// used by HTML View
+//*********************************
+
+function DeviceData(){
+  this.id="nothing";
+  this.status="nothing";
+  this.currentBeat=-1;
+  this.geometry={
+    position: -1,
+    myWidth: myWidth,
+    startX: -1,
+    endX: -1
+  };
+  this.offersChanged=false;
+
+  this.statusChanged=function(){
+    //update relevant bits of html
+  };
+
+  this.geometryChanged=function(){
+
+  };
+}
+
+//*********************************
+// HTML view update functions
+//*********************************
+
+  function changeHTMLMetaDisplay(){
+    if(hideMeta) metaDiv.hide();
+    else metaDiv.show();
+  }
+
+
+  function refreshHTMLStatus(){
+    if(deviceData.status=="nothing"){
+      statusMessage.html("Status: not connected   ID:"+deviceData.id);
+      button.hide();
+      attachButton.hide();
+      detachButton.hide();
+      permitButton.hide();
+      p5canvas.hide();
+    } else if(deviceData.status=="connected"){
+      statusMessage.html("Status: connected   ID:"+deviceData.id);
+      button.show();
+      button.html('Join');
+      connectionStatus=0;
+      attachButton.hide();
+      detachButton.hide();
+      permitButton.hide();
+      p5canvas.hide();
+    } else if(deviceData.status=="joined"){
+      statusMessage.html("Status: joined to lobby   ID:"+deviceData.id);
+      button.show();
+      button.html('un-Join');
+      connectionStatus=1;
+      attachButton.show();
+      detachButton.hide();
+      permitButton.hide();
+      p5canvas.hide();
+    } else if(deviceData.status=="attached"){
+      statusMessage.html("Status: attached to ring   ID:"+deviceData.id);
+      button.hide();
+      attachButton.hide();
+      detachButton.show();
+      permitButton.show();
+      p5canvas.show();
+    } else {
+      statusMessage.html("Status: I have no idea   ID:"+deviceData.id);
+      button.hide();
+      attachButton.hide();
+      detachButton.hide();
+      permitButton.hide();
+      p5canvas.hide();
+    }
+    // statusMessage.html=stat;
+  }
+
+  function refreshHTMLGeometry(){
+    var tempHTML="pos: "+deviceData.geometry.position+ " startX: "+deviceData.geometry.startX+" endX: "+deviceData.geometry.endX+" width: "+deviceData.geometry.myWidth;
+    geometry.html(tempHTML);
+  };
+
+function renderOffers(){
+  if(deviceData.offersChanged){
+    deviceData.offersChanged=false;
+    if(!offersList){
+      console.log("create offers list");
+      offersList=createElement('ul');
+      offersList.parent(offersDiv);
+    }
+    var oListTemp=selectAll('li',offersList);
+    oListTemp.forEach(function(li){
+      li.remove();
+    });
+    offers.forEach(function (offer){
+      var offerString="Offer to attach between "+offer.prev+" and "+offer.next+" expires in:"+(offer.expires-Date.now());
+      var li=createElement('li');
+      li.parent(offersList);
+      var el=createP(offerString);
+      var acceptOfferButton=createButton("accept offer");
+      li.child(el);
+      li.child(acceptOfferButton);
+      acceptOfferButton.mouseClicked(handleAcceptOffer);
+      acceptOfferButton.attribute("data-offer",offer.id);
+    });
+  } else {
+    //do not refresh, nothing has changed
+  }
 }
 
 
