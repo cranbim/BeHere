@@ -21,6 +21,7 @@ var myEndX=null;
 var myBlobs=new MyBlobs();
 var statusBar;
 var hideMeta=false;
+var p5Hidden;
 
 //should these be global, or in the noisefield object?
 var noisePerWorldPixel=0.005;
@@ -29,27 +30,31 @@ var noiseField;
 
 var attached=false;
 var currentBeat; //heartbeat received from server
-
+var p5div,p5canvas;
 
 //need some sort of subfunction to setup some of these
 
 function setup() {
-  createCanvas(400,200);
+  p5div=select('#p5');
+  p5canvas=createCanvas(400,200);
+  p5canvas.parent(p5div);
+  p5canvas.hide();
+  p5Hidden=true;
   statusBar=new StatusBar();
-  metaDiv=select('#meta');
-  button = select('#join');
-  attachButton = select('#attach');
-  attachButton.hide();
-  detachButton = select('#detach');
-  detachButton.hide();
-  permitButton = select('#permit');
-  permitButton.hide();
-  statusMessage = select('#status');
-  geometry = select('#geometry');
-  position = select('#position');
-  offersDiv = select('#attach_offers');
-  offersDiv.html('My Offers');
-  idnum = select('#idnum');
+    metaDiv=select('#meta');
+    button = select('#join');
+    attachButton = select('#attach');
+    attachButton.hide();
+    detachButton = select('#detach');
+    detachButton.hide();
+    permitButton = select('#permit');
+    permitButton.hide();
+    statusMessage = select('#status');
+    geometry = select('#geometry');
+    position = select('#position');
+    offersDiv = select('#attach_offers');
+    offersDiv.html('My Offers');
+    idnum = select('#idnum');
   socket=io.connect('http://192.168.0.5:4000');
   socket.on('connect', connected);
   socket.on('id',setID);
@@ -61,6 +66,10 @@ function setup() {
   //noiseField.setField(myWidth, myStartX, noiseSegsX, noisePerWorldPixel);
 
   dataRefresh=setInterval(dataRefreshPoll, 1000);
+}
+
+function MetaBar(){
+
 }
 
 function draw() {
@@ -109,12 +118,12 @@ function mouseClicked(){
   }
 }
 
-function notouchStarted(){
-  if(mouseX>=0 &&
-    mouseX<=width &&
-    mouseY>=0 &&
-    mouseY<=height){
-      newClick(mouseX+myStartX, mouseY);
+function touchEnded(){
+  if(touchX>=0 &&
+    touchX<=width &&
+    touchY>=0 &&
+    touchY<=height){
+      newClick(touchX+myStartX, touchY);
   }
 }
 
@@ -306,6 +315,8 @@ function requestForPermit(){
 //early implementation and seems to mix up the mvc
 function joinMe(){ 
   if(connectionStatus===0){
+    p5Hidden=false;
+    p5canvas.show();
     button.html('un-Join');
     connectionStatus=1;
     statusMessage.html('Joined');
@@ -313,6 +324,8 @@ function joinMe(){
     attachButton.show();
     console.log("request join to unattached");
   }else if(connectionStatus===1){
+    p5Hidden=true;
+    p5canvas.hide();
     button.html('Join');
     connectionStatus=0;
     statusMessage.html('Connected');
