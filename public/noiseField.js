@@ -18,15 +18,15 @@ function NoiseField(){
     w=noiseSegsX;
     h=floor(devHeight/step);
     noiseOffX=startX*noisePerWorldPixel;
-    noiseSeed(10);
+    noiseSeed(10,10);
     generate();
     console.log("field offset" +noiseOffX);
   };
 
   this.update=function(){
-    //shiftX+=shiftXinc;
+    shiftX+=shiftXinc;
     //shiftY+=shiftYinc;
-    shiftX=(frameCount-noiseSyncFrame)*shiftXinc;
+    //shiftX=(frameCount-noiseSyncFrame)*shiftXinc;
     generate();
   };
 

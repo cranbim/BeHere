@@ -12,6 +12,11 @@ var button, attachButton, detachButton, permitButton;
 var statusMessage, position, idnum;
 var offersList; //HTML offers
 var hideMeta=false;
+var canvasFull=false;
+var canSmallWidth=400;
+var canSmallHeight=50;
+var canFullWidth=400;
+var canFullHeight=200;
 
 
 //Core vars
@@ -35,6 +40,11 @@ var noisePerWorldPixel=0.005;
 var noiseSegsX=20;
 var noiseField;
 
+//geometry vars
+var xInc=10;
+
+//theme vars
+var themeRunner;
 
 //need some sort of subfunction to setup some of these
 
@@ -55,14 +65,26 @@ function setup() {
   //initial display
   refreshHTMLStatus();
   refreshHTMLGeometry();
+  themeRunner=new ThemeRunner(canFullWidth, canFullHeight);
+  console.log("Did I create themes?");
+  frameRate(30);
 }
 
 function setupCanvas(){
   p5div=select('#p5');
-  p5canvas=createCanvas(400,200);
+  p5canvas=createCanvas(canSmallWidth, canSmallHeight);
   p5canvas.parent(p5div);
-  p5canvas.hide();
-  p5Hidden=true;
+  // p5canvas.hide();
+  // p5Hidden=true;
+}
+
+function changeCanvas(full){
+  if(full){
+    resizeCanvas(canFullWidth, canFullHeight);
+  } else {
+    resizeCanvas(canSmallWidth, canSmallHeight);
+  }
+  statusBar.setSize(p5canvas.width, p5canvas.height);
 }
 
 function setupButtons(){
@@ -98,8 +120,14 @@ function draw() {
   }
   runClicks();
   myBlobs.run();
+
+  if(themeRunner) themeRunner.run();
+
   statusBar.show();
   statusBar.run();
+  stroke(0);
+  fill(255);
+  text(parseInt(frameRate(),0),10,height-10);
   //send a heartbeat echo every 0.5-1 frame
   echoHeartBeat();
 }
@@ -178,7 +206,6 @@ function dataRefreshPoll(){
 }
 
 
-
 function notifyAttached(){
   statusBar.trigger('attached',5);
 }
@@ -217,6 +244,9 @@ function setStartX(data){
   refreshHTMLGeometry();
   console.log("new StartX post: "+myStartX+" "+myEndX);
   noiseField.calcOffset(myStartX);
+  noiseField.syncOffset();
+  //empty existing blobs
+  myBlobs.empty();
 }
 
 function updateRingPos(data){
@@ -292,6 +322,7 @@ function processDetach(){
   statusBar.trigger("detach");
   deviceData.status="joined";
   refreshHTMLStatus();
+  refreshHTMLGeometry();
   console.log("Been detached");
 }
 
@@ -414,6 +445,10 @@ function MyBlobs(){
     }
   };
 
+  this.empty=function(){
+    blobs=[];
+  };
+
   function Blob(data){
     this.id=data.id;
     this.ttl=data.ttl;
@@ -421,7 +456,7 @@ function MyBlobs(){
     this.y=data.y;
     this.pos=createVector(this.x,this.y);
     this.vel=createVector(1,0);
-    this.prevailing=createVector(1,0);
+    this.prevailing=createVector(2,0);
 
 
     this.show=function(){
@@ -442,11 +477,11 @@ function MyBlobs(){
       var acc=p5.Vector.fromAngle(random(-PI, PI));
       this.vel.add(acc);
       this.vel.add(this.prevailing);
-      this.vel.limit(4);
+      this.vel.limit(10);
       this.pos.add(this.vel);
       this.x=this.pos.x;
       this.y=this.pos.y;
-      this.x+=1;
+      // this.x+=xInc;
       this.ttl--;
       if(this.x>=myEndX || this.x<myStartX){
         console.log("blob "+this.id+" just exited");
@@ -491,6 +526,11 @@ function StatusBar(){
     blob: {r: 200, g:80, b:20 },
     none: {r: 0, g:0, b:0 }
   };
+
+  this.setSize=function(w,h){
+    this.w=w;
+    this.h=h;
+  }
 
   this.run=function(){
     if(this.ttl>0){
@@ -560,13 +600,13 @@ function DeviceData(){
   };
   this.offersChanged=false;
 
-  this.statusChanged=function(){
-    //update relevant bits of html
-  };
+  // this.statusChanged=function(){
+  //   //update relevant bits of html
+  // };
 
-  this.geometryChanged=function(){
+  // this.geometryChanged=function(){
 
-  };
+  // };
 }
 
 //*********************************
@@ -586,7 +626,8 @@ function DeviceData(){
       attachButton.hide();
       detachButton.hide();
       permitButton.hide();
-      p5canvas.hide();
+      //p5canvas.hide();
+      changeCanvas(false);
     } else if(deviceData.status=="connected"){
       statusMessage.html("Status: connected   ID:"+deviceData.id);
       button.show();
@@ -595,7 +636,8 @@ function DeviceData(){
       attachButton.hide();
       detachButton.hide();
       permitButton.hide();
-      p5canvas.hide();
+      //p5canvas.hide();
+      changeCanvas(false);
     } else if(deviceData.status=="joined"){
       statusMessage.html("Status: joined to lobby   ID:"+deviceData.id);
       button.show();
@@ -604,21 +646,24 @@ function DeviceData(){
       attachButton.show();
       detachButton.hide();
       permitButton.hide();
-      p5canvas.hide();
+      //p5canvas.hide();
+      changeCanvas(false);
     } else if(deviceData.status=="attached"){
       statusMessage.html("Status: attached to ring   ID:"+deviceData.id);
       button.hide();
       attachButton.hide();
       detachButton.show();
       permitButton.show();
-      p5canvas.show();
+      //p5canvas.show();
+      changeCanvas(true);
     } else {
       statusMessage.html("Status: I have no idea   ID:"+deviceData.id);
       button.hide();
       attachButton.hide();
       detachButton.hide();
       permitButton.hide();
-      p5canvas.hide();
+      //p5canvas.hide();
+      changeCanvas(false);
     }
     // statusMessage.html=stat;
   }
@@ -626,7 +671,7 @@ function DeviceData(){
   function refreshHTMLGeometry(){
     var tempHTML="pos: "+deviceData.geometry.position+ " startX: "+deviceData.geometry.startX+" endX: "+deviceData.geometry.endX+" width: "+deviceData.geometry.myWidth;
     geometry.html(tempHTML);
-  };
+  }
 
 function renderOffers(){
   if(deviceData.offersChanged){

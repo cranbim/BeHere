@@ -1,0 +1,22 @@
+body 
+{padding: 0; margin: 0;} 
+
+canvas {vertical-align: top;}
+
+.buttons_div{
+	width: 100%;
+	background-color: gray;
+	padding: 2px;
+}
+
+button {
+	float: left;
+	background-color: lightblue;
+	border-radius: 3px;
+}
+
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}

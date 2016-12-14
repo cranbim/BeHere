@@ -72,19 +72,20 @@ function Ring(name, io){ //have to pass io to have access to sockets object
 	};
 
 	function checkShadowHealth(heartbeat){
+		//don't do this for unattached ring
 		for(var i=self.deviceShadows.length-1; i>=0; i--){
 			var ds=self.deviceShadows[i];
 			if(ds.lastBeat<heartbeat-10){
 				//force detach of device
-				console.log("Device "+ds.session.id+" last checked in "+ds.lastBeat+" Detach this device");
-				ds.session.socket.emit('notifyDetached',{});
-				detachFromRing(ds.session.id);
+				// console.log("Device "+ds.session.id+" last checked in "+ds.lastBeat+" Detach this device");
+				// ds.session.socket.emit('notifyDetached',{});
+				// detachFromRing(ds.session.id);
 			} else if(ds.lastBeat<heartbeat-1){
 				if(!ds.suspended){
-					console.log("Device "+ds.session.id+" last checked in "+ds.lastBeat+" Skip this device");
-					suspendDev(ds.session.id);
-					ds.suspended=true;
-				} 
+					// console.log("Device "+ds.session.id+" last checked in "+ds.lastBeat+" Skip this device");
+					// suspendDev(ds.session.id);
+					// ds.suspended=true;
+				}
 			} else {
 				if(ds.suspended){
 					unsuspendDev(ds.session.id);
@@ -269,7 +270,7 @@ function Ring(name, io){ //have to pass io to have access to sockets object
 		}
 		//var blobs=self.blobList.getBlobs();
 		io.sockets.emit("blobData", {blobs:blobs});
-		// console.log("sendBlobData:"+blobs.length);
+		console.log("sendBlobData:"+blobs.length);
 	}
 
 		//new blob creation from the client
@@ -312,6 +313,7 @@ function Ring(name, io){ //have to pass io to have access to sockets object
 		var s=ds.session.socket;
 		//should this be done from here inside ring???
 		s.emit('attached',{ring: self.ringID});
+		//send new ring pos to all subsequent devices.
 		s.emit('ringpos',{ring: self.ringID, pos:pos});
 		if(next){
 			ds=self.findShadow(next);
@@ -381,25 +383,28 @@ function Ring(name, io){ //have to pass io to have access to sockets object
 	this.unjoinRing=function(id){
 		var i=findDevRingPos(id);
 		var shadow=this.findShadow(id);
-		var startX=shadow.startX;
-		var dw=shadow.devWidth;
-		//this.deviceShadows[i]=null;
-		this.deviceShadows.splice(i,1);
-		//update ring geometry
-		this.ringLengthDevs--;
-		this.ringLengthPixels-=dw;
-			//update all subsequent devices
-		if(unattached!==null){ //don't do this on the unattached ring	
-			shadow.setStartX(null);
-			for(var j=i; j<this.deviceShadows.length; j++){
-				if(!this.deviceShadows[j].suspended){
-					this.deviceShadows[j].setStartX(startX);
-					startX=this.deviceShadows[j].startX;
+		if(shadow){
+			var startX=shadow.startX;
+			var dw=shadow.devWidth;
+			//this.deviceShadows[i]=null;
+			this.deviceShadows.splice(i,1);
+			//update ring geometry
+			this.ringLengthDevs--;
+			this.ringLengthPixels-=dw;
+				//update all subsequent devices
+			if(unattached!==null){ //don't do this on the unattached ring	
+				shadow.setStartX(null);
+				for(var j=i; j<this.deviceShadows.length; j++){
+					if(!this.deviceShadows[j].suspended){
+						this.deviceShadows[j].setStartX(startX);
+						startX=this.deviceShadows[j].endX;
+					}
 				}
 			}
+			console.log(this.name+" "+this.ringID+" "+"unJoined device shadow: "+id+" "+this.deviceShadows.length);
 		}
-		console.log(this.name+" "+this.ringID+" "+"unJoined device shadow: "+id+" "+this.deviceShadows.length);
 	};
+	
 
 	function suspendDev(devid){
 		var i=findDevRingPos(devid);
@@ -415,7 +420,7 @@ function Ring(name, io){ //have to pass io to have access to sockets object
 			shadow.setStartX(null);
 			for(var j=i; j<self.deviceShadows.length; j++){
 				self.deviceShadows[j].setStartX(startX);
-				startX=self.deviceShadows[j].startX;
+				startX=self.deviceShadows[j].endX;
 			}
 		}
 		console.log(self.name+" "+self.ringID+" "+" suspended device shadow: "+devid);
@@ -457,6 +462,9 @@ function Ring(name, io){ //have to pass io to have access to sockets object
 
 	this.joinNewDevShadow=function(shadow){
 		this.deviceShadows.push(shadow);
+		//update ring geometry
+		self.ringLengthDevs++;
+		self.ringLengthPixels+=shadow.devWidth;
 	};
 
 	this.findShadow=function(devid){
