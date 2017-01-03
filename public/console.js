@@ -3,8 +3,9 @@ var id;
 var beatnum;
 var consoleid;
 var lobbyDiv;
-var lobbyUL;
+var lobbyUL, themeUL;
 var ringDiv;
+var themeDiv;
 var ringUL=null;
 var MetaDiv;
 var metaULreq, metaULgrant, metaULoffer, metaBlobs;
@@ -22,6 +23,7 @@ function setup() {
   lobbyDiv=select('#lobbydevs');
   ringDiv=select('#ringdevs');
   metaDiv=select('#metadata');
+  themeDiv=select('#themes');
 }
 
 function connected(data){
@@ -37,7 +39,7 @@ function consoleData(data){
   var rd=data.ring;
   var md=data.ringMeta;
   var bd=data.blobMeta;
-
+  var td=data.themeMeta;
   //var lobbyList=selectAll('li',lobbyUL);
   //lobbyList.forEach(function(){});
 
@@ -84,7 +86,7 @@ function consoleData(data){
     var devString;
     if(!metaULreq){
       metaULreq=createElement('ul');
-      metaULreq.parent(metaDiv);ß
+      metaULreq.parent(metaDiv);
     }
     var count=select('p',metaULreq);
     if(!count) {
@@ -164,6 +166,29 @@ function consoleData(data){
       var el=createElement('li',devString);
       el.parent(metaBlobs);
     });
+  }
+  if(true){
+    //var devString;
+    if(!themeUL) {
+      themeUL=createElement('ul');
+      var el=createElement('li',"something");
+      el.parent(themeUL);
+      themeUL.parent(themeDiv);
+    }
+    var themeList=selectAll('li',themeUL);
+    themeList.forEach(function(li){
+      li.remove();
+    });
+    td.themes.forEach(function(theme,i){
+      //devString=("00"+dev.position).slice(-3)+" "+dev.connection+" "+dev.socket;
+      devString=("0"+i).slice(-2)+" Theme: "+theme.id;
+      var el=createElement('li',devString);
+      el.parent(themeUL);
+
+    });
+    var devString="Current Theme: "+("0"+td.current.index).slice(-2)+", ttl: "+td.current.ttl;
+    var el=createElement('li',devString);
+    el.parent(themeUL);
   }
 }
 

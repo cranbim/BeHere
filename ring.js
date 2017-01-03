@@ -199,7 +199,7 @@ function Ring(name, io){ //have to pass io to have access to sockets object
 		currentGrants.forEach(function(grant){
 			granted.push(findDevRingPos(grant.device));
 		});
-		console.log("Grants count: "+currentGrants.length+" "+granted.length);
+		//console.log("Grants count: "+currentGrants.length+" "+granted.length);
 		var p=granted.length-1;
 		for(var i=0; i<granted.length; i++){
 			var currPos=granted[i];

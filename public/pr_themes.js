@@ -60,17 +60,14 @@ function Theme1(w,h){
 
   function initTheme(){
     rNow=10;
-	  echoes=[];
-	  maxEchoes=20;
-	  alpha=255;
-	  // r=random(10,250);
-	  // g=random(10,250);
-	  // b=random(10,250);
+    echoes=[];
+    maxEchoes=20;
+    alpha=255;
   }
   
   this.init=function(){
     initTheme();
-  }
+  };
 
 	this.run=function(){
 		this.show();

@@ -4,6 +4,7 @@
 
 var express = require('express');
 var ringMod= require('./ring.js');
+var themeRunner= require ('./themeRunner.js');
 
 var app=express();
 
@@ -17,6 +18,7 @@ var nextAttachOffer=0;
 var heartbeat=1000;
 var consoleSession;
 
+var themes=new themeRunner.ThemeRunner();
 var unattached=new ringMod.Ring("LOBBY", io); //ring to monitor unattached devices
 var ring=new ringMod.Ring("RING_01", io); //ring to monitor attached devices
 ring.setUnattached(unattached);
@@ -38,6 +40,7 @@ function beat(){
 	console.log("heartbeat "+heartbeat);
 	if(sessions.length>0) io.sockets.emit('heartbeat',{beat:heartbeat});
 	ring.run(heartbeat);
+	themes.run();
 	sendConsoleData();
 }
 
@@ -130,7 +133,8 @@ function sendConsoleData(){
 			lobby: buildJSONRing(unattached),
 			ring: buildJSONRing(ring),
 			ringMeta: ring.buildJSONRingMeta(),
-			blobMeta: ring.buildJSONBlobMeta()
+			blobMeta: ring.buildJSONBlobMeta(),
+			themeMeta: themes.buildMetaData()
 		});
 	} else {
 		console.log("Can't send console data, no console connected");
