@@ -44,7 +44,7 @@ function DeviceShadow(session, devid, devWidth){
 /**********************************************
 		Constructor for Blob Ring Object - does most of the work
 ***********************************************/
-function Ring(name, io){ //have to pass io to have access to sockets object
+function Ring(name, io, themes){ //have to pass io to have access to sockets object
 	var self=this; //to get around this context in functions
 	var unattached=null;
 	this.blobList=new blobList.BlobList();
@@ -69,6 +69,10 @@ function Ring(name, io){ //have to pass io to have access to sockets object
 		this.blobList.run(this.ringLengthPixels);
 		sendBlobData();
 		checkShadowHealth(heartbeat);
+		var newTheme=themes.run();
+		if(newTheme>-1){
+			io.sockets.emit("themeSwitch", {index:newTheme});
+		}
 	};
 
 	function checkShadowHealth(heartbeat){

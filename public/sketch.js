@@ -17,6 +17,8 @@ var canSmallWidth=400;
 var canSmallHeight=50;
 var canFullWidth=400;
 var canFullHeight=200;
+var winWidth;
+var winHeight;
 
 
 //Core vars
@@ -49,6 +51,12 @@ var themeRunner;
 //need some sort of subfunction to setup some of these
 
 function setup() {
+  //get display capabilities
+  // winWidth=windowWidth;
+  // winHeight=winHeight;
+  // canFullWidth=winWidth;
+  // canSmallWidth=winWidth;
+  // canFullHeight=winHeight;
   //setup html/display sections
   setupCanvas();
   setupMeta();
@@ -66,7 +74,6 @@ function setup() {
   refreshHTMLStatus();
   refreshHTMLGeometry();
   themeRunner=new ThemeRunner(canFullWidth, canFullHeight);
-  console.log("Did I create themes?");
   frameRate(30);
 }
 
@@ -114,15 +121,16 @@ function setupMeta(){
 
 function draw() {
   background(80);
+  var showing=false;
   if(deviceData.status=="attached"){
-    noiseField.show();
-    noiseField.update();
+    //noiseField.show();
+    //noiseField.update();
+    var blobPos=myBlobs.getPos();
+    if(themeRunner) themeRunner.run(blobPos);
+    showing=true;
   }
   runClicks();
-  myBlobs.run();
-
-  if(themeRunner) themeRunner.run();
-
+  myBlobs.run(showing);
   statusBar.show();
   statusBar.run();
   stroke(0);
@@ -156,6 +164,7 @@ function connected(){
   socket.on('blobData',handleBlobData);
   socket.on('notifyAttached',notifyAttached);
   socket.on('notifyDetached',notifyDetached);
+  socket.on('themeSwitch',switchTheme);
 }
 
 function disconnected(){
@@ -178,7 +187,7 @@ function mouseClicked(){
   }
 }
 
-function touchEnded(){
+function touchEnded(){ //temp disabled as activates on click
   logger.log("f touchEnded","touched");
   if(touchX>=0 &&
     touchX<=width &&
@@ -205,6 +214,9 @@ function dataRefreshPoll(){
   renderOffers();
 }
 
+function switchTheme(data){
+  themeRunner.switchTheme(data.index);
+}
 
 function notifyAttached(){
   statusBar.trigger('attached',5);
@@ -436,13 +448,24 @@ function MyBlobs(){
     });
   };
 
-  this.run=function(){
+  this.run=function(showBlobs){
     for(var i=blobs.length-1; i>=0; i--){
-      blobs[i].show();
+      if(showBlobs) blobs[i].show();
       if(!blobs[i].update()){
         blobs.splice(i,1);
       }
     }
+  };
+
+  this.getPos=function(){
+    bPos=[];
+    blobs.forEach(function(b){
+      bPos.push({
+        x:b.pos.x-myStartX,
+        y:b.pos.y
+      });
+    });
+    return bPos;
   };
 
   this.empty=function(){
@@ -456,7 +479,7 @@ function MyBlobs(){
     this.y=data.y;
     this.pos=createVector(this.x,this.y);
     this.vel=createVector(1,0);
-    this.prevailing=createVector(2,0);
+    this.prevailing=createVector(1,0);
 
 
     this.show=function(){
@@ -530,7 +553,7 @@ function StatusBar(){
   this.setSize=function(w,h){
     this.w=w;
     this.h=h;
-  }
+  };
 
   this.run=function(){
     if(this.ttl>0){

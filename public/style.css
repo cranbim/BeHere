@@ -1,5 +1,8 @@
-body 
-{padding: 0; margin: 0;} 
+body {
+	padding: 0; 
+	margin: 0;
+	font-family: "arial", "sans-serif";
+} 
 
 canvas {vertical-align: top;}
 
@@ -14,6 +17,29 @@ button {
 	background-color: lightblue;
 	border-radius: 3px;
 }
+
+.panel {
+	background-color: #A0D0F0;
+	float: left;
+	width: 30%;
+	height:100%;
+	border-radius: 5px;
+	/*margin: 3px;*/
+	padding: 3px;
+	margin-right: 3px;
+}
+
+.container {
+	background-color: #A0A0A0;
+	float: left;
+	width: 98%;
+	border-radius: 5px;
+	margin-bottom:3px;
+	padding: 3px;
+	color: white;
+}
+
+
 
 .clearfix::after {
     content: "";

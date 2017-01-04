@@ -20,7 +20,7 @@ var consoleSession;
 
 var themes=new themeRunner.ThemeRunner();
 var unattached=new ringMod.Ring("LOBBY", io); //ring to monitor unattached devices
-var ring=new ringMod.Ring("RING_01", io); //ring to monitor attached devices
+var ring=new ringMod.Ring("RING_01", io, themes); //ring to monitor attached devices
 ring.setUnattached(unattached);
 var sessions=[];
 
@@ -40,7 +40,7 @@ function beat(){
 	console.log("heartbeat "+heartbeat);
 	if(sessions.length>0) io.sockets.emit('heartbeat',{beat:heartbeat});
 	ring.run(heartbeat);
-	themes.run();
+	//themes.run();
 	sendConsoleData();
 }
 

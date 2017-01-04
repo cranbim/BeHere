@@ -40,10 +40,16 @@ function consoleData(data){
   var md=data.ringMeta;
   var bd=data.blobMeta;
   var td=data.themeMeta;
-  //var lobbyList=selectAll('li',lobbyUL);
-  //lobbyList.forEach(function(){});
+  showLobbyData(ld);
+  showRingData(rd);
+  showRequestsMeta(md);
+  showGrantMeta(md);
+  showOfferMeta(md);
+  showBlobMeta(bd);
+  showThemeMeta(td);
+}
 
-  if(true){
+  function showLobbyData(ld){
     var devString;
     if(!lobbyUL) {
       lobbyUL=createElement('ul');
@@ -56,14 +62,15 @@ function consoleData(data){
       li.remove();
     });
     ld.data.forEach(function(dev,i){
-      devString=("00"+dev.position).slice(-3)+" "+dev.connection+" "+dev.socket;
+      devString=("00"+dev.position).slice(-3)+" "+dev.connection/*+" "+dev.socket*/;
       var el=createElement('li',devString);
       el.parent(lobbyUL);
     });
   }
-  if(true){
+
+  function showRingData(rd){
     var devString;
-    if(!ringUL){ 
+    if(!ringUL){
       ringUL=createElement('ul');
       var el=createElement('li',"something");
       el.parent(ringUL);
@@ -74,15 +81,14 @@ function consoleData(data){
       li.remove();
     });
     rd.data.forEach(function(dev,i){
-      devString=("00"+dev.position).slice(-2)+" "+dev.connection+" "+dev.socket;
+      devString=("00"+dev.position).slice(-2)+" "+dev.connection/*+" "+dev.socket*/;
       //console.log(devString);
       var el=createElement('li',devString);
       el.parent(ringUL);
     });
   }
-  // console.log("Ring Meta Data: ");
-   //console.log(md);
-  if(true){
+
+  function showRequestsMeta(md){
     var devString;
     if(!metaULreq){
       metaULreq=createElement('ul');
@@ -92,7 +98,7 @@ function consoleData(data){
     if(!count) {
       count=createP("");
       count.parent(metaULreq);
-    } 
+    }
     count.html("Attach Requests #: "+md.requesters.length);
     var metaReqList=selectAll('li',metaULreq);
     metaReqList.forEach(function(li){
@@ -104,7 +110,9 @@ function consoleData(data){
       var el=createElement('li',devString);
       el.parent(metaULreq);
     });
+  }
 
+  function showGrantMeta(md){
     if(!metaULgrant){
       metaULgrant=createElement('ul');
       metaULgrant.parent(metaDiv);
@@ -113,7 +121,7 @@ function consoleData(data){
     if(!count) {
       count=createP("");
       count.parent(metaULgrant);
-    } 
+    }
     count.html("Attach Grants #: "+md.grants.length);
     var metaGrantList=selectAll('li',metaULgrant);
     metaGrantList.forEach(function(li){
@@ -125,6 +133,9 @@ function consoleData(data){
       var el=createElement('li',devString);
       el.parent(metaULgrant);
     });
+  }
+
+  function showOfferMeta(md){
     if(!metaULoffer){
       metaULoffer=createElement('ul');
       metaULoffer.parent(metaDiv);
@@ -145,7 +156,9 @@ function consoleData(data){
       var el=createElement('li',devString);
       el.parent(metaULoffer);
     });
+  }
 
+  function showBlobMeta(bd){
     if(!metaBlobs){
       metaBlobs=createElement('ul');
       metaBlobs.parent(metaDiv);
@@ -167,8 +180,8 @@ function consoleData(data){
       el.parent(metaBlobs);
     });
   }
-  if(true){
-    //var devString;
+
+  function showThemeMeta(td){
     if(!themeUL) {
       themeUL=createElement('ul');
       var el=createElement('li',"something");
@@ -181,7 +194,7 @@ function consoleData(data){
     });
     td.themes.forEach(function(theme,i){
       //devString=("00"+dev.position).slice(-3)+" "+dev.connection+" "+dev.socket;
-      devString=("0"+i).slice(-2)+" Theme: "+theme.id;
+      devString=("0"+i).slice(-2)+" Theme: "+theme.id+" "+theme.name;
       var el=createElement('li',devString);
       el.parent(themeUL);
 
@@ -190,7 +203,6 @@ function consoleData(data){
     var el=createElement('li',devString);
     el.parent(themeUL);
   }
-}
 
 function setID(data){
   console.log(data.id);
