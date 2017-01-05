@@ -16,7 +16,7 @@ var themeLoader={
 	},
 	themeThree: {
 		func: Theme3,
-		ttl: 5
+		ttl: 10
 	},
 };
 

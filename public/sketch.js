@@ -507,6 +507,7 @@ function MyBlobs(){
   };
 
   function Blob(data){
+    this.bloboid=new Bloboid();
     this.id=data.id;
     this.ttl=data.ttl;
     this.x=data.x;
@@ -514,9 +515,11 @@ function MyBlobs(){
     this.pos=createVector(this.x,this.y);
     this.vel=createVector(1,0);
     this.prevailing=createVector(random(0,10),0);
+    var rr=0; var rg=255; var rb=150;
+    var er=255; var eg=0; var eb=0;
 
 
-    this.show=function(){
+    this.oldshow=function(){
       push();
       translate(this.x-myStartX, this.y);
       stroke(255,0,150);
@@ -527,6 +530,15 @@ function MyBlobs(){
       }
       ellipse(0,0,30,30);
       pop();
+    };
+
+    this.show=function(){
+      this.bloboid.addPoint(this.x-myStartX, this.y);
+      if(this.ttl>100){
+        this.bloboid.run(rr,rg,rb);
+      } else {
+        this.bloboid.run(255,0,0);//er,eg,eb);
+      }
     };
 
     this.update=function(){
@@ -549,6 +561,37 @@ function MyBlobs(){
       if(this.ttl%30<1) socket.emit('blobUpdate',{id:this.id, x:this.x, y:this.y, ttl:this.ttl});
       return this.x>=myStartX && this.x<myEndX && this.ttl>0;
     };
+  }
+
+  function Bloboid(){
+    var x, y;
+    var trail=[];
+    var maxTrail=10;
+    
+    this.run=function(r1,g1,b1){
+      //this.addPoint(x,y);
+      this.showTrail(r1,g1,b1);
+    };
+    
+    this.addPoint=function(x,y){
+      if(trail.length>maxTrail){
+        trail.splice(0,1);
+      }
+      trail.push({x:x, y:y});
+    };
+    
+    this.showTrail=function(r1,g1,b1){
+      push();
+      for(var i=0; i<trail.length; i++){
+        var r=trail.length-i;
+        // r*=r;
+        r=2*i;
+        noStroke();
+        fill(r1,g1,b1,map(i,0,trail.length, 10,255));
+        ellipse(trail[i].x, trail[i].y, r,r );
+      }
+      pop();
+    }
   }
 }
 

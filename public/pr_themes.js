@@ -18,7 +18,7 @@ function ThemeRunner(w,h){
 	var themeLoader={
 		themeOne: ThemeDust,
 		themeTwo: ThemeSpark,
-		themeThree: ThemeHypno
+		themeThree: ThemeNoise1
 	};
 
 	loadThemes(w,h);
@@ -406,9 +406,9 @@ function ThemeSpark(name, w,h){
 
   function Spark(pos, travel, mr, mg, mb){
     travel.normalize();
-    var rad=random(0.5,5);
+    var rad=random(1,10);
     travel.mult(rad/2);
-    var ttl=100;
+    var ttl=50;
     var trail=[];
     var maxTrail=20;
     var width=4;
@@ -574,4 +574,189 @@ function ThemeHypno(name, w,h){
   }
 }
 
+function ThemeNoise1(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var noiseSet;
+
+  initTheme();
+
+  function initTheme(){
+    noiseSet=new NoiseStripes();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    noiseSet.run(blobPos);
+    // while(blobPos.length>noiseSet.length){
+    //   var n=new noiseStripes();
+    //   noiseSet.push(n);
+    // }
+    // blobPos.forEach(function(p,i){
+    //  dusts[i].run(p);
+    // });
+    // noiseSet.forEach(function(n,i){
+    //   n.run(blobPos[i]);
+    // });
+  };
+
+
+
+  function NoiseStripes(){
+
+    var a=0;
+    var aInc=0;//0.01;
+    var field;
+    var lines;
+    var lineWidth=5;
+    var amplitude=5;
+    var avgX=100;
+		var avgY=100;
+
+    field=new NoiseField(10,0.04);
+    lines=new Lines(10,8);
+    smooth();
+  
+
+    this.run=function(bPos) {
+    	var nAvgX=0;
+    	var nAvgY=h/2;
+			var count=bPos.length;
+			if(bPos){
+				if(bPos.length>0){
+					nAvgY=bPos.reduce(function(p,n){
+						return p+n.y;
+					},0)/count;
+					nAvgX=bPos.reduce(function(p,n){
+						return p+n.x;
+					},0)/count;
+					// avgX+=(nAvgX-avgX)/10;
+					// avgY+=(nAvgY-avgY)/10;
+				} else {
+					var nAvgX=0;
+    			var nAvgY=h/2;
+				}
+			}else {
+				var nAvgX=0;
+    		var nAvgY=h/2;
+			}
+			// if(nAvgY<1)nAvgY=h/2;
+			// if(nAvgX<1)nAvgX=w/2;
+			avgX+=(nAvgX-avgX)/10;
+			avgY+=(nAvgY-avgY)/10;
+			//console.log(">>> "+count+" >>> "+avgY);
+			// refresh(avgY, avgX);
+			refresh(avgX, avgY);
+			//field.show();
+			lines.show(field, amplitude);
+			field.shift(0.1,0.5);
+			field.update();
+    };
+
+    function refresh(x, y){
+    	var near=dist(x,0,w/2,0)
+      amplitude=map(near,0,w/2,100,5);
+      lineWidth=map(y,0,h,0.5,20);
+    }
+
+    function Lines(stepX, stepY){
+      var h=floor(height/stepY);
+      var w=floor(width/stepX);
+      
+      this.show=function(field, amp){
+        push();
+        translate(width/2, height/2);
+        rotate(a);
+        translate(-width/2, -height/2);
+        translate(0,-amp*5);
+        strokeWeight(lineWidth);
+        stroke(255,120,0,100);
+        noFill();
+        for(var y=0; y<h; y++){
+          beginShape();
+          var f;
+          for(var x=0; x<w; x++){
+            f=field.noiseAtLerp(x*stepX,y*stepY);
+            vertex(x*stepX,y*stepY+f*stepY*amp);
+          }
+          vertex(x*stepX+1,y*stepY+f*stepY*amp);
+          endShape();
+        }
+        pop();
+        a+=aInc;
+      }
+    }
+
+    function NoiseField(step, noiseLevel){
+      var w=floor((width+step)/step);
+      var h=floor(height/step);
+      var field=[];
+      var nStep=noiseLevel;
+      var nXOff=0;
+      var nYOff=0;
+      
+      for(var y=0; y<h; y++){
+        var row=[];
+        for(var x=0; x<w; x++){
+          var n=noise(x*nStep+nXOff, y*nStep+nYOff);
+          row.push(n);
+        }
+        field.push(row);
+      }
+      
+      this.noiseAt=function(x,y){
+        var xf=floor(x/step);
+        var yf=floor(y/step);
+        return field[yf][xf];
+      }
+      
+      this.noiseAtLerp=function(x,y){
+        var xf=floor(x/step);
+        var xl=x%step;
+        var yf=floor(y/step);
+        var yl=y%step;
+        if(yf+1>=field.length)yn=yf; else yn=yf+1;
+        if(xf+1>=field[0].length)xn=xf; else xn=xf+1;
+        var noiseHere=field[yf][xf];
+        var noiseXNext=field[yf][xn];
+        var noiseYNext=field[yn][xf];
+        var lerpX=lerp(noiseHere, noiseXNext, xl/step);
+        var lerpY=lerp(noiseHere, noiseYNext, yl/step);
+        return (lerpX+lerpY)/2;
+      }
+      
+      this.update=function(){
+        field=[];
+        for(var y=0; y<h; y++){
+          var row=[];
+          for(var x=0; x<w; x++){
+            var n=noise(x*nStep+nXOff, y*nStep+nYOff);
+            row.push(n);
+          }
+          field.push(row);
+        }
+      }
+      
+      this.show=function(){
+        for(var y=0; y<field.length; y++){
+          for(var x=0; x<field[y].length; x++){
+            var c=map(field[y][x], 0, 1, 0, 255);
+            noStroke();
+            fill(c);
+            rect(x*step, y*step, step, step);
+          }
+        }
+      };
+      
+      this.shift=function(x,y){
+        nXOff+=nStep*x;
+        nYOff+=nStep*y;
+      }
+    }
+  }
+}
 
