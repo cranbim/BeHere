@@ -13,15 +13,16 @@ var nextRingID=0;
 /**********************************************
 		Constructor for Device Shadow Object
 ***********************************************/
-function DeviceShadow(session, devid, devWidth){
+function DeviceShadow(session, devid, devWidth, devHeight){
 	this.session=session;
 	this.devid=devid;
 	this.lastBeat=0;
 	this.devWidth=devWidth;
+	this.devHeight=devHeight;
 	this.startX=null;
 	this.endX=null;
 	this.suspended=false;
-	console.log("New device shadow "+this.session.id+", Device"+devid+", Width:"+devWidth+" pixels");
+	console.log("New device shadow "+this.session.id+", Device"+devid+", Width:"+devWidth+" Height:"+devHeight);
 
 	this.requestForPermit=function(){
 		console.log(this.session.id+" received request for attach permit. Pass to device");

@@ -97,7 +97,7 @@ function newConnection(socket){
   }
 
   function joiner(data){
-		var newUnAttached=new ringMod.DeviceShadow(session, data.id, data.width);
+		var newUnAttached=new ringMod.DeviceShadow(session, data.id, data.width, data.height);
 		unattached.joinNewDevShadow(newUnAttached);
 	}
 

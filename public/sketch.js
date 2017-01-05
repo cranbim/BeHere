@@ -8,7 +8,8 @@ var idBar;
 var buttonBar;
 var geometry;
 var offersDiv;
-var button, attachButton, detachButton, permitButton;
+var button, attachButton, detachButton, permitButton, fsButton;
+var isFullScreen;
 var statusMessage, position, idnum;
 var offersList; //HTML offers
 var hideMeta=false;
@@ -17,6 +18,7 @@ var canSmallWidth=400;
 var canSmallHeight=50;
 var canFullWidth=400;
 var canFullHeight=200;
+var lastTouch=0;
 
 
 //Core vars
@@ -81,6 +83,7 @@ function setupCanvas(){
   p5div=select('#p5');
   p5canvas=createCanvas(canSmallWidth, canSmallHeight);
   p5canvas.parent(p5div);
+  isFullScreen = fullscreen();
   // p5canvas.hide();
   // p5Hidden=true;
 }
@@ -97,6 +100,7 @@ function changeCanvas(full){
 function setupButtons(){
   buttonBar=select('#buttons');
   button = select('#join');
+  fsButton= select('#fullScreen');
   attachButton = select('#attach');
   attachButton.hide();
   detachButton = select('#detach');
@@ -105,9 +109,35 @@ function setupButtons(){
   permitButton.hide();
   statusMessage = select('#status');
   button.mouseClicked(joinMe);
+  fsButton.mouseClicked(switchFullScreen);
   attachButton.mouseClicked(attachMe);
   detachButton.mouseClicked(detachFromRing);
   permitButton.mouseClicked(permitAttacher);
+}
+
+function windowResized(){
+  devWidth=windowWidth;
+  devHeight=windowHeight;
+  myWidth=devWidth;
+  canFullWidth=devWidth;
+  canSmallWidth=devWidth;
+  canFullHeight=devHeight;
+
+  changeCanvas(deviceData.fullDisplay);
+}
+
+function switchFullScreen(){
+  isFullScreen = fullscreen();
+  fullscreen(!isFullScreen);
+
+  devWidth=windowWidth;
+  devHeight=windowHeight;
+  myWidth=devWidth;
+  canFullWidth=devWidth;
+  canSmallWidth=devWidth;
+  canFullHeight=devHeight;
+
+  changeCanvas(deviceData.fullDisplay);
 }
 
 function setupMeta(){
@@ -174,28 +204,32 @@ function disconnected(){
   refreshHTMLGeometry();
 }
 
+function touchEnded(){
+  logger.log("f touchEnded","touched");
+  if(Date.now()>lastTouch+100){
+    if(touchX>=0 &&
+      touchX<=width &&
+      touchY>=0 &&
+      touchY<=height){
+        newClick(touchX+myStartX, touchY);
+    }
+    lastTouch=Date.now();
+  }
+  //return false;
+}
 
 function mouseClicked(){
   //click also triggers a touch. why?
   logger.log("f mouseClicked","clicked");
-
-  if(mouseX>=0 &&
-    mouseX<=width &&
-    mouseY>=0 &&
-    mouseY<=height){
-      newClick(mouseX+myStartX, mouseY);
+  if(Date.now()>lastTouch+100){
+    if(mouseX>=0 &&
+      mouseX<=width &&
+      mouseY>=0 &&
+      mouseY<=height){
+        newClick(mouseX+myStartX, mouseY);
+    }
+    lastTouch=Date.now();
   }
-}
-
-function touchEnded(){ //temp disabled as activates on click
-  logger.log("f touchEnded","touched");
-  if(touchX>=0 &&
-    touchX<=width &&
-    touchY>=0 &&
-    touchY<=height){
-      newClick(touchX+myStartX, touchY);
-  }
-  // return false;
 }
 
 function keyPressed(){
@@ -361,7 +395,7 @@ function joinMe(){
   if(deviceData.status=="connected"){
     deviceData.status="joined";
     refreshHTMLStatus();
-    socket.emit('join',{id: id, width:myWidth});
+    socket.emit('join',{id: id, width:myWidth, height:devHeight});
     console.log("request join to unattached");
   }else if(deviceData.status=="joined"){
     deviceData.status="connected";
@@ -479,7 +513,7 @@ function MyBlobs(){
     this.y=data.y;
     this.pos=createVector(this.x,this.y);
     this.vel=createVector(1,0);
-    this.prevailing=createVector(1,0);
+    this.prevailing=createVector(random(0,10),0);
 
 
     this.show=function(){
@@ -497,7 +531,7 @@ function MyBlobs(){
 
     this.update=function(){
       this.pos=createVector(this.x,this.y);
-      var acc=p5.Vector.fromAngle(random(-PI, PI));
+      var acc=p5.Vector.fromAngle(random(-TWO_PI, TWO_PI));
       this.vel.add(acc);
       this.vel.add(this.prevailing);
       this.vel.limit(10);
@@ -616,8 +650,10 @@ function DeviceData(){
   this.status="nothing";
   this.currentBeat=-1;
   this.geometry={
+    fullDisplay: false,
     position: -1,
     myWidth: myWidth,
+    myHeight: devHeight,
     startX: -1,
     endX: -1
   };
@@ -644,55 +680,65 @@ function DeviceData(){
 
   function refreshHTMLStatus(){
     if(deviceData.status=="nothing"){
+      deviceData.fullDisplay=false;
       statusMessage.html("Status: not connected   ID:"+deviceData.id);
       button.hide();
+      fsButton.show();
       attachButton.hide();
       detachButton.hide();
       permitButton.hide();
       //p5canvas.hide();
-      changeCanvas(false);
+      changeCanvas(deviceData.fullDisplay);
     } else if(deviceData.status=="connected"){
+      deviceData.fullDisplay=false;
       statusMessage.html("Status: connected   ID:"+deviceData.id);
       button.show();
       button.html('Join');
+      fsButton.show();
       connectionStatus=0;
       attachButton.hide();
       detachButton.hide();
       permitButton.hide();
       //p5canvas.hide();
-      changeCanvas(false);
+      changeCanvas(deviceData.fullDisplay);
     } else if(deviceData.status=="joined"){
+      deviceData.fullDisplay=false;
       statusMessage.html("Status: joined to lobby   ID:"+deviceData.id);
       button.show();
       button.html('un-Join');
+      fsButton.hide();
       connectionStatus=1;
       attachButton.show();
       detachButton.hide();
       permitButton.hide();
       //p5canvas.hide();
-      changeCanvas(false);
+      changeCanvas(deviceData.fullDisplay);
     } else if(deviceData.status=="attached"){
+      deviceData.fullDisplay=true;
       statusMessage.html("Status: attached to ring   ID:"+deviceData.id);
       button.hide();
+      fsButton.hide();
       attachButton.hide();
       detachButton.show();
       permitButton.show();
       //p5canvas.show();
-      changeCanvas(true);
+      changeCanvas(deviceData.fullDisplay);
     } else {
+      deviceData.fullDisplay=false;
       statusMessage.html("Status: I have no idea   ID:"+deviceData.id);
       button.hide();
+      fsButton.hide();
       attachButton.hide();
       detachButton.hide();
       permitButton.hide();
       //p5canvas.hide();
-      changeCanvas(false);
+      changeCanvas(deviceData.fullDisplay);
     }
     // statusMessage.html=stat;
   }
 
   function refreshHTMLGeometry(){
-    var tempHTML="pos: "+deviceData.geometry.position+ " startX: "+deviceData.geometry.startX+" endX: "+deviceData.geometry.endX+" width: "+deviceData.geometry.myWidth;
+    var tempHTML="pos: "+deviceData.geometry.position+ " startX: "+deviceData.geometry.startX+" endX: "+deviceData.geometry.endX+" width: "+deviceData.geometry.myWidth+" height: "+deviceData.geometry.myHeight;
     geometry.html(tempHTML);
   }
 
