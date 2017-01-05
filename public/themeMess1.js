@@ -25,11 +25,11 @@
 // }
 
 
-function ThemeBlank(name, w,h){
+function ThemeHypno(name, w,h){
   this.id=nextThemeId++;
   this.name=name;
   //this.lifeSpan=0;
-  var sparklers=[];
+  var hypnos=[];
 
   initTheme();
 
@@ -55,182 +55,86 @@ function ThemeBlank(name, w,h){
   };
 
 
+  function HypnoRing(w,h){
 
-  function Sparkler(){
-    var sparks=[];
-    var r,g,b,rt,gt,bt;
-    var nx, ny, px, py;
+    var rings=[];
+    var numRings;
+    var a=0;
+    var aInc;
+    var rGrow=1;
+    var gap=25;
+    var thick=5;
+    var rot=0;
+    var rotInc;
+    var running=true;
 
-    r=100; g=80; b=200;
-    rt=50; gt=255; bt=0;
-
-    this.run=function(pos){
-      for(var i=sparks.length-1; i>=0; i--){
-        sparks[i].show();
-        if(!sparks[i].run()) sparks.splice(i,1);
-      }
-      shiftCol();
-      if(pos){
-        px=nx; py=ny;
-        nx=pos.x; ny=pos.y;
-        if(random(10)<6){
-          var travel=createVector(nx, ny);
-          travel.sub(px, py);
-          var pos=createVector(nx, ny);
-          var s=new Spark(pos, travel, r, g, b);
-          sparks.push(s);
-        }
-      }
-    };
-
-
-
-    function shiftCol(){
-      r+=(rt-r)/10;
-      if(abs(rt-r)<2) rt=random(100,255);
-      g+=(gt-g)/10;
-      if(abs(gt-g)<2) gt=random(100,255);
-      r+=(bt-b)/10;
-      if(abs(bt-b)<2) bt=random(100,255);
+    rotInc=PI/100;
+    createCanvas(500,500);
+    numRings=w*1.4/2/gap;
+    aInc=PI/50;
+    for(var i=0; i<numRings; i++){
+      var r=new Ring(gap+i*gap, PI/numRings*i);
+      rings.push(r);
     }
-
-  }
-
-  function Spark(pos, travel, mr, mg, mb){
-    travel.normalize();
-    var rad=random(0.5,5);
-    travel.mult(rad/2);
-    var ttl=100;
-    var trail=[];
-    var maxTrail=20;
-    var width=4;
-    var alpha=255;
-    // r+=random(50,150);
-    // r=r%255;
-    // r=255;
     
-    this.show=function(){
-      trail.forEach(function(spot){
-        push();
-        alpha=map(ttl,100,0,255,50);
-        fill(color(random(50,150),mg,mb,alpha));
-        //fill(255,alpha);
-        noStroke();
-        translate(spot.pos.x, spot.pos.y);
-        ellipse(0,0,rad,rad);
-        pop();
+    this.run=function() {
+      rings.forEach(function(r,i){
+        r.show(rot+rotInc*i*10);
+        if(!r.grow(a)) r.reset();
       });
-    };
-    
-    this.run=function(){
-      var p=pos.copy();
-      var spot={
-        pos:p
-      };
-      trail.unshift(spot);
-      if(trail.length>maxTrail) trail.pop();
-      if(ttl<maxTrail){
-        trail.pop();
-      } else {
-        pos.add(travel);
-        if(random(10)<4){
-          var v=p5.Vector.random2D().mult(2);
-          pos.add(v);
-        }
+      rot+=rotInc;
+      if(running){
+        a+=aInc;
       }
-      //pos.x+=1;
-      ttl--;
-      return ttl>0;
-    };
-  }
-}
-
-var sparks=[];
-var r,g,b,rt,gt,bt;
-
-function setup() {
-  createCanvas(800,600);
-  // frameRate(10);
-  r=100; g=80; b=200;
-  rt=50; gt=255; bt=0;
-}
-
-function draw() {
-  background(0);
-  //sparks.forEach(function(spark)
-  // if(sparks.length>0){
-    for(var i=sparks.length-1; i>=0; i--){
-      sparks[i].show();
-      if(!sparks[i].run()) sparks.splice(i,1);
     }
-  // }
- // console.log(sparks.length);
- shiftCol();
-}
 
-function shiftCol(){
-  r+=(rt-r)/10;
-  if(abs(rt-r)<2) rt=random(100,255);
-  g+=(gt-g)/10;
-  if(abs(gt-g)<2) gt=random(100,255);
-  r+=(bt-b)/10;
-  if(abs(bt-b)<2) bt=random(100,255);
-}
+    function Ring(rInit, phase){
+      var x=width/2;
+      var y=height/2;
+      var r=rInit;
+      
+      this.grow=function(a){
+        r+=sin(a+phase)*rGrow;//+0.5;
+        return !(r>width*1.4/2);
+      }
+      
+      this.show=function(rot){
+        push();
+        translate(x,y);
+        stroke(200);
+        strokeWeight(thick);
+        noFill();
+        //ellipse(0,0,r*2,r*2);
+        myRing(0,0,r,rot);
+        pop();
+      }
+      
+      this.reset=function(){
+        r=gap;
+      }
+    }
 
-function mouseMoved(){
-  if(random(10)<4){
-    var travel=createVector(mouseX, mouseY);
-    travel.sub(pmouseX, pmouseY);
-    var pos=createVector(mouseX, mouseY);
-    var s=new Spark(pos, travel, r, g, b);
-    sparks.push(s);
-  }
-}
-
-function Spark(pos, travel, mr, mg, mb){
-  travel.normalize();
-  var rad=random(0.5,5);
-  travel.mult(rad/2);
-  var ttl=100;
-  var trail=[];
-  var maxTrail=20;
-  var width=4;
-  var alpha=255;
-  // r+=random(50,150);
-  // r=r%255;
-  // r=255;
-  
-  this.show=function(){
-    trail.forEach(function(spot){
+    function myRing(x,y,r,rot){
+      var segs=50;
+      var maxThick=10;
+      var aInc=TWO_PI/segs;
+      var a=0;//TWO_PI;
       push();
-      alpha=map(ttl,100,0,255,50);
-      fill(color(random(50,150),mg,mb,alpha));
-      //fill(255,alpha);
-      noStroke();
-      translate(spot.pos.x, spot.pos.y);
-      ellipse(0,0,rad,rad);
-      pop();
-    });
-  };
-  
-  this.run=function(){
-    var p=pos.copy();
-    var spot={
-      pos:p
-    };
-    trail.unshift(spot);
-    if(trail.length>maxTrail) trail.pop();
-    if(ttl<maxTrail){
-      trail.pop();
-    } else {
-      pos.add(travel);
-      if(random(10)<4){
-        var v=p5.Vector.random2D().mult(2);
-        pos.add(v);
+      translate(x,y);
+      rotate(rot);
+      //var px=0; var py=0;
+      var px=cos(a)*r;
+      var py=sin(a)*r;
+      for(var i=0; i<segs; i++){
+        a+=aInc;
+        var rx=cos(a)*r;
+        var ry=sin(a)*r;
+        strokeWeight((sin(a)*maxThick+maxThick+1)*r/width*2);
+        line(px,py,rx,ry);
+        px=rx;
+        py=ry;
       }
+      pop();
     }
-    //pos.x+=1;
-    ttl--;
-    return ttl>0;
-  };
+  }
 }

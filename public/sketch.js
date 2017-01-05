@@ -17,8 +17,6 @@ var canSmallWidth=400;
 var canSmallHeight=50;
 var canFullWidth=400;
 var canFullHeight=200;
-var winWidth;
-var winHeight;
 
 
 //Core vars
@@ -28,6 +26,7 @@ var offers=[]; //actual offers
 var dataRefresh; //timer for updating the display
 var clicks=[]; //stores recent mouse click echoes
 var myWidth=400;
+var devWidth;
 var devHeight=200;
 var myStartX=null;
 var myEndX=null;
@@ -52,11 +51,12 @@ var themeRunner;
 
 function setup() {
   //get display capabilities
-  // winWidth=windowWidth;
-  // winHeight=winHeight;
-  // canFullWidth=winWidth;
-  // canSmallWidth=winWidth;
-  // canFullHeight=winHeight;
+  devWidth=windowWidth;
+  devHeight=windowHeight;
+  myWidth=devWidth;
+  canFullWidth=devWidth;
+  canSmallWidth=devWidth;
+  canFullHeight=devHeight;
   //setup html/display sections
   setupCanvas();
   setupMeta();
