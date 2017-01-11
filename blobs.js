@@ -1,5 +1,6 @@
 module.exports={
-	BlobList: BlobList
+	BlobList: BlobList,
+	Parameters: Parameters
 };
 
 function BlobList(){
@@ -87,6 +88,44 @@ function BlobList(){
 }
 
 
+function Parameters(){
+	var numParams=2;
+	var params=[];
 
+	for(var i=0; i<numParams; i++){
+		params[i]=new Parameter(i+1);
+	}
+
+	this.run=function(){
+		params.forEach(function(p){
+			p.run();
+		});
+	};
+
+	this.getVal=function(ind){
+		return params[ind].get();
+	};
+
+	console.log("New Parameters");
+	console.log("0: "+params[0].get());
+
+
+	function Parameter(ind){
+		var value=0;
+		var steps=10;
+		var inc=ind/steps;
+
+		this.run=function(){
+			value+=inc;
+			if(value>1) value-=1;
+			// console.log("run param");
+		};
+
+		this.get=function(){
+			return value;
+		};
+	}
+
+}
 
 	

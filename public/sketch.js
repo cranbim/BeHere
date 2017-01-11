@@ -33,10 +33,14 @@ var devHeight=200;
 var myStartX=null;
 var myEndX=null;
 var myBlobs=new MyBlobs();
+var allBlobs=new AllBlobs();
 var statusBar; //stores the visual cue to actions
 var socket;
 var id;
-
+var ringLength=10;
+var ringDevs=1;
+var globalParams=[];
+var distances;
 
 //noisefield vars - camn these be held elsewhere?
 var noisePerWorldPixel=0.005;
@@ -81,6 +85,8 @@ function setup() {
 
 function setupCanvas(){
   p5div=select('#p5');
+  //switch off retina capability to improve performance?
+  pixelDensity(1);
   p5canvas=createCanvas(canSmallWidth, canSmallHeight);
   p5canvas.parent(p5div);
   isFullScreen = fullscreen();
@@ -150,7 +156,8 @@ function setupMeta(){
 }
 
 function draw() {
-  background(80);
+  background(backGroundFromParams());
+  backgroundDistanceMeter();
   var showing=false;
   if(deviceData.status=="attached"){
     //noiseField.show();
@@ -168,6 +175,39 @@ function draw() {
   text(parseInt(frameRate(),0),10,height-10);
   //send a heartbeat echo every 0.5-1 frame
   echoHeartBeat();
+}
+
+function backGroundFromParams(){
+  var bg=0;
+  if(globalParams[1]){
+    var p1=globalParams[1];
+    p1.count++;
+    var diff=lerp(p1.last, p1.current, p1.count/30);
+    bg=map(diff,0,1,50,150);
+  }
+  return bg;
+}
+
+function backgroundDistanceMeter(){
+  var lerpedPos=0;
+  if(distances){
+    lerpedPos=lerp(distances.last, distances.current, distances.count/30);
+    distances.count++;
+    //console.log(distances.count, lerpedPos);
+  }
+  var r=100;
+  var myX=myStartX+myWidth/2;
+  var dist=abs(myX-lerpedPos);
+  var relDist=dist/ringLength*2;
+  var aspect=width/height;
+  //console.log(myX, dist, relDist);
+  r=map(relDist,0,1,width/2,10);
+  // text(r,20,40);
+  push();
+  noStroke();
+  fill(255,50);
+  ellipse(width/2, height/2, r, r/aspect);
+  pop();
 }
 
 function echoHeartBeat(){
@@ -258,10 +298,19 @@ function notifyAttached(){
 
 function handleBlobData(data){
   console.log("Incoming blob data "+data.blobs.length);
-  processBlobData(data.blobs);
+  processBlobData(data);
 }
 
-function processBlobData(blobs){
+function processBlobData(data){
+  var allBlobsSent=data.allBlobs;
+  if(allBlobsSent){
+    allBlobs.reset();
+  }
+  var blobs=data.blobs;
+  ringLength=data.ringLength;
+  numDevs=data.numDevs;
+  parametersChanged(data.params);
+  // console.log("Ring data "+ringLength+" "+numDevs);
   blobs.forEach(function(blob){
     //check if blob is in our patch
     if(blob.x>=myStartX && blob.x<myEndX){
@@ -272,6 +321,44 @@ function processBlobData(blobs){
         console.log("Blob entered my patch "+blob.id+" x:"+blob.x+" S:"+myStartX+" E:"+myEndX);
       }
       //if we do then just run it
+    }
+    if(allBlobsSent){
+      allBlobs.addBlob(blob);
+    }
+  });
+  if(allBlobsSent){
+    // allBlobs.writeAll();
+    distanceChanged();
+  }
+}
+
+function distanceChanged(){
+  //console.log("Dist changed");
+  if(!distances){
+    distances={
+      current: 0,
+      last:0 ,
+      count:0
+    };
+  } else {
+    distances.last=distances.current;
+    distances.current=allBlobs.allAvgX;
+    distances.count=0;
+  }
+}
+
+function parametersChanged(params){
+  params.forEach(function(p,i){
+    if(globalParams[i]!==undefined){
+      globalParams[i].last=globalParams[i].current;
+      globalParams[i].current=p;
+      globalParams[i].count=0;
+    }else{
+      globalParams[i]={
+        last: p,
+        current: p,
+        count:0
+      };
     }
   });
 }
@@ -467,6 +554,58 @@ function Click(x,y){
 /*****************************************
   MyBlobs and integral Blob objects
   ******************************************/
+function AllBlobs(){
+  var prev=500;
+  var next=500;
+
+  this.allBlobs=[];
+  this.allCount=0;
+  this.allTotalX=0;
+  this.allTotalY=0;
+  this.allAvgX=0;
+  this.allAvgY=0;
+  this.prevCount=0;
+  this.prevTotalX=0;
+  this.prevTotalY=0;
+  this.prevAvgX=0;
+  this.prevAvgY=0;
+
+  this.reset=function(){
+    this.allBlobs=[];
+    this.allCount=0;
+    this.allTotalX=0;
+    this.allTotalY=0;
+    this.allAvgX=0;
+    this.allAvgY=0;
+    this.prevCount=0;
+    this.prevTotalX=0;
+    this.prevTotalY=0;
+    this.prevAvgX=0;
+    this.prevAvgY=0;
+  };
+
+  this.addBlob=function(blob){
+    this.allCount++;
+    this.allTotalX+=blob.x;
+    this.allAvgX=this.allTotalX/this.allCount;
+    this.allTotalY+=blob.y;
+    this.allAvgY=this.allTotalY/this.allCount;
+    this.allBlobs.push({x:blob.x, y:blob.y});
+    if(blob.x>(myStartX-prev) && blob.x<myStartX){
+      this.prevCount++;
+      this.prevTotalX+=blob.x;
+      this.prevTotalY+=blob.y;
+      this.prevAvgX=this.prevTotalX/this.prevCount;
+      this.prevAvgY=this.prevTotalY/this.prevCount;
+    }
+  };
+
+  this.writeAll=function(){
+    console.log("AllBlobs "+this.allCount+" avX:"+this.allAvgX+" avY:"+this.allAvgY);
+    console.log("All prev"+this.prevCount+" avX:"+this.prevAvgX+" avY:"+this.prevAvgY);
+  };
+}
+
 
 function MyBlobs(){
   blobs=[];
@@ -507,8 +646,8 @@ function MyBlobs(){
   };
 
   function Blob(data){
-    this.bloboid=new Bloboid();
     this.id=data.id;
+    this.bloboid=new Bloboid(this.id);
     this.ttl=data.ttl;
     this.x=data.x;
     this.y=data.y;
@@ -517,6 +656,10 @@ function MyBlobs(){
     this.prevailing=createVector(random(0,10),0);
     var rr=0; var rg=255; var rb=150;
     var er=255; var eg=0; var eb=0;
+    var drag=0.95;
+    var steer=2;
+    var maxTTL=1000;
+
 
 
     this.oldshow=function(){
@@ -534,16 +677,23 @@ function MyBlobs(){
 
     this.show=function(){
       this.bloboid.addPoint(this.x-myStartX, this.y);
-      if(this.ttl>100){
-        this.bloboid.run(rr,rg,rb);
-      } else {
-        this.bloboid.run(255,0,0);//er,eg,eb);
+      var ra=map(this.ttl, maxTTL, 100, 0, 255);
+      var ga=255-ra;
+      var ba=0;
+      var flicker=false;
+      if(this.ttl<200){
+        flicker=true;
+        ra=255;
+        ga=0;
       }
+      this.bloboid.run(ra,ga,rb, flicker, this.ttl);
     };
 
     this.update=function(){
       this.pos=createVector(this.x,this.y);
       var acc=p5.Vector.fromAngle(random(-TWO_PI, TWO_PI));
+      acc.mult(steer);
+      this.vel.mult(drag);
       this.vel.add(acc);
       this.vel.add(this.prevailing);
       this.vel.limit(10);
@@ -563,14 +713,14 @@ function MyBlobs(){
     };
   }
 
-  function Bloboid(){
+  function Bloboid(id){
     var x, y;
     var trail=[];
     var maxTrail=10;
     
-    this.run=function(r1,g1,b1){
+    this.run=function(r1,g1,b1, flicker, ttl){
       //this.addPoint(x,y);
-      this.showTrail(r1,g1,b1);
+      this.showTrail(r1,g1,b1, flicker, ttl);
     };
     
     this.addPoint=function(x,y){
@@ -580,18 +730,36 @@ function MyBlobs(){
       trail.push({x:x, y:y});
     };
     
-    this.showTrail=function(r1,g1,b1){
+    this.showTrail=function(r1,g1,b1, flicker, ttl){
       push();
       for(var i=0; i<trail.length; i++){
         var r=trail.length-i;
         // r*=r;
         r=2*i;
-        noStroke();
+        // noFill();
         fill(r1,g1,b1,map(i,0,trail.length, 10,255));
+        stroke(r1,g1,b1,map(i,0,trail.length, 10,255));
+        if(flicker){
+          noFill();
+          // if(i%2===0){
+          //   noFill();
+          // }
+        }
         ellipse(trail[i].x, trail[i].y, r,r );
       }
+      var x=trail[trail.length-1].x;
+      var y=trail[trail.length-1].y;
+      var relPos=floor((x+myStartX)/ringLength*100);
+      // console.log(myStartX+" "+x+" "+ringLength+" "+relPos);
+      //fill(255);
+      textSize(14);
+      stroke(255);
+      noFill();
+      text(id,x+15,y-15);
+      text((relPos+"%"),x+15,y);
+      text(ttl,x+15,y+15);
       pop();
-    }
+    };
   }
 }
 
@@ -786,7 +954,8 @@ function DeviceData(){
   }
 
 function renderOffers(){
-  if(deviceData.offersChanged){
+  if(true) {//temp to make sure the render is updated even with no change
+  //if(deviceData.offersChanged){
     deviceData.offersChanged=false;
     if(!offersList){
       console.log("create offers list");

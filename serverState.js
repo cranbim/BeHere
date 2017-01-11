@@ -351,7 +351,7 @@ function AttachGrant(devid){
 //Object for individual Attach offer
 
 function AttachOffer(prev, next){
-	var ttl=5000;
+	var ttl=10000;
 	this.id=nextAttachOffer++;
 	this.active=true;
 	this.prevID=prev;

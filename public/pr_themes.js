@@ -16,9 +16,12 @@ function ThemeRunner(w,h){
 
 
 	var themeLoader={
-		themeOne: ThemeDust,
-		themeTwo: ThemeSpark,
-		themeThree: ThemeNoise1
+		themeOne: ThemeDust, //Theme1,
+		themeTwo:  ThemeSpark, //Theme2,
+		themeThree: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
+    themeFour: ThemeNoise1
+    // ,
+    // themeFive: ThemeHypno
 	};
 
 	loadThemes(w,h);
@@ -46,6 +49,8 @@ function ThemeRunner(w,h){
 
 	this.run=function(blobPos){
 		if(nowTheme) nowTheme.run(blobPos);
+		fill(200);
+		if(nowTheme) text(nowTheme.name,100,100);
 	};
 }
 
@@ -262,7 +267,7 @@ function ThemeDust(name, w,h){
 
   function Dust(){
 		var dust=[];
-		var numDust=50;
+		var numDust=40;
 
 		this.run=function(p){
 			if(p){
@@ -367,6 +372,7 @@ function ThemeSpark(name, w,h){
     var sparks=[];
     var r,g,b,rt,gt,bt;
     var nx, ny, px, py;
+    var maxSparks=20;
 
 
     r=100; g=80; b=200;
@@ -381,7 +387,7 @@ function ThemeSpark(name, w,h){
       if(bpos){
         px=nx; py=ny;
         nx=bpos.x; ny=bpos.y;
-        if(random(10)<4){
+        if(random(10)<4 && sparks.length<maxSparks){
           var travel=createVector(nx, ny);
           travel.sub(px, py);
           var pos=createVector(nx, ny);
@@ -406,11 +412,12 @@ function ThemeSpark(name, w,h){
 
   function Spark(pos, travel, mr, mg, mb){
     travel.normalize();
-    var rad=random(1,10);
+    var rad=random(3,12);
     travel.mult(rad/2);
+    var ttlMax=50;
     var ttl=50;
     var trail=[];
-    var maxTrail=20;
+    var maxTrail=10;
     var width=4;
     var alpha=255;
     // r+=random(50,150);
@@ -420,8 +427,8 @@ function ThemeSpark(name, w,h){
     this.show=function(){
       trail.forEach(function(spot){
         push();
-        alpha=map(ttl,100,0,255,50);
-        fill(color(random(50,200),mg,mb,alpha));
+        alpha=map(ttl,ttlMax,0,255,50);
+        fill(color(random(150,250),mg,mb,alpha));
         //fill(255,alpha);
         noStroke();
         translate(spot.pos.x, spot.pos.y);
@@ -455,7 +462,7 @@ function ThemeSpark(name, w,h){
 
 
 //*****************************
-// Second Real Theme
+// Third Real Theme
 //*****************************
 
 
@@ -574,6 +581,11 @@ function ThemeHypno(name, w,h){
   }
 }
 
+//*****************************
+// Forth Real Theme
+//*****************************
+
+
 function ThemeNoise1(name, w,h){
   this.id=nextThemeId++;
   this.name=name;
@@ -616,9 +628,11 @@ function ThemeNoise1(name, w,h){
     var amplitude=5;
     var avgX=100;
 		var avgY=100;
+    var numNoiseStepsX=20;
+    var numLines=20;
 
-    field=new NoiseField(10,0.04);
-    lines=new Lines(10,8);
+    field=new NoiseField(numNoiseStepsX,0.04);
+    lines=new Lines(numNoiseStepsX, numLines);
     smooth();
   
 
@@ -658,14 +672,16 @@ function ThemeNoise1(name, w,h){
     };
 
     function refresh(x, y){
-    	var near=dist(x,0,w/2,0)
-      amplitude=map(near,0,w/2,100,5);
+      var near=dist(x,0,w/2,0);
+      amplitude=map(near,0,w/2,numLines*2,1);
       lineWidth=map(y,0,h,0.5,20);
     }
 
-    function Lines(stepX, stepY){
-      var h=floor(height/stepY);
-      var w=floor(width/stepX);
+    function Lines(nX, nY){
+      var stepX=width/nX;
+      var stepY=height/nY;
+      var h=nY;//floor(height/stepY);
+      var w=nX;//floor(width/stepX);
       
       this.show=function(field, amp){
         push();
@@ -688,11 +704,12 @@ function ThemeNoise1(name, w,h){
         }
         pop();
         a+=aInc;
-      }
+      };
     }
 
-    function NoiseField(step, noiseLevel){
-      var w=floor((width+step)/step);
+    function NoiseField(wx, noiseLevel){
+      var step=floor(width/wx);
+      var w=wx; //floor((width+step)/step);
       var h=floor(height/step);
       var field=[];
       var nStep=noiseLevel;
@@ -712,22 +729,35 @@ function ThemeNoise1(name, w,h){
         var xf=floor(x/step);
         var yf=floor(y/step);
         return field[yf][xf];
-      }
+      };
       
       this.noiseAtLerp=function(x,y){
         var xf=floor(x/step);
         var xl=x%step;
         var yf=floor(y/step);
         var yl=y%step;
-        if(yf+1>=field.length)yn=yf; else yn=yf+1;
-        if(xf+1>=field[0].length)xn=xf; else xn=xf+1;
-        var noiseHere=field[yf][xf];
-        var noiseXNext=field[yf][xn];
-        var noiseYNext=field[yn][xf];
-        var lerpX=lerp(noiseHere, noiseXNext, xl/step);
-        var lerpY=lerp(noiseHere, noiseYNext, yl/step);
-        return (lerpX+lerpY)/2;
-      }
+        var xn, yn;
+        var res=0;
+        if(field){
+          if(yf>=field.length) yf-=1;
+          if(yf+1>=field.length)yn=yf; else yn=yf+1;
+          if(yn>=field.length) yn-=1;
+          if(xf>=field[yf].length) xf-=1;
+          if(xf+1>=field[yn].length)xn=xf; else xn=xf+1;
+          // console.log("NFx: "+step+" "+xf+" "+xl+" "+xn);
+          // console.log("NFy: "+step+" "+yf+" "+yl+" "+yn);
+          // console.log("NF "+field.length);
+          // console.log("NF "+field[yn].length);
+          // if(yf>=field.length)yf=field.length-1;
+          var noiseHere=field[yf][xf];
+          var noiseXNext=field[yf][xn];
+          var noiseYNext=field[yn][xf];
+          var lerpX=lerp(noiseHere, noiseXNext, xl/step);
+          var lerpY=lerp(noiseHere, noiseYNext, yl/step);
+          res=(lerpX+lerpY)/2;
+        }
+        return res;
+      };
       
       this.update=function(){
         field=[];
@@ -739,7 +769,7 @@ function ThemeNoise1(name, w,h){
           }
           field.push(row);
         }
-      }
+      };
       
       this.show=function(){
         for(var y=0; y<field.length; y++){
@@ -755,8 +785,119 @@ function ThemeNoise1(name, w,h){
       this.shift=function(x,y){
         nXOff+=nStep*x;
         nYOff+=nStep*y;
-      }
+      };
     }
   }
 }
+
+//*****************************
+// Forth Real Theme
+//*****************************
+
+
+function ThemeBounceRings(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var ringSet;
+  var aMaster=0;
+  var aMInc=PI/500;
+
+  initTheme();
+
+  function initTheme(){
+    ringSet=new RingSet();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    ringSet.run(blobPos);
+  };
+
+
+  function RingSet(){
+    var bouncers=[]
+    var count=40;
+
+    
+    // bouncers[0]=new Bouncer(width/2, height/2, 300, 0.1, 0.9);
+    // bouncers[1]=new Bouncer(width/2, height/2, 50, 0.15, 0.95);
+    // bouncers[2]=new Bouncer(width/2, height/2, 100, 0.2, 0.85);
+  
+    this.add=function(x,y) {
+      bouncers.push(new Bouncer(x,y,100,0.10,0.90));
+    };
+
+    this.run=function(blobPos) {
+      while(blobPos.length>bouncers.length){
+        var p=blobPos[blobPos.length-1];
+        this.add(p.x, p.y);
+        //bouncers.push(new Bouncer(200,200, 100, 0.15, 0.95));
+      }
+      if(bouncers.length>blobPos.length){
+        bouncers.splice(-(bouncers.length-blobPos.length));
+      }
+      text(bouncers.length,width/2, height/2);
+      colorMode(HSB,255);
+      for(var i=0; i<count; i++){
+        for(var j=0; j<bouncers.length; j++){
+          if(i===0) bouncers[j].update(blobPos[j]);
+          bouncers[j].show(i*TWO_PI/count);
+        }
+        // b1.show(i*TWO_PI/count);
+        // b2.show(i*TWO_PI/count+TWO_PI/count/2);
+        // b3.show(i*TWO_PI/count);
+      }
+      colorMode(RGB);
+      // b.show(0);
+      // b.show(PI);
+      
+      // b1.update();
+      // b2.update();
+      // b3.update();
+      aMaster+=aMInc;
+    };
+  }
+
+  function Bouncer(x,y, r, s, d){
+    var pos=createVector(x,y);
+    var vel=createVector(0,0);
+    var strength=s;
+    var drag=d;
+    var hue=random(255);
+    // var x=width/2;
+    // var y=height/2;
+    
+    var acc=createVector(0,0);
+    
+    this.show=function(a){
+      push();
+      translate(width/2,height/2);
+      rotate(a+aMaster);
+      translate(-width/2, -height/2);
+      stroke(hue,255,255);
+      noFill();//fill(255);
+      translate(pos.x, pos.y);
+      ellipse(0,0,r,r);
+      pop();
+    };
+    
+    this.update=function(blobPos){
+      acc=createVector(blobPos.x, blobPos.y);
+      acc.sub(pos);
+      acc.mult(strength*0.5);
+      vel.add(acc);
+      vel.mult(drag);
+      pos.add(vel);
+      r=abs(pos.y-y);
+    };
+    
+  }
+}
+
+//surely many changes!
+
 

@@ -5,6 +5,7 @@ module.exports={
 
 var serverState=require('./serverState.js');
 var blobList=require('./blobs.js');
+var parameters=new blobList.Parameters();
 
 //Gobal Var  - check for conflicts
 var nextRingID=0;
@@ -74,6 +75,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		if(newTheme>-1){
 			io.sockets.emit("themeSwitch", {index:newTheme});
 		}
+		parameters.run();
 	};
 
 	function checkShadowHealth(heartbeat){
@@ -218,7 +220,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 					var pv=self.deviceShadows[prevPos].session.id;
 					var nx=self.deviceShadows[currPos].session.id;
 					//CREATE AN OFFER devid's not positions, which could change
-					if(offers.offerExists(pv,nx)||offers.offerExists(nx,pv)){ //because when there are only two existing devices, the oofer is valid both ways around
+					if(offers.offerExists(pv,nx)||offers.offerExists(nx,pv)){ //because when there are only two existing devices, the offer is valid both ways around
 						console.log("Offer "+pv+" "+nx+" exists already");
 					} else {
 						//create the offer
@@ -269,14 +271,26 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	******************************************/
 
 	function sendBlobData(blobs){//(blobs){
-		if(!blobs || blobs.length===0){
+		var allBlobs=false;
+		if(!blobs || blobs.length===0){ //send all blobs as none specified
 			// console.log("sendBlobData was empty");
 			blobs=self.blobList.getBlobs();
+			allBlobs=true;
 		}
 		//var blobs=self.blobList.getBlobs();
-		io.sockets.emit("blobData", {blobs:blobs});
-		console.log("sendBlobData:"+blobs.length);
+		io.sockets.emit("blobData", {
+			allBlobs: allBlobs,
+			ringLength: self.ringLengthPixels,
+			numDevs: self.ringLengthDevs,
+			params: [parameters.getVal(0), parameters.getVal(1)],
+			blobs: blobs
+		});
+		console.log("sendBlobData:"+blobs.length+" All?:"+allBlobs);
 	}
+
+			// console.log("PP: "+parameters.getVal(0));
+		// console.log("PP: "+parameters.getVal(1));
+
 
 		//new blob creation from the client
 	this.clientBlob=function(data){

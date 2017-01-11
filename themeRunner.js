@@ -8,16 +8,25 @@ var nextThemeId=0;
 var themeLoader={
 	themeOne: {
 		func: Theme1,
-		ttl: 10
+		ttl: 6
 	},
 	themeTwo: {
 		func: Theme2,
-		ttl: 10
+		ttl: 6
 	},
 	themeThree: {
 		func: Theme3,
-		ttl: 10
+		ttl: 6
 	},
+	themeFour: {
+		func: Theme4,
+		ttl: 6
+	}
+	// ,
+	// themeFive: {
+	// 	func: Theme5,
+	// 	ttl: 6
+	// }
 };
 
 function ThemeRunner(){
@@ -131,6 +140,46 @@ function Theme2(name, ttl){
 }
 
 function Theme3(name, ttl){
+	this.id=nextThemeId++;
+	this.name=name;
+	this.ttl=ttl;
+	console.log("New Theme: "+this.id+" "+this.name);
+
+	this.init=function(){
+		this.ttl=ttl;
+		console.log("Theme "+this.id+" loaded and initialised");
+	};
+
+	this.run=function(){
+		this.ttl--;
+		if(true/*this.ttl%10===0*/){
+			console.log("Theme "+this.id+" ttl: "+this.ttl);
+		}
+		return this.ttl>0;
+	};
+}
+
+function Theme4(name, ttl){
+	this.id=nextThemeId++;
+	this.name=name;
+	this.ttl=ttl;
+	console.log("New Theme: "+this.id+" "+this.name);
+
+	this.init=function(){
+		this.ttl=ttl;
+		console.log("Theme "+this.id+" loaded and initialised");
+	};
+
+	this.run=function(){
+		this.ttl--;
+		if(true/*this.ttl%10===0*/){
+			console.log("Theme "+this.id+" ttl: "+this.ttl);
+		}
+		return this.ttl>0;
+	};
+}
+
+function Theme5(name, ttl){
 	this.id=nextThemeId++;
 	this.name=name;
 	this.ttl=ttl;
