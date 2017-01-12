@@ -19,9 +19,10 @@ function ThemeRunner(w,h){
 		themeOne: ThemeDust, //Theme1,
 		themeTwo:  ThemeSpark, //Theme2,
 		themeThree: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
-    themeFour: ThemeNoise1
-    // ,
-    // themeFive: ThemeHypno
+    themeFour: ThemeNoise1,
+    themeFive: ThemePsychaRing,
+    themeSix: ThemeTVStatic,
+    themeSeven: ThemeHairBall
 	};
 
 	loadThemes(w,h);
@@ -898,6 +899,348 @@ function ThemeBounceRings(name, w,h){
   }
 }
 
-//surely many changes!
+function ThemePsychaRing(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var pRing;
 
+  initTheme();
+
+  function initTheme(){
+    pRing=new PsychaRing();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    pRing.run(blobPos);
+  };
+
+
+  function PsychaRing(){
+    var numCircles=40;
+    var shift;
+    var newCount=0;
+    var a=0;
+    var circleWidth=floor(random(width/160,width/20));
+    var aSInc=PI/random(50,200);
+    var numSegs=floor(random(2,10));
+    var s1=new Spinner(circleWidth, 1, random(255), 1);
+    var s2=new Spinner(circleWidth, 1, random(255), -1);
+    
+    this.run=function(){
+      s1.run();
+      s2.run();
+      a+=aSInc;
+    };
+    
+    
+    function Spinner(circleWidth, offset, col, dir){
+      var circles=[];
+      var startRad=50;
+      var maxRad=width*1.4;
+      var count=0;
+      var newCount=0;
+      var growth=0;
+      var grow=1;//floor(random(1,8))/2;
+      
+      for(var i=0; i<numCircles; i++){
+        var rad=startRad+i*circleWidth*4;
+        if(rad>maxRad) break;
+        circles.push(new BrokenCircle(rad, circleWidth, numSegs, PI/100*i, startRad, maxRad));
+      }
+      count=circles.length;
+      
+      this.run=function(){
+        growth+=grow;
+        if(growth%(grow*circleWidth*4)===0){
+          if(dir>0){
+            var nc=new BrokenCircle(startRad, circleWidth, numSegs, -(PI/100)*(1+newCount++), startRad, maxRad);
+            circles.unshift(nc);
+          } else {
+            var nc=new BrokenCircle(maxRad-circleWidth, circleWidth, numSegs, (PI/100)*(count++), startRad, maxRad);
+            circles.push(nc);
+          }
+        }
+        for(var i=circles.length-1; i>=0; i--){
+          circles[i].show(col);
+          if(!circles[i].update(offset, dir, startRad, maxRad)){
+            circles.splice(i,1);
+          }
+        }
+      }
+    }
+    
+    
+    function BrokenCircle(r, sw, numSegs, phase, startRad, maxRad){
+      var numSegsRender=numSegs*2;
+      var segSize=TWO_PI/numSegsRender;
+      var drawing=true;
+      var radialResolution=100;
+      var aShift=0;
+      
+      
+      this.show=function(c){
+        push();
+        colorMode(HSB,255);
+        var alpha=map(r,startRad, maxRad, 20,255);
+        stroke(c, 255,255, alpha);
+        strokeWeight(sw);
+        noFill();
+        translate(width/2, height/2);
+        rotate(aShift);
+        for(var i=0; i<numSegsRender; i+=2){
+          arc(0,0,r,r,i*segSize,(i+1)*segSize);
+        }
+        pop();
+        colorMode(RGB,255);
+      };
+      
+      this.update=function(offset, dir, min, max){
+        r+=1*dir;
+        if(r>max) return false;
+        if(r<min) return false;
+        //aShift+=aInc;
+        aShift=sin(a+phase+offset*segSize)*PI;
+        return true;
+      };
+    }
+  }
+
+}
+
+function ThemeTVStatic(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var ts;
+
+  initTheme();
+
+  function initTheme(){
+    ts=new TVStatic();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    ts.run(blobPos);
+  };
+
+  function TVStatic(){
+    var numStrikes=1000;
+    var swipe1=0;
+    var swipeH=100;
+    var swipe2=height/2+swipeH/2;
+    var n;
+    var nOff=0;
+    var nInc=0.05;
+    var swipeInc=-5;
+
+    this.run=function() {
+      n=noise(nOff);
+      nOff+=nInc;
+      background(noise(nOff+0.5)*100,150);
+      noStroke();
+      fill(100);
+      rect(0,-swipeH/2+swipe1,width,swipeH);
+      rect(0,-swipeH/2+swipe2,width,swipeH);
+      swipe1+=swipeInc;
+      if(swipe1>height+swipeH/2) swipe1=-swipeH/2;
+      if(swipe1<-swipeH/2) swipe1=height+swipeH/2;
+      swipe2+=swipeInc;
+      if(swipe2>height+swipeH/2) swipe2=-swipeH/2;
+      if(swipe2<-swipeH/2) swipe2=height+swipeH/2;
+      for(var i=0; i<numStrikes; i++){
+        var x=random(-10,width);
+        var y=random(height);
+        var l=random(30*n+1);
+        var c=random(200,255);
+        stroke(c);
+        strokeWeight(noise(nOff+0.1)*6+0.25);
+        line(x,y,x+l,y);
+      }
+    };
+
+  }
+
+}
+
+
+function ThemeHairBall(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var hb;
+
+  initTheme();
+
+  function initTheme(){
+    hb=new HairBall();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    hb.run(blobPos);
+  };
+
+  function HairBall(){
+    var segs=[];
+    var maxSegs=30;
+    var len=10;
+    var segRot;
+    var segMaxRot;
+    var hairs=[];
+    var numHairs=40;
+    var a=0;
+    var r=100;
+    var x,y;
+    for(var i=0; i<numHairs; i++){
+      x=width/2+cos(a)*r;
+      y=height/2+sin(a)*r;
+      hairs[i]=new Hair(x,y,PI/2+a);
+      a+=2*PI/numHairs;
+    }
+
+
+    this.run=function(){
+      stroke(255);
+      //b1.display();
+      for(var i=0; i<hairs.length; i++){
+        hairs[i].display();
+      }
+      fill(100);
+    };
+
+    function Hair(x,y, a){
+      this.x=x;
+      this.y=y;
+      this.col=random(150,255);
+      var noiseBase=random(1);
+      var noiseY=random(1);
+      var noiseInc=0.01;
+      var segs=[];
+      var trigger=floor(random(5));
+      var numSegs=3;
+      var len=10;
+      var segRot;
+      var segMaxRot;
+      var s=new Segment2(createVector(100+i*10,100),len,a);
+      segs.push(s);
+      for(var i=1; i<numSegs; i++){
+        var s=new Segment2(createVector(100+i*10,100),len,0);
+        segs.push(s);
+      }
+      segRot=PI/1000;
+      segMaxRot=PI/10;
+
+      this.display=function(){
+        stroke(255);
+        var pos=createVector(this.x, this.y);
+        var a=0;
+        //noiseBase+=noiseInc;
+        noiseY+=noiseInc;
+        var aging;
+        for(var i=0; i<segs.length; i++){
+          var n=map(noise(noiseBase+i*noiseInc, noiseY),0,1,-segRot, segRot);
+          segs[i].rotateMe(n);
+          if(segs.length>20){
+            if(i>segs.length-20){
+              aging=1;
+            }else{
+              aging=i/(segs.length-20);
+            }
+          }else{
+            aging=1;
+          }
+          //aging=i/segs.length;
+          segs[i].update(pos, a, aging);
+          pos=segs[i].tip;
+          a=segs[i].myAngle;
+          segs[i].display(this.col);
+        }
+         //if(frameCount%50==0) addSegBase();
+         if(frameCount%5==trigger) addSegEnd();
+         if(segs.length>maxSegs){
+           this.x=segs[1].base.x;
+           this.y=segs[1].base.y;
+           segs[1].myRotation+=segs[0].myRotation;
+           segs.shift();
+         }
+      };
+
+      function addSegEnd(){
+        var s=new Segment2(createVector(100+4*10,100),len,0);
+        segs.push(s);
+      }
+
+      function addSegBase(){
+      //    var a=segs[0].myAngle;
+          var s=new Segment2(createVector(100*10,100),len,0);
+      //    s.myRotation=a;
+          segs.unshift(s);
+      }
+    }
+
+    function Segment2(base, length, startA){
+      this.base=base;
+      this.seg=createVector(0,length);
+      this.tip=p5.Vector.add(this.base,this.seg);
+      this.givenAngle=0;
+      this.myRotation=startA;
+      this.myAngle=0;
+      var myRotDir=-1;
+      this.mass=0;
+      this.vel=0;
+      this.acc=0;
+      this.hit=false;
+      this.thick=1;
+      this.fade=255;
+      
+      
+      this.rotateMe=function(a){
+        this.myRotation+=a*myRotDir;
+      };
+      
+      this.update=function(pos,angle,dying){
+        this.base=pos;
+        this.givenAngle=angle;
+        this.seg.rotate(-this.myAngle+this.givenAngle+this.myRotation);
+        this.tip=p5.Vector.add(this.base,this.seg);
+        this.myAngle=this.givenAngle+this.myRotation;
+        this.thick+=0.05;
+        this.fade=map(dying,0,1, 20,255);
+      };
+      
+      this.display=function(col){
+        push();
+        translate(this.base.x, this.base.y);
+        rotate(this.givenAngle);
+        rotate(this.myRotation);
+        //if(this.hit) stroke(255,0,0); else stroke(255);
+        stroke(this.fade, this.fade);
+        strokeWeight(this.thick);
+        line(0,0,0,length);
+        pop();
+      };
+      
+      this.collide=function(item){
+        this.hit=collideLinePoly(this.base.x, this.base.y, this.tip.x, this.tip.y, item);
+        //console.log(frameCount+" "+this.hit);
+        if(this.hit){
+          myRotDir=-myRotDir;
+        }
+        return this.hit;
+      };
+    }
+  }
+}
 

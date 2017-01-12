@@ -21,12 +21,19 @@ var themeLoader={
 	themeFour: {
 		func: Theme4,
 		ttl: 6
+	},
+	themeFive: {
+		func: Theme5,
+		ttl: 6
+	},
+	themeSix: {
+		func: Theme5,
+		ttl: 6
+	},
+	themeSeven: {
+		func: Theme5,
+		ttl: 12
 	}
-	// ,
-	// themeFive: {
-	// 	func: Theme5,
-	// 	ttl: 6
-	// }
 };
 
 function ThemeRunner(){
@@ -199,3 +206,42 @@ function Theme5(name, ttl){
 	};
 }
 
+function Theme6(name, ttl){
+	this.id=nextThemeId++;
+	this.name=name;
+	this.ttl=ttl;
+	console.log("New Theme: "+this.id+" "+this.name);
+
+	this.init=function(){
+		this.ttl=ttl;
+		console.log("Theme "+this.id+" loaded and initialised");
+	};
+
+	this.run=function(){
+		this.ttl--;
+		if(true/*this.ttl%10===0*/){
+			console.log("Theme "+this.id+" ttl: "+this.ttl);
+		}
+		return this.ttl>0;
+	};
+}
+
+function Theme7(name, ttl){
+	this.id=nextThemeId++;
+	this.name=name;
+	this.ttl=ttl;
+	console.log("New Theme: "+this.id+" "+this.name);
+
+	this.init=function(){
+		this.ttl=ttl;
+		console.log("Theme "+this.id+" loaded and initialised");
+	};
+
+	this.run=function(){
+		this.ttl--;
+		if(true/*this.ttl%10===0*/){
+			console.log("Theme "+this.id+" ttl: "+this.ttl);
+		}
+		return this.ttl>0;
+	};
+}
