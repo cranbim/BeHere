@@ -156,8 +156,9 @@ function setupMeta(){
 }
 
 function draw() {
+  //background(40);
   background(backGroundFromParams());
-  backgroundDistanceMeter();
+  //backgroundDistanceMeter();
   var showing=false;
   if(deviceData.status=="attached"){
     //noiseField.show();
@@ -178,12 +179,15 @@ function draw() {
 }
 
 function backGroundFromParams(){
+  var wrapX=(ringLength-myStartX);
   var bg=0;
-  if(globalParams[1]){
-    var p1=globalParams[1];
-    p1.count++;
-    var diff=lerp(p1.last, p1.current, p1.count/30);
-    bg=map(diff,0,1,50,150);
+  if(globalParams[2]){
+    var p2=globalParams[2];
+    p2.count++;
+    var paramLerped=lerp(p2.last, p2.current, p2.count/30);
+    var relParam=paramLerped+wrapX;
+    //var relMe=myStartX+wrapX;
+    bg=map(relParam,0,ringLength,0,255);
   }
   return bg;
 }
@@ -361,6 +365,7 @@ function parametersChanged(params){
       };
     }
   });
+  console.log(globalParams);
 }
 
 function setStartX(data){

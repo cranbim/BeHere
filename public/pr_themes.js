@@ -16,13 +16,13 @@ function ThemeRunner(w,h){
 
 
 	var themeLoader={
-		themeOne: ThemeDust, //Theme1,
-		themeTwo:  ThemeSpark, //Theme2,
+		themeOne: ThemePlasma1, //Theme1,
+		themeTwo:  ThemeCracker, //Theme2,
 		themeThree: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
     themeFour: ThemeNoise1,
     themeFive: ThemePsychaRing,
     themeSix: ThemeTVStatic,
-    themeSeven: ThemeHairBall
+    themeSeven: ThemeSparker
 	};
 
 	loadThemes(w,h);
@@ -674,8 +674,8 @@ function ThemeNoise1(name, w,h){
 
     function refresh(x, y){
       var near=dist(x,0,w/2,0);
-      amplitude=map(near,0,w/2,numLines*2,1);
-      lineWidth=map(y,0,h,0.5,20);
+      amplitude=map(near,0,w/2,numLines*4,1);
+      lineWidth=map(y,0,h,0.1,50);
     }
 
     function Lines(nX, nY){
@@ -1033,7 +1033,7 @@ function ThemeTVStatic(name, w,h){
   };
 
   function TVStatic(){
-    var numStrikes=1000;
+    var numStrikes=200;
     var swipe1=0;
     var swipeH=100;
     var swipe2=height/2+swipeH/2;
@@ -1041,8 +1041,15 @@ function ThemeTVStatic(name, w,h){
     var nOff=0;
     var nInc=0.05;
     var swipeInc=-5;
+    var maxDur=500;
+    var duration=maxDur;
 
     this.run=function() {
+      if(duration>0)
+        duration --;
+      var fleckSize=map(duration,maxDur,0,5,200);
+      //console.log(">>>>> "+fleckSize);
+      
       n=noise(nOff);
       nOff+=nInc;
       background(noise(nOff+0.5)*100,150);
@@ -1062,7 +1069,7 @@ function ThemeTVStatic(name, w,h){
         var l=random(30*n+1);
         var c=random(200,255);
         stroke(c);
-        strokeWeight(noise(nOff+0.1)*6+0.25);
+        strokeWeight(noise(nOff+0.1)*fleckSize);
         line(x,y,x+l,y);
       }
     };
@@ -1103,10 +1110,11 @@ function ThemeHairBall(name, w,h){
     var a=0;
     var r=100;
     var x,y;
+    var startA=random(TWO_PI);
     for(var i=0; i<numHairs; i++){
       x=width/2+cos(a)*r;
       y=height/2+sin(a)*r;
-      hairs[i]=new Hair(x,y,PI/2+a);
+      hairs[i]=new Hair(x,y,startA+a);
       a+=2*PI/numHairs;
     }
 
@@ -1243,4 +1251,414 @@ function ThemeHairBall(name, w,h){
     }
   }
 }
+
+function ThemeSwisher(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var s;
+
+  initTheme();
+
+  function initTheme(){
+    s=new SwisherSet();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    s.run(blobPos);
+  };
+
+  
+  function SwisherSet(){
+    var threshold=height/2;
+    var swishers=[];
+    var numS=50;
+    
+    for(var i=0; i<numS; i++){
+      swishers[i]=new Swisher(i*width/numS,height/2);
+    }
+    
+    this.run=function(blobPos){
+      swishers.forEach(function(s){
+        s.update(threshold, blobPos);
+        s.show();
+      });
+    }
+  }
+
+  function Swisher(x,y){
+    var len=height;
+    var lean;
+    
+    this.update=function(threshold,points){
+      lean=0;
+      points.forEach(function(p){
+        var d=dist(p.x,p.y, x,y);
+        if(d<threshold){
+          lean+=map(d, threshold,0,0,PI/2);
+        }
+      });
+    }
+    
+    this.show=function(){
+      push();
+      translate(x,y);
+      stroke(180,120);
+      strokeWeight(map(lean,0,PI,width/40,1));
+      len=map(lean,0,PI,height,0)
+      rotate(lean);
+      rotate(random(-0.02,0.02));
+      line(0,-len, 0,len);
+      pop();
+    }
+  }
+}
+
+function ThemeSparker(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var s;
+
+  initTheme();
+
+  function initTheme(){
+    s=new Sparker();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    s.run(blobPos);
+  };
+
+  function Sparker(){
+    var sparks=[];
+
+    this.run=function(points){
+      while (sparks.length<points.length){
+        sparks.push(new Spark(20));
+      }
+      points.forEach(function(p, i){
+        sparks[i].generate(p.x, p.y);
+        sparks[i].show();
+      });
+    };
+  }
+
+  function Spark(numSegs){
+    var segs=[];
+    var x, y;
+    var a=0;
+    
+    this.generate=function(px, py){
+      x=px;
+      y=py;
+      a=random(TWO_PI);
+      segs=[];
+      currX=0;
+      var tLen=random(width);
+      for(var i=0; i<numSegs; i++){
+        var remainSegs=numSegs-1-i;
+        var remainX=tLen-currX;
+        var seed=remainX/remainSegs;
+        segs[i]=p5.Vector.fromAngle(random(-PI/3,PI/3));
+        segs[i].mult(random(seed*3));
+        currX+=segs[i].x;
+      }
+    };
+    
+    this.show=function(){
+      push();
+      translate(x,y);
+      rotate(a);
+      translate(random(50),0);
+      noFill();
+      stroke(0,220,255);
+      segs.forEach(function(s,i){
+        strokeWeight(map(numSegs-i,numSegs,0,5,0.5));
+        line(0,0,s.x, s.y);
+        translate(s.x, s.y);
+      });
+      pop();
+    };
+  }
+}
+
+
+function ThemeCracker(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var cracker;
+
+  initTheme();
+
+  function initTheme(){
+    cracker=new Cracker();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    cracker.run(blobPos);
+  };
+
+
+  function Cracker(){
+    var numSegs=100;
+    var crack;
+    var count=0;
+    var countMax=500;
+    
+    var r1=255;
+    var g1=100;
+    var b1=0;
+    
+    var rt=255;
+    var gt=255;
+    var bt=255;
+    var r,g,b;
+    
+    crack=new Crack(0,height/2,numSegs);
+
+    this.run=function(blobPos){
+      crack.show(count);
+      count+=4;//!!!!
+      if(count>numSegs-1){
+        // count=0;
+        // crack.generate();
+        if(crack.fragged()){
+          // background(255);
+          r=map(count,200,300,r1,rt);
+          g=map(count,200,300,g1,gt);
+          b=map(count,200,300,b1,bt);
+          background(r,g,b);
+          crack.showFrag();
+        } else {
+          crack.createFragments();
+        }
+      }
+      if(count<500){
+        // r=map(count,100,200,r1,rt);
+        // g=map(count,100,200,g1,gt);
+        // b=map(count,100,200,b1,bt);
+        //background(r,g,b);
+      } else {
+        crack.generate();
+        count=0;
+      }
+    };
+    
+    function Crack(x,y,numSegs){
+      var thick=5;
+    //  var start=createVector(x,y);
+      var segs=[];
+      var frag, frag2;
+      var fragged=false;
+      
+      this.fragged=function(){
+        return fragged;
+      }
+      
+      this.generate=function(){
+        fragged=false;
+        currX=0;
+        for(var i=0; i<numSegs; i++){
+          var remainSegs=numSegs-1-i;
+          var remainX=width-currX;
+          var seed=remainX/remainSegs;
+          segs[i]=p5.Vector.fromAngle(random(-PI/3,PI/3));
+          segs[i].mult(random(seed*3));
+          currX+=segs[i].x;
+        }  
+      };
+      
+      this.generate();
+      
+      this.show=function(showSegs){
+        if(showSegs>segs.length) showSegs=segs.length;
+        push();
+        translate(x,y);
+        for(var i=0; i<showSegs; i++){
+          stroke(r1,g1,b1);
+          // var w=map(i,0,numSegs,0,10);;
+          //console.log(w);
+          var w=1;
+          strokeWeight(w);
+          line(0,0,segs[i].x, segs[i].y);
+          noFill();
+          //fill(0,200,200);
+          //ellipse(segs[i].x, segs[i].y,5,5);
+          translate(segs[i].x, segs[i].y);
+        }
+        pop();
+      }
+      
+      this.createFragments=function(){
+        frag=new Fragment(1,segs);
+        frag2=new Fragment(-1,segs);
+        fragged=true;
+      };
+      
+      this.showFrag=function(){
+        frag.show();
+        frag2.show();
+      };
+    }
+    
+    function Fragment(f, inVertices){
+      var vertices=[];
+      var yOff=f*2;
+      var xOff=0;
+      
+      if(f==1){
+        vertices[0]={x:width, y:height};
+        vertices[1]={x:0, y:height};
+        vertices[2]={x:0, y:height/2};
+      } else {
+        vertices[0]={x:width, y:0};
+        vertices[1]={x:0, y:0};
+        vertices[2]={x:0, y:height/2};
+      }
+      var cx=0;
+      var cy=height/2;
+      inVertices.forEach(function(v,i){
+        cx+=v.x;
+        cy+=v.y;
+        vertices[i+3]={x:cx, y:cy};
+      });
+      
+      this.show=function(x,y){
+        //console.log(vertices);
+        var speed=map(abs(yOff),0,50,0.1,1);
+        push();
+        translate(xOff,yOff);
+        if(abs(yOff)<height/2){ 
+          if(abs(yOff)>3){
+            yOff+=random(5)*f*speed;
+            xOff=random(3);
+          } else {
+            yOff+=1*f*speed;
+          }
+        }
+        stroke(0);
+        fill(0);
+        translate(x,y);
+        beginShape();
+        vertices.forEach(function(v){
+          vertex(v.x, v.y);
+        });
+        endShape(CLOSE);
+        pop();
+      }
+    }
+  }
+}
+
+
+function ThemePlasma1(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var plasma;
+
+  initTheme();
+
+  function initTheme(){
+    plasma=new PlasmaBalls();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    plasma.run(blobPos);
+  };
+
+  function PlasmaBalls(){
+    var balls=[];
+
+    this.run=function(blobPos){
+      while(balls.length<blobPos.length){
+        balls.push(new PlasmaBall());
+      }
+      blobPos.forEach(function(b,i){
+        balls[i].run(b.x, b.y);
+      });
+    };
+  }
+
+  function PlasmaBall(){
+    var numParticles=100;
+    var particles=[];
+    var radMin=width/8;
+    var radMax=width/3;
+    var radNow=radMin;
+    
+    this.run=function(x,y){
+      if(particles.length<numParticles){
+        // var d=dist(pmouseX, pmouseY,mouseX, mouseY);
+        // if(d<20){
+        //   if(radNow<radMax){
+        //     radNow++;
+        //   }
+        // } else {
+        //   if(radNow>50){
+        //     radNow-=5;
+        //   }
+        // }
+        for(var i=0; i<5; i++){
+          particles.push(new Particle(x,y, radNow));
+        }
+      }
+      for(var i=particles.length-1; i>=0; i--){
+        if(!particles[i].update()){
+          particles.splice(i,1);
+        }
+        particles[i].show();
+      }
+    };
+  }
+
+  function Particle(x,y, rad){
+    var pos=createVector(x,y);
+    var vel=createVector(0,0);
+    var acc;
+    var ttlInit=20;
+    var ttl=ttlInit;
+    
+    this.update=function(){
+      var acc=p5.Vector.random2D();
+      acc.mult(2);
+      vel.add(acc);
+      pos.add(vel);
+      ttl--;
+      return ttl>0;
+    };
+    
+    this.show=function(){
+      var r=map(ttl,0,ttlInit,0,rad);
+      var a=map(ttl,0,ttlInit,50,255)
+      push();
+      colorMode(HSB,255);
+      fill(map(ttl,ttlInit,0,100,180),map(ttl,ttlInit,0,0,200),255);
+      noStroke();
+      ellipse(pos.x,pos.y,r,r);
+      colorMode(RGB,255);
+      pop();
+    }
+  }
+
+}
+
 

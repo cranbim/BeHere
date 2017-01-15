@@ -95,10 +95,11 @@ function Parameters(){
 	for(var i=0; i<numParams; i++){
 		params[i]=new Parameter(i+1);
 	}
+	params.push(new ParamLoop());
 
-	this.run=function(){
+	this.run=function(ringLengthPixels){
 		params.forEach(function(p){
-			p.run();
+			p.run(ringLengthPixels);
 		});
 	};
 
@@ -115,10 +116,27 @@ function Parameters(){
 		var steps=10;
 		var inc=ind/steps;
 
-		this.run=function(){
+		this.run=function(ringLengthPixels){
 			value+=inc;
 			if(value>1) value-=1;
 			// console.log("run param");
+		};
+
+		this.get=function(){
+			return value;
+		};
+	}
+
+	function ParamLoop(){
+		var value=0;
+		var maxLoop=1000;
+
+		this.run=function(ringLengthPixels){
+			value+=120;
+			console.log("param loop: "+value);
+			if(value>ringLengthPixels){
+				value=0;
+			}
 		};
 
 		this.get=function(){

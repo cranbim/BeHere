@@ -32,7 +32,7 @@ var themeLoader={
 	},
 	themeSeven: {
 		func: Theme5,
-		ttl: 12
+		ttl: 6
 	}
 };
 
