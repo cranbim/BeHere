@@ -17,11 +17,11 @@ function ThemeRunner(w,h){
 
 	var themeLoader={
 		themeOne: ThemePlasma1, //Theme1,
-		themeTwo:  ThemeCracker, //Theme2,
+		themeTwo:  ThemeStrings, //Theme2,
 		themeThree: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
     themeFour: ThemeNoise1,
     themeFive: ThemePsychaRing,
-    themeSix: ThemeTVStatic,
+    themeSix: ThemeBounceChain,
     themeSeven: ThemeSparker
 	};
 
@@ -51,7 +51,12 @@ function ThemeRunner(w,h){
 	this.run=function(blobPos){
 		if(nowTheme) nowTheme.run(blobPos);
 		fill(200);
-		if(nowTheme) text(nowTheme.name,100,100);
+		if(nowTheme) {
+      textSize(20);
+      noStroke();
+      fill(200,200);
+      text(nowTheme.name,100,100);
+    }
 	};
 }
 
@@ -822,6 +827,7 @@ function ThemeBounceRings(name, w,h){
   function RingSet(){
     var bouncers=[]
     var count=40;
+    var thick=1;
 
     
     // bouncers[0]=new Bouncer(width/2, height/2, 300, 0.1, 0.9);
@@ -841,12 +847,13 @@ function ThemeBounceRings(name, w,h){
       if(bouncers.length>blobPos.length){
         bouncers.splice(-(bouncers.length-blobPos.length));
       }
-      text(bouncers.length,width/2, height/2);
+      //text(bouncers.length,width/2, height/2);
       colorMode(HSB,255);
+      thick=map(blobPos.length,0,5,10,1);
       for(var i=0; i<count; i++){
         for(var j=0; j<bouncers.length; j++){
           if(i===0) bouncers[j].update(blobPos[j]);
-          bouncers[j].show(i*TWO_PI/count);
+          bouncers[j].show(i*TWO_PI/count, thick);
         }
         // b1.show(i*TWO_PI/count);
         // b2.show(i*TWO_PI/count+TWO_PI/count/2);
@@ -874,12 +881,13 @@ function ThemeBounceRings(name, w,h){
     
     var acc=createVector(0,0);
     
-    this.show=function(a){
+    this.show=function(a, thick){
       push();
       translate(width/2,height/2);
       rotate(a+aMaster);
       translate(-width/2, -height/2);
       stroke(hue,255,255);
+      strokeWeight(thick);
       noFill();//fill(255);
       translate(pos.x, pos.y);
       ellipse(0,0,r,r);
@@ -1662,3 +1670,240 @@ function ThemePlasma1(name, w,h){
 }
 
 
+
+function ThemeStrings(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var strings;
+
+  initTheme();
+
+  function initTheme(){
+    strings=new Strings();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    strings.run(blobPos);
+  };
+
+  function Strings(){
+    var strings=[];
+    var numStrings=16;
+    var pitch;
+    var rot=0.1;
+    var rotInc=0;
+    var prox=height/2;
+    
+    pitch=width*1.1/numStrings
+    for(var i=0; i<numStrings; i++){
+      strings[i]=new String(pitch*i);
+    }
+    rotInc=PI/1000;
+
+    this.run=function(blobPos){
+      strings.forEach(function(s){
+        s.update(blobPos);
+        s.show();
+      });
+    }
+
+    function String(x){
+      var numSegs=100;
+      var a=0;
+      var aInc;
+      var phase=0;
+      var f=0.1;
+      var near;
+      var nTot=0.1;
+      var nCount=0;
+      var c,w,p,alph;
+      
+      
+      this.update=function(points){
+        var fTot=0.1;
+        nTot=1;
+        nCount=0;
+        if(points && points.length>0){
+          points.forEach(function(p){
+            // stroke(255,0,0);
+            // ellipse(p.x,p.y,10,10);
+            //near=prox-abs(x-p.x);
+            near=prox-dist(p.x,p.y,x,height/2);
+            if(near>0){
+              f=map(near,prox,0,18,0.5);
+              nTot+=near;
+              nCount++;
+
+            } else {
+              f=0.1;
+              nTot+=1;
+            }
+            fTot+=f;
+
+          });
+          //nTot/=points.length;
+        }
+        
+        aInc=TWO_PI/numSegs*fTot*2;
+        phase+=aInc*10;
+        if(phase>TWO_PI) phase-=TWO_PI;
+
+      }
+      
+      this.show=function(){
+        push();
+        var hue;
+        colorMode(HSB,255);
+        translate(x,height/2);
+        rotate(rot);
+        //rot+=rotInc;
+        if(true){
+          c=map(nTot,prox/2,0*nCount,255,0);
+          hue=map(nTot,prox,0,1,30);
+          w=map(nTot,prox,0,1,10);
+          p=map(nTot,prox,0,1,4);
+          alph=map(nTot,prox/2,0,255,100);
+          // c=map(nTot,prox/2,0*nCount,255,0);
+          // w=map(nTot,prox/2,0,8,25);
+          // p=map(nTot,prox/2,0,1,8);
+          // alph=map(nTot,prox/2,0,255,100);
+        }
+        stroke(hue,c,255,alph);
+        strokeWeight(w);
+        noFill();
+        beginShape();
+        var sy=-height/2;
+        for(var i=0; i<numSegs; i++){
+          var sx=sin(a+phase)*pitch/p;
+          sy+=height/numSegs;
+          vertex(sx,sy);
+          a+=aInc;
+        }
+        endShape();
+        colorMode(RGB,255);
+        pop();
+      }
+      
+    }
+
+  }
+
+}
+
+
+
+function ThemeBounceChain(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var bChain;
+
+  initTheme();
+
+  function initTheme(){
+    bChain=new ChainSet();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    bChain.run(blobPos);
+  };
+  
+
+  function ChainSet(){
+    var chains=[];
+    var numChains=3;
+    
+    for(var i=0; i<numChains; i++){
+      chains[i]=new Chain(random(0.05,0.2), random(0.85,0.98));
+    }
+    
+    this.run=function(points){
+      colorMode(HSB,255);
+      chains.forEach(function(c){
+        c.run(points);
+      });
+      colorMode(RGB,255);
+
+    };
+  }
+
+
+  function Chain(strength, drag){
+    var blobs=[];
+    var numBlobs=10;
+    var col=random(255);
+    var rad=random(2,100);
+    var opposite=1;
+    if(random(10)<5) opposite*=-1;
+    // var strength=0.15;
+    // var drag=0.95;
+    for(var i=0; i<numBlobs; i++){
+      blobs[i]=new Blob(width/numBlobs*i+width/numBlobs/2,height/2);
+    }
+    
+    this.run=function(points){
+      blobs.forEach(function(b){
+        b.update(points);
+        b.show();
+      });
+    };
+    
+    function Blob(x,y){
+      var pos=createVector(x,y);
+      var threshold=height/2;
+      var vel=createVector(0,0);
+      //var acc=createVector(0,0);
+      
+      this.update=function(points){
+        var dTot=0;
+        points.forEach(function(p){
+          var d=dist(p.x, p.y, x, y);
+          if(d<threshold){
+            d=(threshold-d)/2;
+            //var dir=spot.y<y?1:-1;
+            var dir=opposite;
+            d*=opposite;
+            //pos.y=d*dir;
+            // acc.y=d*dir;
+          } else d=0;
+          dTot+=d;
+        });
+        // var d=dist(spot.x, spot.y, x, y);
+        acc=createVector(x,0);
+        // if(d<threshold){
+        //   d=(threshold-d)/2;
+        //   //var dir=spot.y<y?1:-1;
+        //   var dir=opposite;
+        //   //pos.y=d*dir;
+        //   acc.y=d*dir;
+        // } else acc.y=0;
+        acc.y=dTot;
+        acc.sub(pos);
+        acc.mult(strength);
+        vel.add(acc);
+        vel.mult(drag);
+        pos.add(vel);
+      };
+      
+      this.show=function(){
+        push();
+        translate(0,height/2);
+        fill(col,255,180,100);
+        stroke(col,255,255,255);
+        // noStroke();
+        ellipse(pos.x,pos.y,rad,rad);
+        pop();
+      };
+    }
+  }
+
+}

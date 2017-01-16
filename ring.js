@@ -76,6 +76,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 			io.sockets.emit("themeSwitch", {index:newTheme});
 		}
 		parameters.run(this.ringLengthPixels);
+		sendParamData();
 	};
 
 	function checkShadowHealth(heartbeat){
@@ -282,10 +283,22 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 			allBlobs: allBlobs,
 			ringLength: self.ringLengthPixels,
 			numDevs: self.ringLengthDevs,
-			params: [parameters.getVal(0), parameters.getVal(1), parameters.getVal(2)],
+			// params: {
+			// 	time: Date.now(),
+			// 	params:[parameters.getVal(0), parameters.getVal(1), parameters.getVal(2)]
+			// },
 			blobs: blobs
 		});
 		console.log("sendBlobData:"+blobs.length+" All?:"+allBlobs);
+	}
+
+	function sendParamData(){
+		io.sockets.emit("parameters", {
+			params: {
+				time: Date.now(),
+				params:[parameters.getVal(0), parameters.getVal(1), parameters.getVal(2)]
+			}
+		});
 	}
 
 			// console.log("PP: "+parameters.getVal(0));

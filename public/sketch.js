@@ -53,6 +53,9 @@ var xInc=10;
 //theme vars
 var themeRunner;
 
+//Temporary variable
+var paramPos;
+
 //need some sort of subfunction to setup some of these
 
 function setup() {
@@ -68,7 +71,7 @@ function setup() {
   setupMeta();
   setupButtons();
   noiseField=new NoiseField();
-  statusBar=new StatusBar();
+  statusBar=new StatusBar(p5canvas.width, p5canvas.height);
   logger=new Logger();
   deviceData=new DeviceData();
 
@@ -156,8 +159,8 @@ function setupMeta(){
 }
 
 function draw() {
-  //background(40);
-  background(backGroundFromParams());
+  background(40);
+  backGroundFromParams();
   //backgroundDistanceMeter();
   var showing=false;
   if(deviceData.status=="attached"){
@@ -170,12 +173,20 @@ function draw() {
   runClicks();
   myBlobs.run(showing);
   statusBar.show();
-  statusBar.run();
+  // statusBar.run();
+
+  //Helper, debug stuff on the display
   stroke(0);
+  strokeWeight(2);
   fill(255);
+  textSize(20);
   text(parseInt(frameRate(),0),10,height-10);
   //send a heartbeat echo every 0.5-1 frame
   echoHeartBeat();
+  stroke(255,0,0,150);
+  strokeWeight(2);
+  translate(paramPos,0);
+  line(0,0,0,height);
 }
 
 function backGroundFromParams(){
@@ -183,12 +194,27 @@ function backGroundFromParams(){
   var bg=0;
   if(globalParams[2]){
     var p2=globalParams[2];
-    p2.count++;
-    var paramLerped=lerp(p2.last, p2.current, p2.count/30);
-    var relParam=paramLerped+wrapX;
+    // p2.count++;
+    // var paramLerped=lerp(p2.last, p2.current, p2.count/30);
+    // var relParam=paramLerped+wrapX;
+    var paramStep=(p2.current-p2.last)/(p2.currentTimeServer-p2.lastTimeServer)*333;//333 is ms per frame at 30fps
+    var ellapsedSinceRefresh=(Date.now()-p2.myTimeStamp)/333;
+    var newVal;
+    if(paramStep>0){
+      newVal=0;
+    } else {
+      newVal=(p2.last+ellapsedSinceRefresh*paramStep);
+    }
     //var relMe=myStartX+wrapX;
-    bg=map(relParam,0,ringLength,0,255);
+    // bg=map(relParam,0,ringLength,0,255);
+    bg=map(newVal,0,ringLength,0,255);
+    if(newVal>myStartX && newVal<myEndX){
+      paramPos=newVal-myStartX;
+    } else {
+      paramPos=-10;
+    }
   }
+  console.log(">>>>"+paramPos);
   return bg;
 }
 
@@ -236,6 +262,7 @@ function connected(){
   socket.on('ringpos',updateRingPos);
   socket.on('startX', setStartX);
   socket.on('blobData',handleBlobData);
+  socket.on('parameters',handleParameters);
   socket.on('notifyAttached',notifyAttached);
   socket.on('notifyDetached',notifyDetached);
   socket.on('themeSwitch',switchTheme);
@@ -297,7 +324,7 @@ function switchTheme(data){
 }
 
 function notifyAttached(){
-  statusBar.trigger('attached',5);
+  statusBar.trigger('attached',5,30);
 }
 
 function handleBlobData(data){
@@ -313,7 +340,7 @@ function processBlobData(data){
   var blobs=data.blobs;
   ringLength=data.ringLength;
   numDevs=data.numDevs;
-  parametersChanged(data.params);
+  //parametersChanged(data.params);
   // console.log("Ring data "+ringLength+" "+numDevs);
   blobs.forEach(function(blob){
     //check if blob is in our patch
@@ -351,14 +378,21 @@ function distanceChanged(){
   }
 }
 
-function parametersChanged(params){
-  params.forEach(function(p,i){
+function handleParameters(data){
+  var params=data.params;
+  params.params.forEach(function(p,i){
     if(globalParams[i]!==undefined){
       globalParams[i].last=globalParams[i].current;
       globalParams[i].current=p;
       globalParams[i].count=0;
+      globalParams[i].lastTimeServer=globalParams[i].currentTimeServer;
+      globalParams[i].currentTimeServer=params.time;
+      globalParams[i].myTimeStamp=Date.now();
     }else{
       globalParams[i]={
+        lastTimeServer: params.time,
+        currentTimeServer: params.time,
+        myTimeStamp: Date.now(),
         last: p,
         current: p,
         count:0
@@ -403,7 +437,7 @@ function processOffer(data){
   offers.push(offerTemp);
   //should really clean up and recreate this each time
   console.log("Offer "+data.id+" received, between: "+data.prev+","+data.next);
-  statusBar.trigger("offer");
+  statusBar.trigger("offer",0,30);
   deviceData.offersChanged=true;
 }
 
@@ -433,7 +467,7 @@ function handleAcceptOffer(){
   console.log("Offer accepted "+offer.id);
   this.html("Accepted");
   socket.emit("offerAccepted",{offer:offer.id, device:id});
-  statusBar.trigger("accept");
+  statusBar.trigger("accept",0,30);
 }
 
 function attachedToRing(data){
@@ -441,7 +475,7 @@ function attachedToRing(data){
   deviceData.status="attached";
   refreshHTMLStatus();
   refreshHTMLGeometry();
-  statusBar.trigger("attach");
+  statusBar.trigger("attach",0,30);
   noiseField.setField(myWidth, myStartX, noiseSegsX, noisePerWorldPixel);
   attachedFrame=frameCount;
 }
@@ -457,7 +491,7 @@ function notifyDetached(){
 }
 
 function processDetach(){
-  statusBar.trigger("detach");
+  statusBar.trigger("detach",0,30);
   deviceData.status="joined";
   refreshHTMLStatus();
   refreshHTMLGeometry();
@@ -467,7 +501,7 @@ function processDetach(){
 function permitAttacher(){
   console.log("Permit Attacher");
   socket.emit('permit',{id:id});
-  statusBar.trigger("grant");
+  statusBar.trigger("grant",0,30);
 }
 
 function setID(data){
@@ -479,7 +513,7 @@ function setID(data){
 
 function requestForPermit(){
   console.log("received request for attach permit from ring");
-  statusBar.trigger("permit");
+  statusBar.trigger("permit",0,30);
 }
 
 //early implementation and seems to mix up the mvc
@@ -500,7 +534,7 @@ function joinMe(){
 function attachMe(){
   socket.emit('attach',{id: id});
   console.log("requested attachement to ring");
-  statusBar.trigger("request");
+  statusBar.trigger("request",0,30);
 }
 
 function beat(data){
@@ -522,7 +556,7 @@ function runClicks(){
 function newClick(x,y){
   var c=new Click(x-myStartX,y);
   clicks.push(c);
-  statusBar.trigger("blob");
+  //statusBar.trigger("blob",0,10);
   socket.emit("newBlob",{device:id, x:x, y:y});
 }
 
@@ -532,9 +566,9 @@ function newClick(x,y){
 
 function Click(x,y){
   var r=5;
-  var rInc=1;
+  var rInc=3;
   var alpha=255;
-  var ttl=60;
+  var ttl=30;
 
   this.show=function(){
     push();
@@ -551,7 +585,7 @@ function Click(x,y){
   this.update=function(){
     r+=rInc;
     ttl--;
-    alpha=map(ttl,60,0,150,20);
+    alpha=map(ttl,30,0,250,20);
     return ttl>0;
   };
 }
@@ -758,8 +792,9 @@ function MyBlobs(){
       // console.log(myStartX+" "+x+" "+ringLength+" "+relPos);
       //fill(255);
       textSize(14);
-      stroke(255);
-      noFill();
+      stroke(0);
+      strokeWeight(1);
+      fill(200,200);
       text(id,x+15,y-15);
       text((relPos+"%"),x+15,y);
       text(ttl,x+15,y+15);
@@ -771,75 +806,206 @@ function MyBlobs(){
 /*****************************************
   status bar object constructor
   ******************************************/
-
-function StatusBar(){
+function StatusBar(start, end){
+  var w=10;
+  var alphaS=50;
+  var alphaE=200;
+  var pos=start-10;
+  // var inc=(end-start)/duration;
+  var r=200;
+  var g=0;
+  var b=200;
+  var sweepMult=12;
+  var sweepThick=6;
+  textSize(width*0.05);
+  var tL;//=textWidth(message);
+  var tLength=height*2;
+  var tSpeed;//=tLength/duration;
+  var tPos=height;
+  var running=true;
   this.flashes=0;
-  this.x=0;
-  this.y=0;
-  this.w=width;
-  this.h=height;
-  this.thick=50;
-  this.thickStep=this.thick/5;
-  var ttlMax=60;
-  this.ttl=0;
-  var r=20;
-  var g=225;
-  var b=100;
-  var alpha=255;
+  var duration=30;
+  var message="none";
+  var flashes=0;
+  var tPosX=100;
+
+  this.setValues=function(){
+    inc=(end-start)/duration;
+    //textSize(height*0.5);
+    tLength=this.h;
+    textSize(this.w*0.2);
+    tL=textWidth(message);
+    tPosX=this.w/2-tL/2;
+    tSpeed=this.h/duration;
+  };
+
+  this.setValues();
+  
   var statusColors={
-    request: {r: 20, g:80, b:255 },
-    permit: {r: 255, g:20, b:150 },
-    grant: {r: 125, g:20, b:255 },
-    offer: {r: 255, g:130, b:0 },
-    accept: {r: 255, g:230, b:0 },
-    accepted: {r: 0, g:255, b:50 },
-    attach: {r: 0, g:180, b:0 },
-    detach: {r: 255, g:0, b:0 },
-    attached: {r: 0, g:180, b:0 },
-    blob: {r: 200, g:80, b:20 },
-    none: {r: 0, g:0, b:0 }
+    request: {r: 20, g:80, b:255, m:"REQUEST" },
+    permit: {r: 255, g:20, b:150, m:"PERMIT" },
+    grant: {r: 125, g:20, b:255, m:"GRANT" },
+    offer: {r: 255, g:130, b:0, m:"OFFER" },
+    accept: {r: 255, g:230, b:0, m:"ACCEPT" },
+    accepted: {r: 0, g:255, b:50, m:"ACCEPTED" },
+    attach: {r: 0, g:180, b:0, m:"ATTACH" },
+    detach: {r: 255, g:0, b:0, m:"DETACH" },
+    attached: {r: 0, g:180, b:0, m:"ATTACHED" },
+    blob: {r: 200, g:80, b:20, m:"BLOB" },
+    none: {r: 0, g:0, b:0, m:"NOTHING" }
   };
 
   this.setSize=function(w,h){
     this.w=w;
     this.h=h;
+    start=w;
+    end=0;
   };
-
-  this.run=function(){
-    if(this.ttl>0){
-      this.ttl--;
-    } else {
-      if(this.flashes>0){
-        this.flashes--;
-        this.ttl=ttlMax;
+  
+  this.show=function(){
+    if(running){
+      if(pos>end){
+        for(var i=0; i<w; i++){
+          var a=map(i,w,0,alphaS, alphaE);
+          fill(r,g,b,a);
+          noStroke();
+          rectMode(CORNER);
+          rect(pos+i*sweepMult,0,sweepThick,height);
+          rect(width-pos-i*sweepMult,0,-sweepThick,height);
+          var vPos=map(pos,start,end,height,0);
+          rect(0, vPos+i*sweepMult, width,sweepThick);
+          rect(0, height-vPos-i*sweepMult, width, -sweepThick);
+         //rect(width/2, height/2, pos+i, pos+i, w+i);
+  
+        }
+        var rad=map(pos,start,end,0,width/8);
+        rectMode(CENTER);
+        stroke(r,g,b,a);
+        strokeWeight(sweepThick);
+        noFill();
+        for(var i=0; i<w; i++){
+          var a=map(i,0,w,0, 255);
+          stroke(r,g,b,a);
+          var vPos=map(pos,0,width, 0, height);
+          rect(width/2, height/2, pos+i*sweepThick, vPos+i*sweepThick, rad+i);
+        }
+        fill(r,g,b,150);
+        //noStroke();
+        stroke(0);
+        strokeWeight(4);
+        textSize(this.w*0.2);
+        text(message,this.w/2-tL/2,tPos);
+        pos+=inc;
+        tPos-=tSpeed;
+      } else{
+        if(flashes>0){
+          flashes--;
+          this.reset();
+        } else {
+          running=false;
+        }
       }
     }
-  };
-
-  this.trigger=function(trigKey, count){
-    this.flashes=count||0;
-    this.ttl=ttlMax;
+  }
+  
+  this.trigger=function(trigKey, count, dur){
+    flashes=count||0;
+    // this.ttl=ttlMax;
     if(!statusColors[trigKey]){
       trigKey="none";
     }
     r=statusColors[trigKey].r;
     g=statusColors[trigKey].g;
     b=statusColors[trigKey].b;
+    duration=dur;
+    message=statusColors[trigKey].m;
+    running=true;
+    pos=start-10;
+    tPos=this.h;
+    this.setValues();
   };
 
-  this.show=function(){
-    if(this.ttl>0){
-      for(var i=0; i<5; i++){
-        alpha=map(this.ttl,ttlMax,0,(5-i)*50,50);
-        noFill();
-        stroke(r,g,b,alpha);
-        strokeWeight(this.thickStep);
-        rect(this.x+this.thickStep*(i+0.5),this.y+this.thickStep*(i+0.5),this.w-this.thickStep*(i+0.5)*2, this.h-this.thickStep*(i+0.5)*2);
-        strokeWeight(1);
-      }
-    }
-  };
+
+  
+  this.reset=function(){
+    running=true;
+    pos=start-10;
+    tPos=width;
+  }
 }
+
+/*****************************************
+  Old status bar object constructor
+  ******************************************/
+
+// function NoStatusBar(){
+//   this.flashes=0;
+//   this.x=0;
+//   this.y=0;
+//   this.w=width;
+//   this.h=height;
+//   this.thick=50;
+//   this.thickStep=this.thick/5;
+//   var ttlMax=60;
+//   this.ttl=0;
+//   var r=20;
+//   var g=225;
+//   var b=100;
+//   var alpha=255;
+//   var statusColors={
+//     request: {r: 20, g:80, b:255 },
+//     permit: {r: 255, g:20, b:150 },
+//     grant: {r: 125, g:20, b:255 },
+//     offer: {r: 255, g:130, b:0 },
+//     accept: {r: 255, g:230, b:0 },
+//     accepted: {r: 0, g:255, b:50 },
+//     attach: {r: 0, g:180, b:0 },
+//     detach: {r: 255, g:0, b:0 },
+//     attached: {r: 0, g:180, b:0 },
+//     blob: {r: 200, g:80, b:20 },
+//     none: {r: 0, g:0, b:0 }
+//   };
+
+//   this.setSize=function(w,h){
+//     this.w=w;
+//     this.h=h;
+//   };
+
+//   this.run=function(){
+//     if(this.ttl>0){
+//       this.ttl--;
+//     } else {
+//       if(this.flashes>0){
+//         this.flashes--;
+//         this.ttl=ttlMax;
+//       }
+//     }
+//   };
+
+//   this.trigger=function(trigKey, count){
+//     this.flashes=count||0;
+//     this.ttl=ttlMax;
+//     if(!statusColors[trigKey]){
+//       trigKey="none";
+//     }
+//     r=statusColors[trigKey].r;
+//     g=statusColors[trigKey].g;
+//     b=statusColors[trigKey].b;
+//   };
+
+//   this.show=function(){
+//     if(this.ttl>0){
+//       for(var i=0; i<5; i++){
+//         alpha=map(this.ttl,ttlMax,0,(5-i)*50,50);
+//         noFill();
+//         stroke(r,g,b,alpha);
+//         strokeWeight(this.thickStep);
+//         rect(this.x+this.thickStep*(i+0.5),this.y+this.thickStep*(i+0.5),this.w-this.thickStep*(i+0.5)*2, this.h-this.thickStep*(i+0.5)*2);
+//         strokeWeight(1);
+//       }
+//     }
+//   };
+// }
 
 function Logger(){
   const CONSOLE=0;

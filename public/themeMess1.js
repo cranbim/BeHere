@@ -25,16 +25,16 @@
 // }
 
 
-function ThemeSparker(name, w,h){
+function ThemeBounceChain(name, w,h){
   this.id=nextThemeId++;
   this.name=name;
   //this.lifeSpan=0;
-  var s;
+  var bChain;
 
   initTheme();
 
   function initTheme(){
-    s=new Sparker();
+    bChain=new ChainSet();
   }
   
   this.init=function(){
@@ -42,60 +42,98 @@ function ThemeSparker(name, w,h){
   };
 
   this.run=function(blobPos){
-    s.run(blobPos);
+    bChain.run(blobPos);
   };
+  
 
-  function Sparker(){
-    var sparks=[];
-
+  function ChainSet(){
+    var chains=[];
+    var numChains=3;
+    
+    for(var i=0; i<numChains; i++){
+      chains[i]=new Chain(random(0.05,0.2), random(0.85,0.98));
+    }
+    
     this.run=function(points){
-      while (sparks.length<points.length){
-        sparks.push(new Spark(20));
-      }
-      points.forEach(function(p, i){
-        sparks[i].generate(p.x, p.y);
-        sparks[i].show();
+      colorMode(HSB,255);
+      chains.forEach(function(c){
+        c.run(points);
       });
+      colorMode(RGB,255);
+
     };
   }
 
-  function Spark(numSegs){
-    var segs=[];
-    var x, y;
-    var a=0;
+
+  function Chain(strength, drag){
+    var blobs=[];
+    var numBlobs=10;
+    var col=random(255);
+    var rad=random(2,100);
+    var opposite=1;
+    if(random(10)<5) opposite*=-1;
+    // var strength=0.15;
+    // var drag=0.95;
+    for(var i=0; i<numBlobs; i++){
+      blobs[i]=new Blob(width/numBlobs*i+width/numBlobs/2,height/2);
+    }
     
-    this.generate=function(px, py){
-      x=px;
-      y=py;
-      a=random(TWO_PI);
-      segs=[];
-      currX=0;
-      var tLen=random(width);
-      for(var i=0; i<numSegs; i++){
-        var remainSegs=numSegs-1-i;
-        var remainX=tLen-currX;
-        var seed=remainX/remainSegs;
-        segs[i]=p5.Vector.fromAngle(random(-PI/3,PI/3));
-        segs[i].mult(random(seed*3));
-        currX+=segs[i].x;
-      }
-    };
-    
-    this.show=function(){
-      push();
-      translate(x,y);
-      rotate(a);
-      translate(random(50),0);
-      noFill();
-      stroke(0,220,255);
-      segs.forEach(function(s,i){
-        strokeWeight(map(numSegs-i,numSegs,0,5,0.5));
-        line(0,0,s.x, s.y);
-        translate(s.x, s.y);
+    this.run=function(points){
+      blobs.forEach(function(b){
+        b.update(points);
+        b.show();
       });
-      pop();
     };
+    
+    function Blob(x,y){
+      var pos=createVector(x,y);
+      var threshold=height/2;
+      var vel=createVector(0,0);
+      //var acc=createVector(0,0);
+      
+      this.update=function(points){
+        var dTot=0;
+        points.forEach(function(p){
+          var d=dist(p.x, p.y, x, y);
+          if(d<threshold){
+            d=(threshold-d)/2;
+            //var dir=spot.y<y?1:-1;
+            var dir=opposite;
+            d*=opposite;
+            //pos.y=d*dir;
+            // acc.y=d*dir;
+          } else d=0;
+          dTot+=d;
+        });
+        // var d=dist(spot.x, spot.y, x, y);
+        acc=createVector(x,0);
+        // if(d<threshold){
+        //   d=(threshold-d)/2;
+        //   //var dir=spot.y<y?1:-1;
+        //   var dir=opposite;
+        //   //pos.y=d*dir;
+        //   acc.y=d*dir;
+        // } else acc.y=0;
+        acc.y=dTot;
+        acc.sub(pos);
+        acc.mult(strength);
+        vel.add(acc);
+        vel.mult(drag);
+        pos.add(vel);
+      };
+      
+      this.show=function(){
+        push();
+        translate(0,height/2);
+        fill(col,255,180,100);
+        stroke(col,255,255,255);
+        // noStroke();
+        ellipse(pos.x,pos.y,rad,rad);
+        pop();
+      };
+    }
   }
+
 }
 
 
