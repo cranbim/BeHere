@@ -849,7 +849,7 @@ function ThemeBounceRings(name, w,h){
       }
       //text(bouncers.length,width/2, height/2);
       colorMode(HSB,255);
-      thick=map(blobPos.length,0,5,10,1);
+      thick=map(blobPos.length,0,5,5,1);
       for(var i=0; i<count; i++){
         for(var j=0; j<bouncers.length; j++){
           if(i===0) bouncers[j].update(blobPos[j]);
