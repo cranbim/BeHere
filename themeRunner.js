@@ -44,7 +44,7 @@ function ThemeRunner(){
 	var nowTheme=null;
 
 	//var themeTTL=0;
-	console.log("Theme Runner instantiated");
+	console.log("Theme Runner started");
 	loadThemes();
 
 	function loadThemes(){

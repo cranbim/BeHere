@@ -17,9 +17,9 @@ function ThemeRunner(w,h){
 
 	var themeLoader={
 		themeOne: ThemePlasma1, //Theme1,
-		themeTwo:  ThemeStrings, //Theme2,
+		themeTwo:  ThemeRepelWobble, //Theme2,
 		themeThree: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
-    themeFour: ThemeNoise1,
+    themeFour: ThemeFlipper1,
     themeFive: ThemePsychaRing,
     themeSix: ThemeBounceChain,
     themeSeven: ThemeSparker
@@ -1348,6 +1348,12 @@ function ThemeSparker(name, w,h){
 
   function Sparker(){
     var sparks=[];
+    var noise1=new p5.Noise('white');
+    var env = new p5.Env();
+    env.setADSR(0.005, 0.01, 0, 0.1);
+    env.setRange(1, 0);
+    noise1.start();
+    noise1.amp(0);
 
     this.run=function(points){
       while (sparks.length<points.length){
@@ -1356,6 +1362,7 @@ function ThemeSparker(name, w,h){
       points.forEach(function(p, i){
         sparks[i].generate(p.x, p.y);
         sparks[i].show();
+        if(random(10)<2) env.play(noise1);
       });
     };
   }
@@ -1904,6 +1911,251 @@ function ThemeBounceChain(name, w,h){
         pop();
       };
     }
+  }
+
+}
+
+function ThemeRepelWobble(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var bChain;
+
+  initTheme();
+
+  function initTheme(){
+    bChain=new ChainSet();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    bChain.run(blobPos);
+  };
+  
+
+  function ChainSet(){
+    var chains=[];
+    var numChains=3;
+    
+    for(var i=0; i<numChains; i++){
+      chains[i]=new Chain(random(0.05,0.2), random(0.85,0.98));
+    }
+    
+    this.run=function(points){
+      colorMode(HSB,255);
+      chains.forEach(function(c){
+        c.run(points);
+      });
+      colorMode(RGB,255);
+    };
+  }
+
+
+  function Chain(strength, drag){
+    var blobs=[];
+    var numBlobs=100;
+    var col=random(255);
+    var rad=random(2,100);
+    var opposite=1;
+    var repelR=random(1,50);
+    if(random(10)<5) opposite*=-1;
+    for(var i=0; i<numBlobs; i++){
+      blobs[i]=new Blob(width/numBlobs*i+width/numBlobs/2,height/2);
+    }
+    
+    this.run=function(points){
+      push();
+      translate(0,height/2);
+      noStroke();//stroke(255);
+      fill(col,200,255,100);
+      beginShape();
+      blobs.forEach(function(b){
+        b.update(points);
+        // b.show();
+        var pos=b.get();
+        vertex(pos.x, pos.y);
+      });
+      for(var i=blobs.length-1; i>=0; i--){
+        var pos=blobs[i].get();
+        vertex(pos.x, -pos.y);
+      }
+      endShape(CLOSE);
+      pop();
+    }
+    
+    function Blob(x,y){
+      var pos=createVector(x,y);
+      var threshold=height/2;
+      var vel=createVector(0,0);
+      //var acc=createVector(0,0);
+      
+      this.update=function(points){
+        var dTot=0;
+        var d;
+        points.forEach(function(p){
+          if(p.y>height/2) p.y=height-p.y;
+          var mPos=pos.copy();
+          var dv=createVector(p.x, p.y);
+          mPos.sub(dv);
+          var dm=mPos.mag()+repelR; //distance
+          if(dm<threshold+repelR){
+            d=threshold-dm;
+          }
+          else
+            d=0;
+          dTot+=d;
+        });
+        acc=createVector(x,0);
+        acc.y=dTot;
+        acc.sub(pos);
+        acc.mult(strength);
+        vel.add(acc);
+        vel.mult(drag);
+        pos.add(vel);
+      }
+      
+      this.get=function(){
+        return pos;
+      }
+      
+      this.show=function(){
+        push();
+        translate(0,height/2);
+        fill(col,255,180,100);
+        //stroke(col,255,255,255);
+        // noStroke();
+        ellipse(pos.x,pos.y,rad,rad);
+        pop();
+      }
+    }
+  }
+
+
+
+}
+
+function ThemeFlipper1(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var flipset;
+
+  initTheme();
+
+  function initTheme(){
+    flipset=new FlipSet();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    flipset.run(blobPos);
+  };
+
+
+  function FlipSet(){
+    var flippers=[];
+    var step=50;
+    var w,h;
+    w=floor(width/step);
+    h=floor(height/step);
+    for(var y=0; y<h; y++){
+      for(var x=0; x<w; x++){
+        flippers.push(new FlipSpot(step/2+step*x,step/2+step*y,step));
+      }
+    }
+    
+    this.run=function(blobPos){
+      flippers.forEach(function(f){
+        // if(frameCount%4===0){ //reduce CPU load
+        blobPos.forEach(function(p){
+          f.check(p.x, p.y);
+        });
+        f.update();
+        // }
+        f.show();
+      });
+    };
+    
+    this.move=function(){
+      flippers.forEach(function(f){
+        //f.update();
+        f.check(mouseX, mouseY);
+      });
+    };
+
+    function FlipSpot(x,y,size){
+      var flipping=false;
+      var flipInc=0.1;
+      var flipDir=1;
+      var flippage=-1;
+      var flipShade=1;
+      var r=size/2;
+      var baseCol=200;
+      var highCol=255;
+      var col=baseCol;
+      var a=random(PI);
+      var threshold=r*3;
+      
+      this.trigger=function(){
+        flipping=true;
+        flipDir=1;
+      };
+      
+      this.untrigger=function(){
+        flipping=true;
+        flipDir=-1;
+      };
+      
+      this.check=function(mx, my){
+        var d=dist(mx, my, x, y);
+        if(d<threshold){
+          col=highCol;
+          //flipShade=map(threshold-d,0,threshold,1,0);
+          this.trigger();
+        } else {
+          col=baseCol;
+          if(!flipping)
+            this.untrigger();
+        }
+      };
+      
+      this.update=function(){
+        this.check();
+        //console.log(flipping);
+        if(flipping){
+          var speed=flipDir>0?2:0.25;
+          flippage+=flipInc*flipDir*speed;
+          //console.log(flippage);
+          if(flippage<-1){
+            flippage=-1;
+            flipping=false;
+          } else if(flippage>1*flipShade){
+            //this.untrigger();
+            flippage=1;
+            flipping=false;
+          }
+        }
+      };
+      
+      this.show=function(){
+        push();
+        translate(x,y);
+        rotate(a);
+        noStroke();
+        // stroke(col);
+        if(flippage<0) fill(0);
+        else fill(255);
+        ellipse(0,0,r*2*(1/flippage),r*2*flippage);
+        pop();
+      };
+    }
+    
   }
 
 }

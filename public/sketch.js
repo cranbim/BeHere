@@ -692,10 +692,10 @@ function MyBlobs(){
     this.y=data.y;
     this.pos=createVector(this.x,this.y);
     this.vel=createVector(1,0);
-    this.prevailing=createVector(random(0,10),0);
+    this.prevailing=createVector(1,0);
     var rr=0; var rg=255; var rb=150;
     var er=255; var eg=0; var eb=0;
-    var drag=0.95;
+    var drag=0.90;
     var steer=2;
     var maxTTL=1000;
 

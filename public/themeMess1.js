@@ -25,16 +25,16 @@
 // }
 
 
-function ThemeBounceChain(name, w,h){
+function ThemeFlipper1(name, w,h){
   this.id=nextThemeId++;
   this.name=name;
   //this.lifeSpan=0;
-  var bChain;
+  var flipset;
 
   initTheme();
 
   function initTheme(){
-    bChain=new ChainSet();
+    flipset=new FlipSet();
   }
   
   this.init=function(){
@@ -42,96 +42,106 @@ function ThemeBounceChain(name, w,h){
   };
 
   this.run=function(blobPos){
-    bChain.run(blobPos);
+    flipset.run(blobPos);
   };
   
 
-  function ChainSet(){
-    var chains=[];
-    var numChains=3;
-    
-    for(var i=0; i<numChains; i++){
-      chains[i]=new Chain(random(0.05,0.2), random(0.85,0.98));
+  function FlipSet(){
+    var flippers=[];
+    var step=25;
+    var w,h;
+    w=floor(width/step);
+    h=floor(height/step);
+    for(var y=0; y<h; y++){
+      for(var x=0; x<w; x++){
+        flippers.push(new FlipSpot(step/2+step*x,step/2+step*y,step));
+      }
     }
     
-    this.run=function(points){
-      colorMode(HSB,255);
-      chains.forEach(function(c){
-        c.run(points);
-      });
-      colorMode(RGB,255);
-
-    };
-  }
-
-
-  function Chain(strength, drag){
-    var blobs=[];
-    var numBlobs=10;
-    var col=random(255);
-    var rad=random(2,100);
-    var opposite=1;
-    if(random(10)<5) opposite*=-1;
-    // var strength=0.15;
-    // var drag=0.95;
-    for(var i=0; i<numBlobs; i++){
-      blobs[i]=new Blob(width/numBlobs*i+width/numBlobs/2,height/2);
-    }
-    
-    this.run=function(points){
-      blobs.forEach(function(b){
-        b.update(points);
-        b.show();
-      });
-    };
-    
-    function Blob(x,y){
-      var pos=createVector(x,y);
-      var threshold=height/2;
-      var vel=createVector(0,0);
-      //var acc=createVector(0,0);
-      
-      this.update=function(points){
-        var dTot=0;
-        points.forEach(function(p){
-          var d=dist(p.x, p.y, x, y);
-          if(d<threshold){
-            d=(threshold-d)/2;
-            //var dir=spot.y<y?1:-1;
-            var dir=opposite;
-            d*=opposite;
-            //pos.y=d*dir;
-            // acc.y=d*dir;
-          } else d=0;
-          dTot+=d;
+    this.run=function(blobPos){
+      flippers.forEach(function(f){
+        blobPos.forEach(function(p){
+          f.check(p.x, p.y);
         });
-        // var d=dist(spot.x, spot.y, x, y);
-        acc=createVector(x,0);
-        // if(d<threshold){
-        //   d=(threshold-d)/2;
-        //   //var dir=spot.y<y?1:-1;
-        //   var dir=opposite;
-        //   //pos.y=d*dir;
-        //   acc.y=d*dir;
-        // } else acc.y=0;
-        acc.y=dTot;
-        acc.sub(pos);
-        acc.mult(strength);
-        vel.add(acc);
-        vel.mult(drag);
-        pos.add(vel);
+        f.update();
+        f.show();
+      });
+    };
+    
+    this.move=function(){
+      flippers.forEach(function(f){
+        //f.update();
+        f.check(mouseX, mouseY);
+      });
+    };
+
+    function FlipSpot(x,y,size){
+      var flipping=false;
+      var flipInc=0.1;
+      var flipDir=1;
+      var flippage=-1;
+      var flipShade=1;
+      var r=size/2;
+      var baseCol=200;
+      var highCol=255;
+      var col=baseCol;
+      var a=random(PI);
+      var threshold=r*3;
+      
+      this.trigger=function(){
+        flipping=true;
+        flipDir=1;
+      };
+      
+      this.untrigger=function(){
+        flipping=true;
+        flipDir=-1;
+      };
+      
+      this.check=function(mx, my){
+        var d=dist(mx, my, x, y);
+        if(d<threshold){
+          col=highCol;
+          //flipShade=map(threshold-d,0,threshold,1,0);
+          this.trigger();
+        } else {
+          col=baseCol;
+          if(!flipping)
+            this.untrigger();
+        }
+      };
+      
+      this.update=function(){
+        this.check();
+        //console.log(flipping);
+        if(flipping){
+          var speed=flipDir>0?2:0.25;
+          flippage+=flipInc*flipDir*speed;
+          //console.log(flippage);
+          if(flippage<-1){
+            flippage=-1;
+            flipping=false;
+          } else if(flippage>1*flipShade){
+            //this.untrigger();
+            flippage=1;
+            flipping=false;
+          }
+        }
       };
       
       this.show=function(){
         push();
-        translate(0,height/2);
-        fill(col,255,180,100);
-        stroke(col,255,255,255);
-        // noStroke();
-        ellipse(pos.x,pos.y,rad,rad);
+        translate(x,y);
+        rotate(a);
+        noStroke();
+        // stroke(col);
+        if(flippage<0) fill(0);
+        else fill(255);
+        ellipse(0,0,r*2*(1/flippage),r*2*flippage);
         pop();
       };
     }
+    
   }
 
 }
