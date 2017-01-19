@@ -39,6 +39,15 @@ function ThemeRunner(w,h){
 	}
 
 	this.switchTheme=function(i){
+    //exit old theme first
+    if(nowTheme){
+      if(typeof(nowTheme.shutdown)!=='undefined'){
+        console.log("Theme shutdown");
+        nowTheme.shutdown();
+      } else {
+        console.log("Theme has no shutdown");
+      }
+    }
 		nowTheme=themes[i];
 		console.log("Current Theme: "+nowTheme.id+" "+nowTheme.name);
 		nowTheme.init();
@@ -1342,6 +1351,10 @@ function ThemeSparker(name, w,h){
     initTheme();
   };
 
+  this.shutdown=function(){
+    s.shutdown();
+  }
+
   this.run=function(blobPos){
     s.run(blobPos);
   };
@@ -1354,6 +1367,11 @@ function ThemeSparker(name, w,h){
     env.setRange(1, 0);
     noise1.start();
     noise1.amp(0);
+
+    this.shutdown=function(){
+      noise1.stop();
+      console.log("********* noise stopped");
+    }
 
     this.run=function(points){
       while (sparks.length<points.length){

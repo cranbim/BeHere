@@ -214,7 +214,7 @@ function backGroundFromParams(){
       paramPos=-10;
     }
   }
-  console.log(">>>>"+paramPos);
+  //console.log(">>>>"+paramPos);
   return bg;
 }
 

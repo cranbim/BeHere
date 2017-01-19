@@ -7,31 +7,31 @@ var nextThemeId=0;
 
 var themeLoader={
 	themeOne: {
-		func: Theme1,
+		func: ServerTheme,
 		ttl: 6
 	},
 	themeTwo: {
-		func: Theme2,
+		func: ServerTheme,
 		ttl: 10
 	},
 	themeThree: {
-		func: Theme3,
+		func: ServerTheme,
 		ttl: 6
 	},
 	themeFour: {
-		func: Theme4,
+		func: ServerTheme,
 		ttl: 6
 	},
 	themeFive: {
-		func: Theme5,
+		func: ServerTheme,
 		ttl: 6
 	},
 	themeSix: {
-		func: Theme5,
+		func: ServerTheme,
 		ttl: 6
 	},
 	themeSeven: {
-		func: Theme5,
+		func: ServerTheme,
 		ttl: 6
 	}
 };
@@ -82,6 +82,14 @@ function ThemeRunner(){
 		return meta;
 	};
 
+	// this.run=function(){
+	// 	if(!nowTheme){
+	// 		return -1;
+	// 	} else {
+	// 		return currentTheme;
+	// 	}
+	// };
+
 	this.run=function(){
 		if(!nowTheme){
 			switchTheme();
@@ -105,8 +113,7 @@ function ThemeRunner(){
 }
 
 
-
-function Theme1(name, ttl){
+function ServerTheme(name, ttl){
 	this.id=nextThemeId++;
 	this.name=name;
 	this.ttl=ttl;
@@ -126,122 +133,5 @@ function Theme1(name, ttl){
 	};
 }
 
-function Theme2(name, ttl){
-	this.id=nextThemeId++;
-	this.name=name;
-	this.ttl=ttl;
-	console.log("New Theme: "+this.id+" "+this.name);
 
-	this.init=function(){
-		this.ttl=ttl;
-		console.log("Theme "+this.id+" loaded and initialised");
-	};
-
-	this.run=function(){
-		this.ttl--;
-		if(true/*this.ttl%10===0*/){
-			console.log("Theme "+this.id+" ttl: "+this.ttl);
-		}
-		return this.ttl>0;
-	};
-}
-
-function Theme3(name, ttl){
-	this.id=nextThemeId++;
-	this.name=name;
-	this.ttl=ttl;
-	console.log("New Theme: "+this.id+" "+this.name);
-
-	this.init=function(){
-		this.ttl=ttl;
-		console.log("Theme "+this.id+" loaded and initialised");
-	};
-
-	this.run=function(){
-		this.ttl--;
-		if(true/*this.ttl%10===0*/){
-			console.log("Theme "+this.id+" ttl: "+this.ttl);
-		}
-		return this.ttl>0;
-	};
-}
-
-function Theme4(name, ttl){
-	this.id=nextThemeId++;
-	this.name=name;
-	this.ttl=ttl;
-	console.log("New Theme: "+this.id+" "+this.name);
-
-	this.init=function(){
-		this.ttl=ttl;
-		console.log("Theme "+this.id+" loaded and initialised");
-	};
-
-	this.run=function(){
-		this.ttl--;
-		if(true/*this.ttl%10===0*/){
-			console.log("Theme "+this.id+" ttl: "+this.ttl);
-		}
-		return this.ttl>0;
-	};
-}
-
-function Theme5(name, ttl){
-	this.id=nextThemeId++;
-	this.name=name;
-	this.ttl=ttl;
-	console.log("New Theme: "+this.id+" "+this.name);
-
-	this.init=function(){
-		this.ttl=ttl;
-		console.log("Theme "+this.id+" loaded and initialised");
-	};
-
-	this.run=function(){
-		this.ttl--;
-		if(true/*this.ttl%10===0*/){
-			console.log("Theme "+this.id+" ttl: "+this.ttl);
-		}
-		return this.ttl>0;
-	};
-}
-
-function Theme6(name, ttl){
-	this.id=nextThemeId++;
-	this.name=name;
-	this.ttl=ttl;
-	console.log("New Theme: "+this.id+" "+this.name);
-
-	this.init=function(){
-		this.ttl=ttl;
-		console.log("Theme "+this.id+" loaded and initialised");
-	};
-
-	this.run=function(){
-		this.ttl--;
-		if(true/*this.ttl%10===0*/){
-			console.log("Theme "+this.id+" ttl: "+this.ttl);
-		}
-		return this.ttl>0;
-	};
-}
-
-function Theme7(name, ttl){
-	this.id=nextThemeId++;
-	this.name=name;
-	this.ttl=ttl;
-	console.log("New Theme: "+this.id+" "+this.name);
-
-	this.init=function(){
-		this.ttl=ttl;
-		console.log("Theme "+this.id+" loaded and initialised");
-	};
-
-	this.run=function(){
-		this.ttl--;
-		if(true/*this.ttl%10===0*/){
-			console.log("Theme "+this.id+" ttl: "+this.ttl);
-		}
-		return this.ttl>0;
-	};
-}
+// 
