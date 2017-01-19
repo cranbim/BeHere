@@ -320,7 +320,8 @@ function dataRefreshPoll(){
 }
 
 function switchTheme(data){
-  themeRunner.switchTheme(data.index);
+  themeRunner.switchThemeByIndex(data.index);
+  // themeRunner.switchThemeByName(data.name);
 }
 
 function notifyAttached(){

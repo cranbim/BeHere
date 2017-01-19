@@ -6,32 +6,56 @@ module.exports={
 var nextThemeId=0;
 
 var themeLoader={
-	themeOne: {
-		func: ServerTheme,
+	ThemePlasma1: {
+		func: GenericServerTheme,
 		ttl: 6
 	},
-	themeTwo: {
-		func: ServerTheme,
+	ThemeRepelWobble: {
+		func: GenericServerTheme,
 		ttl: 10
 	},
-	themeThree: {
-		func: ServerTheme,
+	ThemeBounceRings: {
+		func: GenericServerTheme,
 		ttl: 6
 	},
-	themeFour: {
-		func: ServerTheme,
+	ThemeFlipper1: {
+		func: GenericServerTheme,
 		ttl: 6
 	},
-	themeFive: {
-		func: ServerTheme,
+	ThemePsychaRing: {
+		func: GenericServerTheme,
 		ttl: 6
 	},
-	themeSix: {
-		func: ServerTheme,
+	ThemeBounceChain: {
+		func: GenericServerTheme,
 		ttl: 6
 	},
-	themeSeven: {
-		func: ServerTheme,
+	ThemeSparker: {
+		func: GenericServerTheme,
+		ttl: 6
+	},
+	ThemeDust: {
+		func: GenericServerTheme,
+		ttl: 6
+	},
+	ThemeNoise1:	{
+		func: GenericServerTheme,
+		ttl: 6
+	},
+	ThemeTVStatic: {
+		func: GenericServerTheme,
+		ttl: 6
+	},
+	ThemeHairBall:	{
+		func: GenericServerTheme,
+		ttl: 6
+	},
+	ThemeSwisher:	{
+		func: GenericServerTheme,
+		ttl: 6
+	},
+	ThemeCracker: {
+		func: GenericServerTheme,
 		ttl: 6
 	}
 };
@@ -42,6 +66,7 @@ function ThemeRunner(){
 	var currentTheme=-1;
 	var nextTheme=0;
 	var nowTheme=null;
+	var currentThemeName="";
 
 	//var themeTTL=0;
 	console.log("Theme Runner started");
@@ -97,6 +122,7 @@ function ThemeRunner(){
 		if(!nowTheme.run()){
 			switchTheme();
 			return currentTheme;
+			// return currentThemeName;
 		}
 		return -1;
 	};
@@ -107,13 +133,14 @@ function ThemeRunner(){
 		nextTheme++;
 		if(nextTheme>=themes.length) nextTheme=0;
 		nowTheme=themes[currentTheme];
-		console.log(themes[currentTheme].name);
+		currentThemeName=nowTheme.name;
+		console.log("Switch theme to" + currentThemeName);
 		nowTheme.init();
 	}
 }
 
 
-function ServerTheme(name, ttl){
+function GenericServerTheme(name, ttl){
 	this.id=nextThemeId++;
 	this.name=name;
 	this.ttl=ttl;

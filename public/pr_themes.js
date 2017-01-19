@@ -15,15 +15,33 @@ function ThemeRunner(w,h){
 	var themeTTL=0;
 
 
-	var themeLoader={
-		themeOne: ThemePlasma1, //Theme1,
-		themeTwo:  ThemeRepelWobble, //Theme2,
-		themeThree: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
-    themeFour: ThemeFlipper1,
-    themeFive: ThemePsychaRing,
-    themeSix: ThemeBounceChain,
-    themeSeven: ThemeSparker
-	};
+	// var themeLoader={
+	// 	ThemePlasma1: ThemePlasma1, //Theme1,
+	// 	ThemeRepelWobble:  ThemeRepelWobble, //Theme2,
+	// 	ThemeBounceRings: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
+ //    ThemeFlipper1: ThemeFlipper1,
+ //    ThemePsychaRing: ThemePsychaRing,
+ //    ThemeBounceChain: ThemeBounceChain,
+ //    ThemeSparker: ThemeSparker
+	// };
+
+  var themeLoader={
+    ThemePlasma1: ThemePlasma1, //Theme1,
+    ThemeRepelWobble:  ThemeRepelWobble, //Theme2,
+    ThemeBounceRings: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
+    ThemeFlipper1: ThemeFlipper1,
+    ThemePsychaRing: ThemePsychaRing,
+    ThemeBounceChain: ThemeBounceChain,
+    ThemeSparker: ThemeSparker,
+    ThemeDust: ThemeDust,
+    ThemeNoise1: ThemeNoise1,
+    ThemeTVStatic: ThemeTVStatic,
+    ThemeHairBall: ThemeHairBall,
+    ThemeSwisher: ThemeSwisher,
+    ThemeCracker: ThemeCracker
+  };
+
+  
 
 	loadThemes(w,h);
 
@@ -36,9 +54,20 @@ function ThemeRunner(w,h){
 			themes.push(new themeLoader[key](key, w,h));
 			console.log(themes.length+" "+key);
 		}
+    console.log(themes);
 	}
 
-	this.switchTheme=function(i){
+  this.themeByName=function(themeName){
+    console.log("Matching"+themeName);
+    var t=themes.find(function(theme){
+      console.log(theme.name);
+      return theme.name===themeName;
+    });
+    console.log(t);
+    return t;
+  };
+
+	this.switchThemeByIndex=function(i){
     //exit old theme first
     if(nowTheme){
       if(typeof(nowTheme.shutdown)!=='undefined'){
@@ -52,6 +81,21 @@ function ThemeRunner(w,h){
 		console.log("Current Theme: "+nowTheme.id+" "+nowTheme.name);
 		nowTheme.init();
 	};
+
+  this.switchThemeByName=function(themeName){
+    //exit old theme first
+    if(nowTheme){
+      if(typeof(nowTheme.shutdown)!=='undefined'){
+        console.log("Theme shutdown");
+        nowTheme.shutdown();
+      } else {
+        console.log("Theme has no shutdown");
+      }
+    }
+    nowTheme=this.themeByName(themeName);
+    console.log("Current Theme: "+nowTheme.id+" "+nowTheme.name);
+    nowTheme.init();
+  };
 
 	this.test=function(){
 		console.log("ThemeRunner is OK");

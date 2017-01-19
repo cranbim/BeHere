@@ -72,12 +72,13 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		sendBlobData();
 		checkShadowHealth(heartbeat);
 		var newTheme=themes.run();
+		var newThemeName="none";//themes.run();
 		//var oldTheme=themes.getCurrent();
 		// if(oldTheme>-1){
 		// 	//shutdown old theme
 		// }
 		if(newTheme>-1){
-			io.sockets.emit("themeSwitch", {index:newTheme});
+			io.sockets.emit("themeSwitch", {name: newThemeName, index:newTheme});
 		}
 		parameters.run(this.ringLengthPixels);
 		sendParamData();
