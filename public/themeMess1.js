@@ -25,16 +25,16 @@
 // }
 
 
-function ThemeFlipper1(name, w,h){
+function ThemeFlyThrough(name, w,h){
   this.id=nextThemeId++;
   this.name=name;
   //this.lifeSpan=0;
-  var flipset;
+  var f;
 
   initTheme();
 
   function initTheme(){
-    flipset=new FlipSet();
+    f=new FlyThrough();
   }
   
   this.init=function(){
@@ -42,106 +42,138 @@ function ThemeFlipper1(name, w,h){
   };
 
   this.run=function(blobPos){
-    flipset.run(blobPos);
+    f.run();
   };
   
 
-  function FlipSet(){
-    var flippers=[];
-    var step=25;
-    var w,h;
-    w=floor(width/step);
-    h=floor(height/step);
-    for(var y=0; y<h; y++){
-      for(var x=0; x<w; x++){
-        flippers.push(new FlipSpot(step/2+step*x,step/2+step*y,step));
+  function FlyThrough(){
+    var s=[];
+    var numScreens=10;
+    var ind=numScreens;
+    var back=0;
+    var gap=1000;
+    var maxBack=-numScreens*gap;
+    var here=1000;
+    var span=1000;
+    var speed=500;
+    var offR=0.05;
+    var offS=0.05;
+    var aspect;
+    var spaceWidth;
+
+    spaceWidth=width*2;
+    aspect=width/height;
+    // s1=new Screen(-100);
+    for(var i=0; i<numScreens; i++){
+      back=i*-gap;
+      s[i]=new Screen(back, i);
+    }
+    
+    this.run=function(){
+      for(var i=s.length-1; i>=0; i--){
+        s[i].showFill(i);
+        if(!s[i].update(speed)){
+          s.splice(i,1);
+          back=here-((s.length+1)*gap);
+          s.push(new Screen(back,ind++))
+        }
       }
     }
-    
-    this.run=function(blobPos){
-      flippers.forEach(function(f){
-        blobPos.forEach(function(p){
-          f.check(p.x, p.y);
-        });
-        f.update();
-        f.show();
-      });
-    };
-    
-    this.move=function(){
-      flippers.forEach(function(f){
-        //f.update();
-        f.check(mouseX, mouseY);
-      });
-    };
 
-    function FlipSpot(x,y,size){
-      var flipping=false;
-      var flipInc=0.1;
-      var flipDir=1;
-      var flippage=-1;
-      var flipShade=1;
-      var r=size/2;
-      var baseCol=200;
-      var highCol=255;
-      var col=baseCol;
-      var a=random(PI);
-      var threshold=r*3;
+    function Screen(zPos, ind){
       
-      this.trigger=function(){
-        flipping=true;
-        flipDir=1;
-      };
+      var verts=[];
+      var numVerts=100;
+      var maxDisp=100;
+      var r=400;
+      var fg=random(150,200);
+      var home;
       
-      this.untrigger=function(){
-        flipping=true;
-        flipDir=-1;
-      };
+      build();
       
-      this.check=function(mx, my){
-        var d=dist(mx, my, x, y);
-        if(d<threshold){
-          col=highCol;
-          //flipShade=map(threshold-d,0,threshold,1,0);
-          this.trigger();
-        } else {
-          col=baseCol;
-          if(!flipping)
-            this.untrigger();
+      function build(){
+        home=createVector(0,0);
+        var xNow=0;
+        var xInc=spaceWidth/numVerts;
+        var nOffR=0;
+        var nOffRInc=offR;
+        var nOffz=offS*ind;
+        var v;
+        var endV;
+        v=createVector(xNow,0);
+        v.y=noise(nOffR, nOffz)*r;
+        nOffR+=nOffRInc;
+        xNow+=xInc;
+        verts[0]=v;
+        for(var i=1; i<numVerts; i++){
+          v=createVector(i*xInc,0);
+          v.y=noise(nOffR, nOffz)*r;
+          nOffR+=nOffRInc;
+          verts.push(v);
+          xNow+=xInc;
+          var close=numVerts-i;
+          verts.push(v);
         }
-      };
+        home=createVector(0, verts[floor(numVerts/2)].y);
+      }
       
-      this.update=function(){
-        this.check();
-        //console.log(flipping);
-        if(flipping){
-          var speed=flipDir>0?2:0.25;
-          flippage+=flipInc*flipDir*speed;
-          //console.log(flippage);
-          if(flippage<-1){
-            flippage=-1;
-            flipping=false;
-          } else if(flippage>1*flipShade){
-            //this.untrigger();
-            flippage=1;
-            flipping=false;
-          }
-        }
-      };
-      
-      this.show=function(){
+     
+      this.showFill=function(ind){
+        
         push();
-        translate(x,y);
-        rotate(a);
+        translate(width/2,-height/4);
+        translate(home.x, home.y);
         noStroke();
-        // stroke(col);
-        if(flippage<0) fill(0);
-        else fill(255);
-        ellipse(0,0,r*2*(1/flippage),r*2*flippage);
+        var f=map(ind,0,numScreens,255,30);
+        var a=map(zPos,-2000*numScreens,0,0,255);
+        fill(fg*f/100,f,0,a);
+        var scl=(maxBack-zPos)/maxBack;
+        scale(scl);
+        translate(-spaceWidth/2,0);
+        beginShape();
+        vertex(spaceWidth*5,height);
+        vertex(spaceWidth*5,height*4);
+        vertex(-spaceWidth*4,height*4);
+        vertex(-spaceWidth*4,height);
+        for(var i=0; i<verts.length; i++){
+          vertex(verts[i].x, verts[i].y*2, 0);
+        }
+        endShape(CLOSE);
+        
+        pop();
+        
+        push();
+        translate(width/2,height/2);
+        stroke(255,0,0);
+        noFill();
+        ellipse(home.x, home.y-height/2,15,15);
+        noStroke();
+        fill(0,fg*f/200,f,a);
+        scale(((maxBack-zPos)/maxBack)*0.7);
+        rotate(PI);
+        translate(-spaceWidth/2,height/2);
+        beginShape();    //vertex(spaceWidth,0);
+        vertex(spaceWidth*5,height);
+        vertex(spaceWidth*5,height*4);
+        vertex(-spaceWidth*4,height*4);
+        vertex(-spaceWidth*4,height);
+        for(var i=0; i<verts.length; i++){
+          vertex(verts[i].x, verts[i].y/2, 0);
+        }
+        endShape(CLOSE);
+       
         pop();
       };
+      
+      this.update=function(move){
+        zPos+=move;
+        return zPos<=here;
+      }
+      
+      this.getZ=function(){
+        return zPos;
+      }
     }
-    
   }
 
 }

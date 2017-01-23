@@ -10,7 +10,10 @@ var themeLoader={
 		func: GenericServerTheme,
 		ttl: 6
 	},
-	ThemeRepelWobble: {
+	ThemeFyThrough: {
+		func: GenericServerTheme,
+		ttl: 10
+	},	ThemeRepelWobble: {
 		func: GenericServerTheme,
 		ttl: 10
 	},
