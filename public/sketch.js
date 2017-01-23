@@ -167,7 +167,12 @@ function draw() {
     //noiseField.show();
     //noiseField.update();
     var blobPos=myBlobs.getPos();
-    if(themeRunner) themeRunner.run(blobPos);
+    if(themeRunner) {
+      if(themeRunner.run(blobPos)){
+        console.log("Theme calling end");
+        socket.emit('themeKiller',{id: id});
+      }
+    }
     showing=true;
   }
   runClicks();

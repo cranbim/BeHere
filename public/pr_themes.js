@@ -103,7 +103,10 @@ function ThemeRunner(w,h){
 	};
 
 	this.run=function(blobPos){
-		if(nowTheme) nowTheme.run(blobPos);
+    var themeEnding;
+		if(nowTheme) {
+      themeEnding=nowTheme.run(blobPos);
+    }
 		fill(200);
 		if(nowTheme) {
       textSize(20);
@@ -111,6 +114,7 @@ function ThemeRunner(w,h){
       fill(200,200);
       text(nowTheme.name,100,100);
     }
+    return themeEnding; //true; //themeRunning;
 	};
 }
 
@@ -1487,7 +1491,7 @@ function ThemeCracker(name, w,h){
   };
 
   this.run=function(blobPos){
-    cracker.run(blobPos);
+    return cracker.run(blobPos);
   };
 
 
@@ -1525,15 +1529,16 @@ function ThemeCracker(name, w,h){
           crack.createFragments();
         }
       }
-      if(count<500){
-        // r=map(count,100,200,r1,rt);
-        // g=map(count,100,200,g1,gt);
-        // b=map(count,100,200,b1,bt);
-        //background(r,g,b);
-      } else {
-        crack.generate();
-        count=0;
-      }
+      return (count>500);
+      // if(count<500){
+      //   // r=map(count,100,200,r1,rt);
+      //   // g=map(count,100,200,g1,gt);
+      //   // b=map(count,100,200,b1,bt);
+      //   //background(r,g,b);
+      // } else {
+      //   crack.generate();
+      //   count=0;
+      // }
     };
     
     function Crack(x,y,numSegs){

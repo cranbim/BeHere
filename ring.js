@@ -109,6 +109,10 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		}
 	}
 
+	this.themeKiller=function(data){
+		themes.clientDrivenSwitch();
+	};
+
 	this.logEcho=function(data){
 		var ds=findDevShadow(data.device);
 		if(ds){

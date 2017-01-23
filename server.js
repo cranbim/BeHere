@@ -67,6 +67,11 @@ function newConnection(socket){
   socket.on('blobUpdate',updateBlob);
   socket.on('detach', detacher);
   socket.on('echo', logEcho);
+  socket.on('themeKiller', themeKiller);
+
+  function themeKiller(data){
+  	ring.themeKiller(data);
+  }
 
   function logEcho(data){
 		ring.logEcho(data);

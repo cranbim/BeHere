@@ -70,6 +70,7 @@ function ThemeRunner(){
 	var nextTheme=0;
 	var nowTheme=null;
 	var currentThemeName="";
+	var changingTheme=false;
 
 	//var themeTTL=0;
 	console.log("Theme Runner started");
@@ -110,6 +111,14 @@ function ThemeRunner(){
 		return meta;
 	};
 
+	this.clientDrivenSwitch=function(){
+		if(!changingTheme){
+			console.log("Client forcing theme end");
+			changingTheme=true;
+			nowTheme.endMe();
+		}
+	};
+
 	this.run=function(){
 		if(!nowTheme){
 			switchTheme();
@@ -134,6 +143,7 @@ function ThemeRunner(){
 		currentThemeName=nowTheme.name;
 		console.log("Switch theme to" + currentThemeName);
 		nowTheme.init();
+		changingTheme=false;
 	}
 }
 
@@ -147,6 +157,10 @@ function GenericServerTheme(name, ttl){
 	this.init=function(){
 		this.ttl=ttl;
 		console.log("Theme "+this.id+" loaded and initialised");
+	};
+
+	this.endMe=function(){
+		this.ttl=0;
 	};
 
 	this.run=function(){
