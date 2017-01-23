@@ -131,7 +131,7 @@ function Parameters(){
 		var value=0;
 		
 		this.run=function(ringLengthPixels){
-			value-=120;
+			value-=250;
 			if(value>ringLengthPixels){
 				value=0;
 			}

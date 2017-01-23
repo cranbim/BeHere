@@ -3,6 +3,17 @@ module.exports={
 	ThemeRunner: ThemeRunner
 };
 
+var narrative1={
+	sequence: [
+		{name: 'ThemePlasma1', duration: 10, params:[]},
+		{name: 'ThemeFlyThrough', duration: 10, params:[]},
+		{name: 'ThemeTextScroller', duration: 20, params: []},
+		{name: 'ThemeRepelWobble', duration: 10, params:[]},
+		{name: 'ThemeCracker', duration: 20, params:[]},
+		{name: 'ThemeStrings', duration: 10, params: []}
+	]
+};
+
 var nextThemeId=0;
 
 var themeLoader={
@@ -10,7 +21,7 @@ var themeLoader={
 		func: GenericServerTheme,
 		ttl: 6
 	},
-	ThemeFyThrough: {
+	ThemeFlyThrough: {
 		func: GenericServerTheme,
 		ttl: 10
 	},	ThemeRepelWobble: {
@@ -60,21 +71,32 @@ var themeLoader={
 	ThemeCracker: {
 		func: GenericServerTheme,
 		ttl: 6
+	},
+	ThemeStrings: {
+		func: GenericServerTheme,
+		ttl: 6
+	},
+	ThemeTextScroller: {
+		func: GenericServerTheme,
+		ttl: 6
 	}
 };
 
 function ThemeRunner(){
 	var themes=[];
+	var narrative;
 	var lastTheme=-1;
 	var currentTheme=-1;
 	var nextTheme=0;
 	var nowTheme=null;
+	var actualTheme=null;
 	var currentThemeName="";
 	var changingTheme=false;
 
 	//var themeTTL=0;
 	console.log("Theme Runner started");
 	loadThemes();
+	loadNarrative();
 
 	function loadThemes(){
 		// themes[0]=new Theme(10);
@@ -83,6 +105,22 @@ function ThemeRunner(){
 		for(var key in themeLoader){
 			themes.push(new themeLoader[key].func(key, themeLoader[key].ttl));
 		}
+		console.log(themes);
+	}
+
+	function loadNarrative(){
+		narrative=narrative1.sequence;
+		console.log(narrative);
+	}
+
+	function getThemeByName(name){
+		console.log(name);
+		var found=themes.find(function(t){
+			return t.name===name;
+		});
+		console.log(found);
+		return found;
+		//handle unmatched name with a generic theme???
 	}
 
 	this.getThemes=function(){
@@ -115,15 +153,15 @@ function ThemeRunner(){
 		if(!changingTheme){
 			console.log("Client forcing theme end");
 			changingTheme=true;
-			nowTheme.endMe();
+			actualTheme.endMe();
 		}
 	};
 
 	this.run=function(){
-		if(!nowTheme){
+		if(!actualTheme){
 			switchTheme();
 		}
-		if(!nowTheme.run()){
+		if(!actualTheme.run()){
 			switchTheme();
 			return {
 				index: currentTheme,
@@ -134,7 +172,7 @@ function ThemeRunner(){
 		return {index: -1, name:"none"};
 	};
 
-	function switchTheme(){
+	function OLDswitchTheme(){
 		lastTheme=currentTheme;
 		currentTheme=nextTheme;
 		nextTheme++;
@@ -143,6 +181,19 @@ function ThemeRunner(){
 		currentThemeName=nowTheme.name;
 		console.log("Switch theme to" + currentThemeName);
 		nowTheme.init();
+		changingTheme=false;
+	}
+
+	function switchTheme(){
+		lastTheme=currentTheme;
+		currentTheme=nextTheme;
+		nextTheme++;
+		if(nextTheme>=narrative.length) nextTheme=0;
+		nowTheme=narrative[currentTheme];
+		currentThemeName=nowTheme.name;
+		console.log("Switch theme to" + currentThemeName);
+		actualTheme=getThemeByName(currentThemeName);
+		actualTheme.init(nowTheme.duration);
 		changingTheme=false;
 	}
 }
@@ -154,8 +205,8 @@ function GenericServerTheme(name, ttl){
 	this.ttl=ttl;
 	console.log("New Theme: "+this.id+" "+this.name);
 
-	this.init=function(){
-		this.ttl=ttl;
+	this.init=function(duration){
+		this.ttl=duration;
 		console.log("Theme "+this.id+" loaded and initialised");
 	};
 

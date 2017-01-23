@@ -11,7 +11,7 @@ function ThemeRunner(w,h){
 	var nextTheme=0;
 	var lastTheme=-1;
 	var nowTheme=null;
-
+  var absParamPos=0;
 	var themeTTL=0;
 
 
@@ -39,7 +39,9 @@ function ThemeRunner(w,h){
     ThemeTVStatic: ThemeTVStatic,
     ThemeHairBall: ThemeHairBall,
     ThemeSwisher: ThemeSwisher,
-    ThemeCracker: ThemeCracker
+    ThemeCracker: ThemeCracker,
+    ThemeStrings: ThemeStrings,
+    ThemeTextScroller: ThemeTextScroller,
   };
 
   
@@ -58,13 +60,17 @@ function ThemeRunner(w,h){
     console.log(themes);
 	}
 
+  this.setCurrentParams=function(absPos){
+    absParamPos=absPos;
+  }
+
   this.themeByName=function(themeName){
-    console.log("Matching"+themeName);
+    // console.log("Matching"+themeName);
     var t=themes.find(function(theme){
-      console.log(theme.name);
+      // console.log(theme.name);
       return theme.name===themeName;
     });
-    console.log(t);
+    // console.log(t);
     return t;
   };
 
@@ -102,10 +108,10 @@ function ThemeRunner(w,h){
 		console.log("ThemeRunner is OK");
 	};
 
-	this.run=function(blobPos){
+	this.run=function(blobPos, soundOn){
     var themeEnding;
 		if(nowTheme) {
-      themeEnding=nowTheme.run(blobPos);
+      themeEnding=nowTheme.run(blobPos, soundOn);
     }
 		fill(200);
 		if(nowTheme) {
@@ -1402,10 +1408,10 @@ function ThemeSparker(name, w,h){
 
   this.shutdown=function(){
     s.shutdown();
-  }
+  };
 
-  this.run=function(blobPos){
-    s.run(blobPos);
+  this.run=function(blobPos, soundOn){
+    s.run(blobPos, soundOn);
   };
 
   function Sparker(){
@@ -1420,9 +1426,12 @@ function ThemeSparker(name, w,h){
     this.shutdown=function(){
       noise1.stop();
       console.log("********* noise stopped");
-    }
+    };
 
-    this.run=function(points){
+    this.run=function(points, soundOn){
+      if(!soundOn){
+        noise1.stop();
+      }
       while (sparks.length<points.length){
         sparks.push(new Spark(20));
       }
@@ -2371,12 +2380,94 @@ function ThemeFlyThrough(name, w,h){
       this.update=function(move){
         zPos+=move;
         return zPos<=here;
-      }
+      };
       
       this.getZ=function(){
         return zPos;
-      }
+      };
     }
+  }
+
+}
+
+function ThemeTextScroller(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var ts;
+
+  initTheme();
+
+  function initTheme(){
+    ts=new CrapTextScroll();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    ts.run();
+  };
+  
+
+  function CrapTextScroll(){
+    var o=new OSB(w,h,"hello my friends, the time has come");
+    
+    this.run=function(){
+      var textPos=absParamPos;
+      var off=myStartX-textPos;
+      o.show(width, off);
+    };
+  }
+
+  function OSB(w,h,myText){
+    var scl=1;
+    var myH=floor(h*scl);
+    var myW=floor(w*scl);
+    textSize(myH*0.7);
+    var txtSize=floor(textWidth(myText));
+    //console.log(txtSize+" "+myW);
+    var buffSize=txtSize+myW*2;
+    //console.log(buffSize);
+    var offX=0;
+    
+    var buffer=createGraphics(buffSize, myH);
+    buffer.background(0);
+    buffer.fill(255);
+    buffer.noStroke(0);
+    buffer.textSize(myH*0.7);
+    buffer.text(myText,myW,myH*0.7);
+    
+    
+    this.show=function(chunkW, offX){
+      myOffX=floor(offX*scl)%buffSize;
+      while(myOffX<0){
+        myOffX+=buffSize;
+      }
+      console.log(buffSize+" "+offX+" "+myOffX);
+      var chunk;
+      var ch=floor(chunkW*scl);
+      var ch2;
+      if(myOffX+ch>buffSize){
+        ch2=myOffX+ch-buffSize;
+        ch=ch-ch2;
+        chunk=buffer.get(myOffX,0,ch,myH);
+        var chunk2=buffer.get(0,0,ch2,myH);
+        push();
+        scale(1/scl);
+        image(chunk,0,0);
+        image(chunk2,ch,0);
+        pop();
+
+      }else{
+        chunk=buffer.get(myOffX,0,ch,myH);
+        push();
+        scale(1/scl);
+        image(chunk,0,0);
+        pop();
+      }
+    };
   }
 
 }

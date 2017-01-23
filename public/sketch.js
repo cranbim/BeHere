@@ -19,6 +19,7 @@ var canSmallHeight=50;
 var canFullWidth=400;
 var canFullHeight=200;
 var lastTouch=0;
+var soundOn=false;
 
 
 //Core vars
@@ -55,6 +56,7 @@ var themeRunner;
 
 //Temporary variable
 var paramPos;
+var absParamPos;
 
 //need some sort of subfunction to setup some of these
 
@@ -168,7 +170,8 @@ function draw() {
     //noiseField.update();
     var blobPos=myBlobs.getPos();
     if(themeRunner) {
-      if(themeRunner.run(blobPos)){
+      themeRunner.setCurrentParams(absParamPos);
+      if(themeRunner.run(blobPos, soundOn)){
         console.log("Theme calling end");
         socket.emit('themeKiller',{id: id});
       }
@@ -218,6 +221,7 @@ function backGroundFromParams(){
     } else {
       paramPos=-10;
     }
+    absParamPos=newVal;
   }
   //console.log(">>>>"+paramPos);
   return bg;
