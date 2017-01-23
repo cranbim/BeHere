@@ -320,8 +320,10 @@ function dataRefreshPoll(){
 }
 
 function switchTheme(data){
-  themeRunner.switchThemeByIndex(data.index);
-  // themeRunner.switchThemeByName(data.name);
+  console.log("switching theme");
+  console.log(data);
+  // themeRunner.switchThemeByIndex(data.index);
+  themeRunner.switchThemeByName(data.name);
 }
 
 function notifyAttached(){

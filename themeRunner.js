@@ -110,24 +110,19 @@ function ThemeRunner(){
 		return meta;
 	};
 
-	// this.run=function(){
-	// 	if(!nowTheme){
-	// 		return -1;
-	// 	} else {
-	// 		return currentTheme;
-	// 	}
-	// };
-
 	this.run=function(){
 		if(!nowTheme){
 			switchTheme();
 		}
 		if(!nowTheme.run()){
 			switchTheme();
-			return currentTheme;
+			return {
+				index: currentTheme,
+				name: currentThemeName
+				};
 			// return currentThemeName;
 		}
-		return -1;
+		return {index: -1, name:"none"};
 	};
 
 	function switchTheme(){
