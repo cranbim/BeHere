@@ -213,12 +213,12 @@ function backGroundFromParams(){
     // if(abs(p2.stepPerMS)<0){
     //   newVal=0;
     // } else {
-      newVal=p2.last+ellapsedSinceRefresh*p2.stepPerMS;
+    newVal=p2.last+ellapsedSinceRefresh*p2.stepPerMS;
       //newVal=(p2.last+ellapsedSinceRefresh*paramStep);
     // }
     // if(newVal<0) newVal+=ringLength;
     newVal=ringLength+newVal%ringLength;
-    console.log(ringLength+" "+newVal);
+    //console.log(ringLength+" "+newVal);
     //var relMe=myStartX+wrapX;
     // bg=map(relParam,0,ringLength,0,255);
     bg=map(newVal,0,ringLength,0,255);

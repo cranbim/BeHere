@@ -5,10 +5,10 @@ module.exports={
 
 var narrative1={
 	sequence: [
-		{name: 'ThemePlasma1', duration: 20, params:[]},
-		//{name: 'ThemeFlyThrough', duration: 10, params:[]},
-		//{name: 'ThemeTextScroller', duration: 20, params: []},
-		//{name: 'ThemeRepelWobble', duration: 10, params:[]},
+		// {name: 'ThemePlasma1', duration: 20, params:[]},
+		// {name: 'ThemeFlyThrough', duration: 10, params:[]},
+		{name: 'ThemeTextScroller', duration: 20, params: []},
+		// {name: 'ThemeRepelWobble', duration: 10, params:[]},
 		// {name: 'ThemeCracker', duration: 20, params:[]},
 		// {name: 'ThemeStrings', duration: 10, params: []}
 	]

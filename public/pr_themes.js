@@ -2409,15 +2409,28 @@ function ThemeTextScroller(name, w,h){
   this.run=function(blobPos){
     ts.run();
   };
+
+  function getGlobalParamPos(span){
+    var relPos=0;
+    if(globalParams[2]){
+      var p2=globalParams[2];
+      var ellapsedSinceRefresh=(Date.now()-p2.myTimeStamp);
+      var newVal;
+      newVal=p2.last+ellapsedSinceRefresh*p2.stepPerMS;
+      relPos=span+newVal%span;
+    }
+    return relPos;
+  }
   
 
   function CrapTextScroll(){
     var o=new OSB(w,h,"hello my friends, the time has come");
     
     this.run=function(){
-      var textPos=absParamPos;
-      var off=myStartX-textPos;
-      o.show(width, off);
+      // var textPos=absParamPos;
+      // var off=myStartX-textPos;
+      // o.show(width, off);
+      o.show(w);
     };
   }
 
@@ -2440,12 +2453,15 @@ function ThemeTextScroller(name, w,h){
     buffer.text(myText,myW,myH*0.7);
     
     
-    this.show=function(chunkW, offX){
-      myOffX=floor(offX*scl)%buffSize;
+    this.show=function(chunkW){//(chunkW, offX){
+      var newRelPos=getGlobalParamPos(floor(buffSize/scl));
+      //var textPos=absParamPos;
+      var offX=myStartX-newRelPos;
+      myOffX=floor(offX*scl);//%buffSize;
       while(myOffX<0){
         myOffX+=buffSize;
       }
-      console.log(buffSize+" "+offX+" "+myOffX);
+      console.log(buffSize+" "+newRelPos+" "+offX+" "+myOffX);
       var chunk;
       var ch=floor(chunkW*scl);
       var ch2;
