@@ -132,14 +132,15 @@ function Parameters(){
 		
 		this.run=function(ringLengthPixels){
 			value-=250;
-			if(value>ringLengthPixels){
-				value=0;
-			}
-			if(value<0){
-				value=ringLengthPixels;
-			}
+			// if(value>ringLengthPixels){
+			// 	value=0;
+			// }
+			// if(value<0){
+			// 	value=ringLengthPixels;
+			// }
 			console.log("param loop: "+value);
 		};
+
 
 		this.get=function(){
 			return value;

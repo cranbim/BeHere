@@ -205,14 +205,20 @@ function backGroundFromParams(){
     // p2.count++;
     // var paramLerped=lerp(p2.last, p2.current, p2.count/30);
     // var relParam=paramLerped+wrapX;
-    var paramStep=(p2.current-p2.last)/(p2.currentTimeServer-p2.lastTimeServer)*333;//333 is ms per frame at 30fps
-    var ellapsedSinceRefresh=(Date.now()-p2.myTimeStamp)/333;
+    
+    // var paramStep=(p2.current-p2.last)/(p2.currentTimeServer-p2.lastTimeServer);//333 is ms per frame at 30fps
+    var ellapsedSinceRefresh=(Date.now()-p2.myTimeStamp);
+    //var paramStep=p2.stepPerFrame;
     var newVal;
-    if(paramStep>0){
-      newVal=0;
-    } else {
-      newVal=(p2.last+ellapsedSinceRefresh*paramStep);
-    }
+    // if(abs(p2.stepPerMS)<0){
+    //   newVal=0;
+    // } else {
+      newVal=p2.last+ellapsedSinceRefresh*p2.stepPerMS;
+      //newVal=(p2.last+ellapsedSinceRefresh*paramStep);
+    // }
+    // if(newVal<0) newVal+=ringLength;
+    newVal=ringLength+newVal%ringLength;
+    console.log(ringLength+" "+newVal);
     //var relMe=myStartX+wrapX;
     // bg=map(relParam,0,ringLength,0,255);
     bg=map(newVal,0,ringLength,0,255);
@@ -400,6 +406,11 @@ function handleParameters(data){
       globalParams[i].lastTimeServer=globalParams[i].currentTimeServer;
       globalParams[i].currentTimeServer=params.time;
       globalParams[i].myTimeStamp=Date.now();
+      globalParams[i].stepPerMS=(p-globalParams[i].last)/(params.time-globalParams[i].lastTimeServer);
+      // var p2=globalParams[2];
+      // var paramStep=(p2.current-p2.last)/(p2.currentTimeServer-p2.lastTimeServer)*333;//333 is ms per frame at 30fps
+      // var ellapsedSinceRefresh=(Date.now()-p2.myTimeStamp)/333;
+      // globalParams[i].stepPerFrame=paramStep;
     }else{
       globalParams[i]={
         lastTimeServer: params.time,
@@ -407,7 +418,8 @@ function handleParameters(data){
         myTimeStamp: Date.now(),
         last: p,
         current: p,
-        count:0
+        count:0,
+        stepPerMS:0
       };
     }
   });
