@@ -26,6 +26,7 @@ function ThemeRunner(w,h){
 	// };
 
   var themeLoader={
+    ThemeDefault: ThemeDefault,
     ThemePlasma1: ThemePlasma1, //Theme1,
     ThemeFlyThrough: ThemeFlyThrough,
     ThemeRepelWobble:  ThemeRepelWobble, //Theme2,
@@ -110,6 +111,12 @@ function ThemeRunner(w,h){
 
 	this.run=function(blobPos, soundOn){
     var themeEnding;
+    if(!nowTheme){
+      this.switchThemeByName('ThemeDefault');
+      console.log('Socket:');
+      console.log(socket);
+      socket.emit('gimmeTheme',{device: id});
+    }
 		if(nowTheme) {
       themeEnding=nowTheme.run(blobPos, soundOn);
     }
@@ -2422,10 +2429,14 @@ function ThemeTextScroller(name, w,h){
     return relPos;
   }
   
+  function mapParamToBuffSize(other){
+    var newVal=other+absParamPos%other;
+    return newVal;
+  }
 
   function CrapTextScroll(){
     var o=new OSB(w,h,"hello my friends, the time has come");
-    
+    // var o=new OSB(w,h,"hello...");
     this.run=function(){
       // var textPos=absParamPos;
       // var off=myStartX-textPos;
@@ -2441,7 +2452,7 @@ function ThemeTextScroller(name, w,h){
     textSize(myH*0.7);
     var txtSize=floor(textWidth(myText));
     //console.log(txtSize+" "+myW);
-    var buffSize=txtSize+myW*2;
+    var buffSize=txtSize;//+myW*2;
     //console.log(buffSize);
     var offX=0;
     
@@ -2450,19 +2461,24 @@ function ThemeTextScroller(name, w,h){
     buffer.fill(255);
     buffer.noStroke(0);
     buffer.textSize(myH*0.7);
-    buffer.text(myText,myW,myH*0.7);
+    buffer.text(myText,0,myH*0.7);
     
     
     this.show=function(chunkW){//(chunkW, offX){
-      var newRelPos=getGlobalParamPos(floor(buffSize/scl));
+       
+      var newRelPos=buffSize-mapParamToBuffSize(floor(buffSize/scl));
+      // var newRelPos=getGlobalParamPos(floor(buffSize/scl));
       //var textPos=absParamPos;
-      var offX=myStartX-newRelPos;
-      if(frameCount%10===0) console.log(">>>>> "+newRelPos);
+      var offX=newRelPos+myStartX;
+      // if(frameCount%10===0) console.log(">>>>> "+newRelPos);
       myOffX=floor(offX*scl);//%buffSize;
-      while(myOffX<0){
+      if(myOffX<0){
         myOffX+=buffSize;
       }
-      console.log(buffSize+" "+newRelPos+" "+offX+" "+myOffX);
+      if(myOffX>buffSize){
+        myOffX-=buffSize;
+      }
+      // console.log(buffSize+" "+newRelPos+" "+offX+" "+myOffX);
       var chunk;
       var ch=floor(chunkW*scl);
       var ch2;
@@ -2484,17 +2500,52 @@ function ThemeTextScroller(name, w,h){
         image(chunk,0,0);
         pop();
       }
-      var paramPos;
-      if(newRelPos>myStartX && newRelPos<myEndX){
-        paramPos=newRelPos-myStartX;
-      } else {
-        paramPos=-10;
-      }
+    };
+  }
+
+}
+
+function ThemeDefault(name, w,h){
+  this.id=nextThemeId++;
+  this.name=name;
+  //this.lifeSpan=0;
+  var f;
+
+  initTheme();
+
+  function initTheme(){
+    f=new Filler();
+  }
+  
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    f.run();
+  };
+
+  function Filler(){
+    var incX=3;
+    var incY=2;
+    var message="No Theme";
+    textSize(w/message.length);
+    var tw=textWidth(message);
+    var ts=tw/message.length;
+    var x=w/2-tw/2;
+    var y=h*0.7;
+    
+
+    this.run=function(){
       push();
-      stroke(0,255,255,150);
-      strokeWeight(2);
-      translate(paramPos,0);
-      line(0,0,0,height);
+      background(120,0,20);
+      textSize(ts);
+      fill(200,20,120);
+      text(message,x,y);
+      x+=incX;
+      y+=incY;
+      if(x<0 || x>(w-tw)) incX*=-1;
+      if(y<ts || y>height) incY*=-1;
       pop();
     };
   }

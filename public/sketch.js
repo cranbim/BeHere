@@ -162,7 +162,10 @@ function setupMeta(){
 
 function draw() {
   background(40);
-  backGroundFromParams();
+  //backGroundFromParams();
+  processParams();
+  mapParamToRing();
+  var test=mapParamToOther(ringLength);
   //backgroundDistanceMeter();
   var showing=false;
   if(deviceData.status=="attached"){
@@ -191,47 +194,43 @@ function draw() {
   text(parseInt(frameRate(),0),10,height-10);
   //send a heartbeat echo every 0.5-1 frame
   echoHeartBeat();
-  stroke(255,0,0,150);
+  stroke(255,0,0,255);
   strokeWeight(2);
-  translate(paramPos,0);
-  line(0,0,0,height);
+  // translate(paramPos,0);
+  line(paramPos,0,paramPos,height);
+  stroke(0,255,255);
+  line(test,0,test,height);
 }
 
-function backGroundFromParams(){
-  var wrapX=(ringLength-myStartX);
-  var bg=0;
+function processParams(){
   if(globalParams[2]){
     var p2=globalParams[2];
-    // p2.count++;
-    // var paramLerped=lerp(p2.last, p2.current, p2.count/30);
-    // var relParam=paramLerped+wrapX;
-    
-    // var paramStep=(p2.current-p2.last)/(p2.currentTimeServer-p2.lastTimeServer);//333 is ms per frame at 30fps
     var ellapsedSinceRefresh=(Date.now()-p2.myTimeStamp);
-    //var paramStep=p2.stepPerFrame;
-    var newVal;
-    // if(abs(p2.stepPerMS)<0){
-    //   newVal=0;
-    // } else {
-    newVal=p2.last+ellapsedSinceRefresh*p2.stepPerMS;
-      //newVal=(p2.last+ellapsedSinceRefresh*paramStep);
-    // }
-    // if(newVal<0) newVal+=ringLength;
-    newVal=ringLength+newVal%ringLength;
-    //console.log(ringLength+" "+newVal);
-    //var relMe=myStartX+wrapX;
-    // bg=map(relParam,0,ringLength,0,255);
-    bg=map(newVal,0,ringLength,0,255);
-    if(newVal>myStartX && newVal<myEndX){
-      paramPos=newVal-myStartX;
-    } else {
-      paramPos=-10;
-    }
-    absParamPos=newVal;
+    absParamPos=p2.last+ellapsedSinceRefresh*p2.stepPerMS;
   }
-  //console.log(">>>>"+paramPos);
-  return bg;
 }
+
+function mapParamToRing(){
+  var newVal;
+  newVal=ringLength+absParamPos%ringLength;
+  if(newVal>myStartX && newVal<myEndX){
+    paramPos=newVal-myStartX;
+  } else {
+    paramPos=-10;
+  }
+}
+
+function mapParamToOther(other){
+  var localPos;
+  var newVal=other+absParamPos%other+20;
+  if(newVal>myStartX && newVal<myEndX){
+    localPos=newVal-myStartX;
+  } else {
+    localPos=-10;
+  }
+  return localPos;
+}
+
 
 function backgroundDistanceMeter(){
   var lerpedPos=0;
@@ -423,7 +422,7 @@ function handleParameters(data){
       };
     }
   });
-  console.log(globalParams);
+  // console.log(globalParams);
 }
 
 function setStartX(data){

@@ -109,6 +109,14 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		}
 	}
 
+	this.gimmeTheme=function(data){
+		//get current active theme
+		var themeStatus=themes.getCurrentTheme();
+		//send back to requesting device
+		var ds=findDevShadow(data.device);
+		ds.session.socket.emit("themeSwitch", themeStatus);
+	};
+
 	this.themeKiller=function(data){
 		themes.clientDrivenSwitch();
 	};

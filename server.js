@@ -68,9 +68,14 @@ function newConnection(socket){
   socket.on('detach', detacher);
   socket.on('echo', logEcho);
   socket.on('themeKiller', themeKiller);
+  socket.on('gimmeTheme', gimmeTheme);
+
+  function gimmeTheme(data){
+		ring.gimmeTheme(data);
+  }
 
   function themeKiller(data){
-  	ring.themeKiller(data);
+		ring.themeKiller(data);
   }
 
   function logEcho(data){

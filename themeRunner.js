@@ -5,18 +5,22 @@ module.exports={
 
 var narrative1={
 	sequence: [
-		// {name: 'ThemePlasma1', duration: 20, params:[]},
-		// {name: 'ThemeFlyThrough', duration: 10, params:[]},
+		{name: 'ThemePlasma1', duration: 20, params:[]},
+		{name: 'ThemeFlyThrough', duration: 10, params:[]},
 		{name: 'ThemeTextScroller', duration: 20, params: []},
-		// {name: 'ThemeRepelWobble', duration: 10, params:[]},
-		// {name: 'ThemeCracker', duration: 20, params:[]},
-		// {name: 'ThemeStrings', duration: 10, params: []}
+		{name: 'ThemeRepelWobble', duration: 10, params:[]},
+		{name: 'ThemeCracker', duration: 20, params:[]},
+		{name: 'ThemeStrings', duration: 10, params: []}
 	]
 };
 
 var nextThemeId=0;
 
 var themeLoader={
+	ThemeDefault: {
+		func: GenericServerTheme,
+		ttl: 6
+	},
 	ThemePlasma1: {
 		func: GenericServerTheme,
 		ttl: 6
@@ -105,12 +109,12 @@ function ThemeRunner(){
 		for(var key in themeLoader){
 			themes.push(new themeLoader[key].func(key, themeLoader[key].ttl));
 		}
-		console.log(themes);
+		//console.log(themes);
 	}
 
 	function loadNarrative(){
 		narrative=narrative1.sequence;
-		console.log(narrative);
+		//console.log(narrative);
 	}
 
 	function getThemeByName(name){
@@ -170,6 +174,17 @@ function ThemeRunner(){
 			// return currentThemeName;
 		}
 		return {index: -1, name:"none"};
+	};
+
+	this.getCurrentTheme=function(){
+		if(actualTheme){
+			return {
+				index: currentTheme,
+				name: currentThemeName
+				};
+		}	else {
+			return {index: -1, name:"none"};
+		}
 	};
 
 	function OLDswitchTheme(){
