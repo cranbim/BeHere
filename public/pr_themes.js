@@ -2457,6 +2457,7 @@ function ThemeTextScroller(name, w,h){
       var newRelPos=getGlobalParamPos(floor(buffSize/scl));
       //var textPos=absParamPos;
       var offX=myStartX-newRelPos;
+      if(frameCount%10===0) console.log(">>>>> "+newRelPos);
       myOffX=floor(offX*scl);//%buffSize;
       while(myOffX<0){
         myOffX+=buffSize;
@@ -2483,6 +2484,18 @@ function ThemeTextScroller(name, w,h){
         image(chunk,0,0);
         pop();
       }
+      var paramPos;
+      if(newRelPos>myStartX && newRelPos<myEndX){
+        paramPos=newRelPos-myStartX;
+      } else {
+        paramPos=-10;
+      }
+      push();
+      stroke(0,255,255,150);
+      strokeWeight(2);
+      translate(paramPos,0);
+      line(0,0,0,height);
+      pop();
     };
   }
 
