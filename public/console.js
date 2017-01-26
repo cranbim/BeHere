@@ -3,9 +3,10 @@ var id;
 var beatnum;
 var consoleid;
 var lobbyDiv;
-var lobbyUL, themeUL;
+var lobbyUL, themeUL, narraUL;
 var ringDiv;
 var themeDiv;
+var narrDiv;
 var ringUL=null;
 var MetaDiv;
 var metaULreq, metaULgrant, metaULoffer, metaBlobs;
@@ -24,6 +25,7 @@ function setup() {
   ringDiv=select('#ringdevs');
   metaDiv=select('#metadata');
   themeDiv=select('#themes');
+  narraDiv=select('#narrative');
 }
 
 function connected(data){
@@ -40,6 +42,7 @@ function consoleData(data){
   var md=data.ringMeta;
   var bd=data.blobMeta;
   var td=data.themeMeta;
+  var nd=data.narrative;
   showLobbyData(ld);
   showRingData(rd);
   showRequestsMeta(md);
@@ -47,6 +50,7 @@ function consoleData(data){
   showOfferMeta(md);
   showBlobMeta(bd);
   showThemeMeta(td);
+  showNarrative(nd);
 }
 
   function showLobbyData(ld){
@@ -203,6 +207,30 @@ function consoleData(data){
     var el=createElement('li',devString);
     el.parent(themeUL);
   }
+
+  function showNarrative(nd){
+    if(!narraUL) {
+      narraUL=createElement('ul');
+      var el=createElement('li',"something");
+      el.parent(narraUL);
+      narraUL.parent(narraDiv);
+    }
+    var narraList=selectAll('li',narraUL);
+    narraList.forEach(function(li){
+      li.remove();
+    });
+    nd.themes.forEach(function(theme,i){
+      //devString=("00"+dev.position).slice(-3)+" "+dev.connection+" "+dev.socket;
+      devString=("0"+i).slice(-2)+" Theme: "+theme.name;
+      var el=createElement('li',devString);
+      el.parent(narraUL);
+
+    });
+    var devString="Current Theme: "+nd.current.name+", ttl: "+nd.current.ttl;
+    var el=createElement('li',devString);
+    el.parent(narraUL);
+  }
+
 
 function setID(data){
   console.log(data.id);

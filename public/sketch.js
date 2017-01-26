@@ -866,14 +866,14 @@ function StatusBar(start, end){
   
   var statusColors={
     request: {r: 20, g:80, b:255, m:"REQUEST" },
-    permit: {r: 255, g:20, b:150, m:"PERMIT" },
-    grant: {r: 125, g:20, b:255, m:"GRANT" },
+    permit: {r: 255, g:20, b:150, m:"ALLOW?" },
+    grant: {r: 125, g:20, b:255, m:"PERMIT" },
     offer: {r: 255, g:130, b:0, m:"OFFER" },
     accept: {r: 255, g:230, b:0, m:"ACCEPT" },
     accepted: {r: 0, g:255, b:50, m:"ACCEPTED" },
-    attach: {r: 0, g:180, b:0, m:"ATTACH" },
+    attach: {r: 0, g:180, b:0, m:"ATTACHING" },
     detach: {r: 255, g:0, b:0, m:"DETACH" },
-    attached: {r: 0, g:180, b:0, m:"ATTACHED" },
+    attached: {r: 0, g:180, b:0, m:"ATTACH HERE" },
     blob: {r: 200, g:80, b:20, m:"BLOB" },
     none: {r: 0, g:0, b:0, m:"NOTHING" }
   };
@@ -1161,11 +1161,11 @@ function renderOffers(){
       li.remove();
     });
     offers.forEach(function (offer){
-      var offerString="Offer to attach between "+offer.prev+" and "+offer.next+" expires in:"+(offer.expires-Date.now());
+      var offerString="Attach between"+offer.prev+" and "+offer.next+" exp:"+(offer.expires-Date.now());
       var li=createElement('li');
       li.parent(offersList);
       var el=createP(offerString);
-      var acceptOfferButton=createButton("accept offer");
+      var acceptOfferButton=createButton("Accept!");
       li.child(el);
       li.child(acceptOfferButton);
       acceptOfferButton.mouseClicked(handleAcceptOffer);

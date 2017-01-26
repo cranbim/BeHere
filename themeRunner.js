@@ -5,12 +5,12 @@ module.exports={
 
 var narrative1={
 	sequence: [
-		{name: 'ThemePlasma1', duration: 20, params:[]},
-		{name: 'ThemeFlyThrough', duration: 10, params:[]},
+		{name: 'ThemePlasma1', duration: 6, params:[]},
+		// {name: 'ThemeFlyThrough', duration: 10, params:[]},
 		{name: 'ThemeTextScroller', duration: 20, params: []},
-		{name: 'ThemeRepelWobble', duration: 10, params:[]},
-		{name: 'ThemeCracker', duration: 20, params:[]},
-		{name: 'ThemeStrings', duration: 10, params: []}
+		// {name: 'ThemeRepelWobble', duration: 10, params:[]},
+		// {name: 'ThemeCracker', duration: 20, params:[]},
+		// {name: 'ThemeStrings', duration: 10, params: []}
 	]
 };
 
@@ -149,6 +149,24 @@ function ThemeRunner(){
 		meta.current={
 			index: currentTheme,
 			ttl: nowTheme.ttl
+		};
+		return meta;
+	};
+
+	this.buildNarrativeData=function(){
+		var meta={};
+		meta.themes=[];
+		narrative.forEach(function(t){
+			var theme={
+				name: t.name,
+				duration: t.duration,
+				other: "stuff"
+			};
+			meta.themes.push(theme);
+		});
+		meta.current={
+			name: currentThemeName,
+			ttl: actualTheme.ttl
 		};
 		return meta;
 	};

@@ -144,7 +144,8 @@ function sendConsoleData(){
 			ring: buildJSONRing(ring),
 			ringMeta: ring.buildJSONRingMeta(),
 			blobMeta: ring.buildJSONBlobMeta(),
-			themeMeta: themes.buildMetaData()
+			themeMeta: themes.buildMetaData(),
+			narrative: themes.buildNarrativeData()
 		});
 	} else {
 		console.log("Can't send console data, no console connected");
