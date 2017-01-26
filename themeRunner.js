@@ -5,14 +5,16 @@ module.exports={
 
 var narrative1={
 	sequence: [
-		// {name: 'ThemePlasma1', duration: 6, params:[]},
-		// {name: 'ThemeFlyThrough', duration: 10, params:[]},
-		// {name: 'ThemeTextScroller', duration: 6, params: []},
-		// {name: 'ThemeRepelWobble', duration: 10, params:[]},
+		{name: 'ThemePlasma1', duration: 4, params:[]},
+		{name: 'ThemeFlyThrough', duration: 10, params:[]},
+		{name: 'ThemeTextScroller', duration: 6, params: []},
+		{name: 'ThemeRepelWobble', duration: 10, params:[]},
 		// {name: 'ThemeCracker', duration: 20, params:[]},
 		// {name: 'ThemeStrings', duration: 10, params: []}
-		{name: 'ThemeNoise1', duration : 10, params: []},
-		{name: 'ThemeBounceRings', duration : 10, params: []},
+		{name: 'ThemeSpark', duration : 4, params: []},
+		{name: 'ThemeDust', duration : 4, params: []},
+		{name: 'ThemeNoise1', duration : 4, params: []},
+		{name: 'ThemeBounceRings', duration : 4, params: []},
 	]
 };
 
@@ -30,7 +32,8 @@ var themeLoader={
 	ThemeFlyThrough: {
 		func: GenericServerTheme,
 		ttl: 10
-	},	ThemeRepelWobble: {
+	},	
+	ThemeRepelWobble: {
 		func: GenericServerTheme,
 		ttl: 10
 	},
@@ -51,6 +54,10 @@ var themeLoader={
 		ttl: 6
 	},
 	ThemeSparker: {
+		func: GenericServerTheme,
+		ttl: 6
+	},
+	ThemeSpark: {
 		func: GenericServerTheme,
 		ttl: 6
 	},

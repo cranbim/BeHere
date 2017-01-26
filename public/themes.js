@@ -18,22 +18,23 @@ function ThemeRunner(w,h){
 
   var themeLoader={
     ThemeDefault: ThemeDefault,
-    // ThemePlasma1: ThemePlasma1, //Theme1,
-    // ThemeFlyThrough: ThemeFlyThrough,
-    // ThemeRepelWobble:  ThemeRepelWobble, //Theme2,
+    ThemePlasma1: ThemePlasma1, //Theme1,
+    ThemeFlyThrough: ThemeFlyThrough,
+    ThemeRepelWobble:  ThemeRepelWobble, //Theme2,
     ThemeBounceRings: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
     // ThemeFlipper1: ThemeFlipper1,
     // ThemePsychaRing: ThemePsychaRing,
     // ThemeBounceChain: ThemeBounceChain,
+    ThemeSpark: ThemeSpark,
     // ThemeSparker: ThemeSparker,
-    // ThemeDust: ThemeDust,
+    ThemeDust: ThemeDust,
     ThemeNoise1: ThemeNoise1, //ThemeInstance, //
     // ThemeTVStatic: ThemeTVStatic,
     // ThemeHairBall: ThemeHairBall,
     // ThemeSwisher: ThemeSwisher,
     // ThemeCracker: ThemeCracker,
     // ThemeStrings: ThemeStrings,
-    // ThemeTextScroller: ThemeTextScroller,
+    ThemeTextScroller: ThemeTextScroller
   };
 
 
@@ -120,39 +121,51 @@ function ThemeRunner(w,h){
 // First Real Theme
 //*****************************
 
-function ThemeDust(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var dusts=[];
-  //var points=[{x:100,y:100},{x:200,y:100}];
+// function ThemeDust(name, w,h){
+//   this.id=nextThemeId++;
+//   this.name=name;
+//   //this.lifeSpan=0;
+//   var dusts=[];
+//   //var points=[{x:100,y:100},{x:200,y:100}];
 
-  initTheme();
+//   initTheme();
 
-  function initTheme(){
-    dusts=[];
-    //dusts[1]=new Dust();
-    // for(var i=0; i<numDust; i++){
-    //   dust[i]=new Mote(w/2, h/2);
-    // }
-  }
+//   function initTheme(){
+//     dusts=[];
+//     //dusts[1]=new Dust();
+//     // for(var i=0; i<numDust; i++){
+//     //   dust[i]=new Mote(w/2, h/2);
+//     // }
+//   }
   
-  this.init=function(){
-    initTheme();
-  };
+//   this.init=function(){
+//     initTheme();
+//   };
 
-  this.run=function(blobPos){
-		while(blobPos.length>dusts.length){
-			var d=new Dust();
-			dusts.push(d);
-		}
-		// blobPos.forEach(function(p,i){
-		// 	dusts[i].run(p);
-		// });
-		dusts.forEach(function(d,i){
-			d.run(blobPos[i]);
-		});
-  };
+//   this.run=function(blobPos){
+
+// 		// while(blobPos.length>dusts.length){
+//   //     var d=new Dust();
+//   //     dusts.push(d);
+//   //   }
+//   //   dusts.forEach(function(d,i){
+//   //     d.run(blobPos[i]);
+//   //   });
+//   };
+
+  function ThemeDust(w,h){
+    dusts=[];
+
+    this.run=function(blobPos){
+      while(blobPos.length>dusts.length){
+        var d=new Dust();
+        dusts.push(d);
+      }
+      dusts.forEach(function(d,i){
+        d.run(blobPos[i]);
+      });
+    }
+  }
 
   function Dust(){
 		var dust=[];
@@ -170,7 +183,7 @@ function ThemeDust(name, w,h){
 					dust.splice(i,1);
 				}
 			}
-};
+    };
   }
 
   function Mote(x,y){
@@ -219,42 +232,58 @@ function ThemeDust(name, w,h){
 
   }
   
-}
+// }
 
 //*****************************
 // Second Real Theme
 //*****************************
 
 
-function ThemeSpark(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var sparklers=[];
+// function ThemeSpark(name, w,h){
+//   this.id=nextThemeId++;
+//   this.name=name;
+//   //this.lifeSpan=0;
+//   var sparklers=[];
 
-  initTheme();
+//   initTheme();
 
-  function initTheme(){
-    sparklers=[];
-  }
+//   function initTheme(){
+//     sparklers=[];
+//   }
   
-  this.init=function(){
-    initTheme();
-  };
+//   this.init=function(){
+//     initTheme();
+//   };
 
-  this.run=function(blobPos){
-    while(blobPos.length>sparklers.length){
-      var s=new Sparkler();
-      sparklers.push(s);
-    }
-    // blobPos.forEach(function(p,i){
-    //  dusts[i].run(p);
-    // });
-    sparklers.forEach(function(s,i){
-      s.run(blobPos[i]);
-    });
-  };
+//   this.run=function(blobPos){
+//     while(blobPos.length>sparklers.length){
+//       var s=new Sparkler();
+//       sparklers.push(s);
+//     }
+//     // blobPos.forEach(function(p,i){
+//     //  dusts[i].run(p);
+//     // });
+//     sparklers.forEach(function(s,i){
+//       s.run(blobPos[i]);
+//     });
+//   };
 
+  function ThemeSpark(w,h){
+    sparklers=[];
+
+    this.run=function(blobPos){
+      while(blobPos.length>sparklers.length){
+        var s=new Sparkler();
+        sparklers.push(s);
+      }
+      // blobPos.forEach(function(p,i){
+      //  dusts[i].run(p);
+      // });
+      sparklers.forEach(function(s,i){
+        s.run(blobPos[i]);
+      });
+    };
+  }
 
 
   function Sparkler(){
@@ -347,7 +376,7 @@ function ThemeSpark(name, w,h){
       return ttl>0;
     };
   }
-}
+// }
 
 
 //*****************************
@@ -483,8 +512,8 @@ function ThemeInstance(name, w, h, instantiator){
   initTheme();
 
   function initTheme(){
-    console.log("!!!!");
-    console.log(instantiator);
+    // console.log("!!!!");
+    // console.log(instantiator);
     instance=new instantiator(w,h);
   }
 
@@ -1485,27 +1514,28 @@ function ThemeCracker(name, w,h){
 }
 
 
-function ThemePlasma1(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var plasma;
+// function ThemePlasma1(name, w,h){
+//   this.id=nextThemeId++;
+//   this.name=name;
+//   //this.lifeSpan=0;
+//   var plasma;
 
-  initTheme();
+//   initTheme();
 
-  function initTheme(){
-    plasma=new PlasmaBalls();
-  }
+//   function initTheme(){
+//     plasma=new PlasmaBalls();
+//   }
   
-  this.init=function(){
-    initTheme();
-  };
+//   this.init=function(){
+//     initTheme();
+//   };
 
-  this.run=function(blobPos){
-    plasma.run(blobPos);
-  };
+//   this.run=function(blobPos){
+//     plasma.run(blobPos);
+//   };
 
-  function PlasmaBalls(){
+  function ThemePlasma1(w,h){
+  // function PlasmaBalls(){
     var balls=[];
 
     this.run=function(blobPos){
@@ -1579,7 +1609,7 @@ function ThemePlasma1(name, w,h){
     }
   }
 
-}
+// }
 
 
 
@@ -1820,28 +1850,28 @@ function ThemeBounceChain(name, w,h){
 
 }
 
-function ThemeRepelWobble(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var bChain;
+// function ThemeRepelWobble(name, w,h){
+//   this.id=nextThemeId++;
+//   this.name=name;
+//   //this.lifeSpan=0;
+//   var bChain;
 
-  initTheme();
+//   initTheme();
 
-  function initTheme(){
-    bChain=new ChainSet();
-  }
+//   function initTheme(){
+//     bChain=new ChainSet();
+//   }
   
-  this.init=function(){
-    initTheme();
-  };
+//   this.init=function(){
+//     initTheme();
+//   };
 
-  this.run=function(blobPos){
-    bChain.run(blobPos);
-  };
+//   this.run=function(blobPos){
+//     bChain.run(blobPos);
+//   };
   
-
-  function ChainSet(){
+  function ThemeRepelWobble(w,h){
+  // function ChainSet(){
     var chains=[];
     var numChains=3;
     
@@ -1920,11 +1950,11 @@ function ThemeRepelWobble(name, w,h){
         vel.add(acc);
         vel.mult(drag);
         pos.add(vel);
-      }
+      };
       
       this.get=function(){
         return pos;
-      }
+      };
       
       this.show=function(){
         push();
@@ -1934,13 +1964,11 @@ function ThemeRepelWobble(name, w,h){
         // noStroke();
         ellipse(pos.x,pos.y,rad,rad);
         pop();
-      }
+      };
     }
   }
 
-
-
-}
+// }
 
 function ThemeFlipper1(name, w,h){
   this.id=nextThemeId++;
@@ -2065,28 +2093,28 @@ function ThemeFlipper1(name, w,h){
 
 }
 
-function ThemeFlyThrough(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var f;
+// function ThemeFlyThrough(name, w,h){
+//   this.id=nextThemeId++;
+//   this.name=name;
+//   //this.lifeSpan=0;
+//   var f;
 
-  initTheme();
+//   initTheme();
 
-  function initTheme(){
-    f=new FlyThrough();
-  }
+//   function initTheme(){
+//     f=new FlyThrough();
+//   }
   
-  this.init=function(){
-    initTheme();
-  };
+//   this.init=function(){
+//     initTheme();
+//   };
 
-  this.run=function(blobPos){
-    f.run();
-  };
+//   this.run=function(blobPos){
+//     f.run();
+//   };
   
-
-  function FlyThrough(){
+  function ThemeFlyThrough(w,h){
+  // function FlyThrough(){
     var s=[];
     var numScreens=10;
     var ind=numScreens;
@@ -2216,27 +2244,27 @@ function ThemeFlyThrough(name, w,h){
     }
   }
 
-}
+// }
 
-function ThemeTextScroller(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var ts;
+// function ThemeTextScroller(name, w,h){
+//   this.id=nextThemeId++;
+//   this.name=name;
+//   //this.lifeSpan=0;
+//   var ts;
 
-  initTheme();
+//   initTheme();
 
-  function initTheme(){
-    ts=new CrapTextScroll();
-  }
+//   function initTheme(){
+//     ts=new CrapTextScroll();
+//   }
   
-  this.init=function(){
-    initTheme();
-  };
+//   this.init=function(){
+//     initTheme();
+//   };
 
-  this.run=function(blobPos){
-    ts.run();
-  };
+//   this.run=function(blobPos){
+//     ts.run();
+//   };
 
   function getGlobalParamPos(span){
     var relPos=0;
@@ -2255,7 +2283,8 @@ function ThemeTextScroller(name, w,h){
     return newVal;
   }
 
-  function CrapTextScroll(){
+  function ThemeTextScroller(w,h){
+  // function CrapTextScroll(){
     var o=new OSB(w,h,"hello my friends, the time has come");
     // var o=new OSB(w,h,"hello...");
     this.run=function(){
@@ -2324,7 +2353,7 @@ function ThemeTextScroller(name, w,h){
     };
   }
 
-}
+// }
 
 function ThemeDefault(name, w,h){
   this.id=nextThemeId++;
