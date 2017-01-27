@@ -3,104 +3,14 @@ module.exports={
 	ThemeRunner: ThemeRunner
 };
 
-var narrative1={
-	sequence: [
-		{name: 'ThemePlasma1', duration: 4, params:[]},
-		{name: 'ThemeTVStatic', duration: 4, params:[]},
-		{name: 'ThemeSpark', duration : 4, params: []},
-		{name: 'ThemeStrings', duration: 4, params: []},
-		{name: 'ThemeHairBall', duration: 4, params:[]},
-		{name: 'ThemeFlyThrough', duration: 4, params:[]},
-		{name: 'ThemeFlipper1', duration: 4, params:[]},
-		{name: 'ThemePsychaRing', duration: 4, params:[]},
-		{name: 'ThemeBounceChain', duration: 4, params:[]},
-		{name: 'ThemeSparker', duration: 4, params:[]},
-		{name: 'ThemeSwisher', duration: 4, params:[]},
-		{name: 'ThemeTextScroller', duration: 4, params: []},
-		{name: 'ThemeRepelWobble', duration: 4, params:[]},
-		{name: 'ThemeCracker', duration: 4, params:[]},
-		{name: 'ThemeDust', duration : 4, params: []},
-		{name: 'ThemeNoise1', duration : 4, params: []},
-		{name: 'ThemeBounceRings', duration : 4, params: []},
-	]
-};
+var themeMaster=require('./themes.js');
+var narrative1=themeMaster.narrative1;
+var themeLoader=themeMaster.themeLoader;
 
 var nextThemeId=0;
 
-var themeLoader={
-	ThemeDefault: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemePlasma1: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeFlyThrough: {
-		func: GenericServerTheme,
-		ttl: 10
-	},	
-	ThemeRepelWobble: {
-		func: GenericServerTheme,
-		ttl: 10
-	},
-	ThemeBounceRings: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeFlipper1: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemePsychaRing: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeBounceChain: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeSparker: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeSpark: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeDust: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeNoise1:	{
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeTVStatic: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeHairBall:	{
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeSwisher:	{
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeCracker: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeStrings: {
-		func: GenericServerTheme,
-		ttl: 6
-	},
-	ThemeTextScroller: {
-		func: GenericServerTheme,
-		ttl: 6
-	}
-};
+var tm=require('./themes.js');
+
 
 function ThemeRunner(){
 	var themes=[];
@@ -115,17 +25,29 @@ function ThemeRunner(){
 
 	//var themeTTL=0;
 	console.log("Theme Runner started");
+
+	var themeMaster=new tm.ThemeMaster();
+	var narrative1=themeMaster.narrative1;
+	var themeLoader=themeMaster.themeLoader;
+
+	var nextThemeId=0;
+
 	loadThemes();
 	loadNarrative();
 
+	// function oldloadThemes(){
+	// 	for(var key in themeLoader){
+	// 		themes.push(new GenericServerTheme(key));
+	// 		// themes.push(new themeLoader[key].func(key, themeLoader[key].ttl));
+	// 	}
+	// 	console.log(themes);
+	// }
+
 	function loadThemes(){
-		// themes[0]=new Theme(10);
-		// themes[1]=new Theme(10);
-		// themes[2]=new Theme(10);
-		for(var key in themeLoader){
-			themes.push(new themeLoader[key].func(key, themeLoader[key].ttl));
-		}
-		//console.log(themes);
+		themeLoader.forEach(function(theme){
+			themes.push(new GenericServerTheme(theme));
+		});
+		console.log(themes);
 	}
 
 	function loadNarrative(){
@@ -221,17 +143,17 @@ function ThemeRunner(){
 		}
 	};
 
-	function OLDswitchTheme(){
-		lastTheme=currentTheme;
-		currentTheme=nextTheme;
-		nextTheme++;
-		if(nextTheme>=themes.length) nextTheme=0;
-		nowTheme=themes[currentTheme];
-		currentThemeName=nowTheme.name;
-		console.log("Switch theme to" + currentThemeName);
-		nowTheme.init();
-		changingTheme=false;
-	}
+	// function OLDswitchTheme(){
+	// 	lastTheme=currentTheme;
+	// 	currentTheme=nextTheme;
+	// 	nextTheme++;
+	// 	if(nextTheme>=themes.length) nextTheme=0;
+	// 	nowTheme=themes[currentTheme];
+	// 	currentThemeName=nowTheme.name;
+	// 	console.log("Switch theme to" + currentThemeName);
+	// 	nowTheme.init();
+	// 	changingTheme=false;
+	// }
 
 	function switchTheme(){
 		lastTheme=currentTheme;
@@ -248,10 +170,10 @@ function ThemeRunner(){
 }
 
 
-function GenericServerTheme(name, ttl){
+function GenericServerTheme(name){
 	this.id=nextThemeId++;
 	this.name=name;
-	this.ttl=ttl;
+	this.ttl=0;
 	console.log("New Theme: "+this.id+" "+this.name);
 
 	this.init=function(duration){
