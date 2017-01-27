@@ -22,18 +22,18 @@ function ThemeRunner(w,h){
     ThemeFlyThrough: ThemeFlyThrough,
     ThemeRepelWobble:  ThemeRepelWobble, //Theme2,
     ThemeBounceRings: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
-    // ThemeFlipper1: ThemeFlipper1,
-    // ThemePsychaRing: ThemePsychaRing,
-    // ThemeBounceChain: ThemeBounceChain,
+    ThemeFlipper1: ThemeFlipper1,
+    ThemePsychaRing: ThemePsychaRing,
+    ThemeBounceChain: ThemeBounceChain,
     ThemeSpark: ThemeSpark,
-    // ThemeSparker: ThemeSparker,
+    ThemeSparker: ThemeSparker,
     ThemeDust: ThemeDust,
     ThemeNoise1: ThemeNoise1, //ThemeInstance, //
-    // ThemeTVStatic: ThemeTVStatic,
-    // ThemeHairBall: ThemeHairBall,
-    // ThemeSwisher: ThemeSwisher,
-    // ThemeCracker: ThemeCracker,
-    // ThemeStrings: ThemeStrings,
+    ThemeTVStatic: ThemeTVStatic,
+    ThemeHairBall: ThemeHairBall,
+    ThemeSwisher: ThemeSwisher,
+    ThemeCracker: ThemeCracker,
+    ThemeStrings: ThemeStrings,
     ThemeTextScroller: ThemeTextScroller
   };
 
@@ -92,10 +92,6 @@ function ThemeRunner(w,h){
     nowTheme.init();
   };
 
-	// this.test=function(){
-	// 	console.log("ThemeRunner is OK");
-	// };
-
 	this.run=function(blobPos, soundOn){
     var themeEnding;
     if(!nowTheme){
@@ -115,43 +111,39 @@ function ThemeRunner(w,h){
 }
 
 
-
-
 //*****************************
-// First Real Theme
+// Theme Instantiator
 //*****************************
 
-// function ThemeDust(name, w,h){
-//   this.id=nextThemeId++;
-//   this.name=name;
-//   //this.lifeSpan=0;
-//   var dusts=[];
-//   //var points=[{x:100,y:100},{x:200,y:100}];
-
-//   initTheme();
-
-//   function initTheme(){
-//     dusts=[];
-//     //dusts[1]=new Dust();
-//     // for(var i=0; i<numDust; i++){
-//     //   dust[i]=new Mote(w/2, h/2);
-//     // }
-//   }
+function ThemeInstance(name, w, h, instantiator){
+  this.id=nextThemeId++;
+  this.name=name;
   
-//   this.init=function(){
-//     initTheme();
-//   };
+  var instance;
 
-//   this.run=function(blobPos){
+  initTheme();
 
-// 		// while(blobPos.length>dusts.length){
-//   //     var d=new Dust();
-//   //     dusts.push(d);
-//   //   }
-//   //   dusts.forEach(function(d,i){
-//   //     d.run(blobPos[i]);
-//   //   });
-//   };
+  function initTheme(){
+    // console.log("!!!!");
+    // console.log(instantiator);
+    instance=new instantiator(w,h);
+  }
+
+  this.init=function(){
+    initTheme();
+  };
+
+  this.run=function(blobPos){
+    instance.run(blobPos);
+  };
+
+}
+
+
+
+//*****************************
+// Theme Dust
+//*****************************
 
   function ThemeDust(w,h){
     dusts=[];
@@ -198,11 +190,7 @@ function ThemeRunner(w,h){
     var maxR=random(20,40)+10;
     var col=random(10)<4?255:180;
     vel.mult(initVel);
-    
-    // for(var i=0; i<numSprinkles; i++){
-      
-    // }
-    
+        
     this.update=function(){
       vel.mult(drag);
       vel.add(acc);
@@ -231,42 +219,11 @@ function ThemeRunner(w,h){
     };
 
   }
-  
-// }
 
 //*****************************
-// Second Real Theme
+// Theme Spark
 //*****************************
 
-
-// function ThemeSpark(name, w,h){
-//   this.id=nextThemeId++;
-//   this.name=name;
-//   //this.lifeSpan=0;
-//   var sparklers=[];
-
-//   initTheme();
-
-//   function initTheme(){
-//     sparklers=[];
-//   }
-  
-//   this.init=function(){
-//     initTheme();
-//   };
-
-//   this.run=function(blobPos){
-//     while(blobPos.length>sparklers.length){
-//       var s=new Sparkler();
-//       sparklers.push(s);
-//     }
-//     // blobPos.forEach(function(p,i){
-//     //  dusts[i].run(p);
-//     // });
-//     sparklers.forEach(function(s,i){
-//       s.run(blobPos[i]);
-//     });
-//   };
 
   function ThemeSpark(w,h){
     sparklers=[];
@@ -326,226 +283,180 @@ function ThemeRunner(w,h){
       if(abs(bt-b)<2) bt=random(100,255);
     }
 
-  }
 
-  function Spark(pos, travel, mr, mg, mb){
-    travel.normalize();
-    var rad=random(3,12);
-    travel.mult(rad/2);
-    var ttlMax=50;
-    var ttl=50;
-    var trail=[];
-    var maxTrail=10;
-    var width=4;
-    var alpha=255;
-    // r+=random(50,150);
-    // r=r%255;
-    // r=255;
-    
-    this.show=function(){
-      trail.forEach(function(spot){
-        push();
-        alpha=map(ttl,ttlMax,0,255,50);
-        fill(color(random(150,250),mg,mb,alpha));
-        //fill(255,alpha);
-        noStroke();
-        translate(spot.pos.x, spot.pos.y);
-        ellipse(0,0,rad,rad);
-        pop();
-      });
-    };
-    
-    this.run=function(){
-      var p=pos.copy();
-      var spot={
-        pos:p
+
+    function Spark(pos, travel, mr, mg, mb){
+      travel.normalize();
+      var rad=random(3,12);
+      travel.mult(rad/2);
+      var ttlMax=50;
+      var ttl=50;
+      var trail=[];
+      var maxTrail=10;
+      var width=4;
+      var alpha=255;
+      this.show=function(){
+        trail.forEach(function(spot){
+          push();
+          alpha=map(ttl,ttlMax,0,255,50);
+          fill(color(random(150,250),mg,mb,alpha));
+          //fill(255,alpha);
+          noStroke();
+          translate(spot.pos.x, spot.pos.y);
+          ellipse(0,0,rad,rad);
+          pop();
+        });
       };
-      trail.unshift(spot);
-      if(trail.length>maxTrail) trail.pop();
-      if(ttl<maxTrail){
-        trail.pop();
-      } else {
-        pos.add(travel);
-        if(random(10)<4){
-          var v=p5.Vector.random2D().mult(2);
-          pos.add(v);
+      
+      this.run=function(){
+        var p=pos.copy();
+        var spot={
+          pos:p
+        };
+        trail.unshift(spot);
+        if(trail.length>maxTrail) trail.pop();
+        if(ttl<maxTrail){
+          trail.pop();
+        } else {
+          pos.add(travel);
+          if(random(10)<4){
+            var v=p5.Vector.random2D().mult(2);
+            pos.add(v);
+          }
         }
-      }
-      //pos.x+=1;
-      ttl--;
-      return ttl>0;
-    };
+        ttl--;
+        return ttl>0;
+      };
+    }
   }
-// }
 
-
+  
 //*****************************
-// Third Real Theme
+// Theme HypnoRIng
 //*****************************
 
 
 function ThemeHypno(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var hypnos=[];
+  // this.id=nextThemeId++;
+  // this.name=name;
+  // //this.lifeSpan=0;
+  // var hypnos=[];
 
-  initTheme();
+  // initTheme();
 
-  function initTheme(){
-    hypnos=[];
-  }
+  // function initTheme(){
+  //   hypnos=[];
+  // }
   
-  this.init=function(){
-    initTheme();
-  };
+  // this.init=function(){
+  //   initTheme();
+  // };
 
-  this.run=function(blobPos){
-    while(blobPos.length>hypnos.length){
-      var h=new HypnoRing(w,h);
-      hypnos.push(h);
-    }
-    // blobPos.forEach(function(p,i){
-    //  dusts[i].run(p);
-    // });
-    hypnos.forEach(function(h,i){
-			if(blobPos[i]){
-				h.run(blobPos[i]);
-      }
-    });
-  };
+  // this.run=function(blobPos){
+  //   while(blobPos.length>hypnos.length){
+  //     var h=new HypnoRing(w,h);
+  //     hypnos.push(h);
+  //   }
+  //   // blobPos.forEach(function(p,i){
+  //   //  dusts[i].run(p);
+  //   // });
+  //   hypnos.forEach(function(h,i){
+		// 	if(blobPos[i]){
+		// 		h.run(blobPos[i]);
+  //     }
+  //   });
+  // };
 
 
-  function HypnoRing(w,h){
+  // function HypnoRing(w,h){
 
-    var rings=[];
-    var numRings;
-    var a=0;
-    var aInc;
-    var rGrow=4;
-    var gap=random(10,40);
-    var thick=5;
-    var rot=0;
-    var rotInc;
-    var running=true;
+  //   var rings=[];
+  //   var numRings;
+  //   var a=0;
+  //   var aInc;
+  //   var rGrow=4;
+  //   var gap=random(10,40);
+  //   var thick=5;
+  //   var rot=0;
+  //   var rotInc;
+  //   var running=true;
 
-    rotInc=PI/random(20,50);
-    numRings=floor(random(4,10));//w*1.4/2/gap;
-    aInc=PI/10;
-    for(var i=0; i<numRings; i++){
-      var r=new Ring(gap+i*gap, PI/numRings*i);
-      rings.push(r);
-    }
+  //   rotInc=PI/random(20,50);
+  //   numRings=floor(random(4,10));//w*1.4/2/gap;
+  //   aInc=PI/10;
+  //   for(var i=0; i<numRings; i++){
+  //     var r=new Ring(gap+i*gap, PI/numRings*i);
+  //     rings.push(r);
+  //   }
     
-    this.run=function(pos) {
-      rings.forEach(function(r,i){
-        r.show(pos.x, pos.y, rot+rotInc*i*10);
-        if(!r.grow(a)) r.reset();
-      });
-      rot+=rotInc;
-      if(running){
-        a+=aInc;
-      }
-    };
+  //   this.run=function(pos) {
+  //     rings.forEach(function(r,i){
+  //       r.show(pos.x, pos.y, rot+rotInc*i*10);
+  //       if(!r.grow(a)) r.reset();
+  //     });
+  //     rot+=rotInc;
+  //     if(running){
+  //       a+=aInc;
+  //     }
+  //   };
 
-    function Ring(rInit, phase){
-      var x=width/2;
-      var y=height/2;
-      var r=rInit;
+  //   function Ring(rInit, phase){
+  //     var x=width/2;
+  //     var y=height/2;
+  //     var r=rInit;
       
-      this.grow=function(a){
-        r+=sin(a+phase)*rGrow;//+0.5;
-        return (r<=width*1.4/2);
-      };
+  //     this.grow=function(a){
+  //       r+=sin(a+phase)*rGrow;//+0.5;
+  //       return (r<=width*1.4/2);
+  //     };
       
-      this.show=function(x, y, rot){
-        push();
-        translate(x,y);
-        stroke(200);
-        strokeWeight(thick);
-        noFill();
-        //ellipse(0,0,r*2,r*2);
-        myRing(0,0,r,rot);
-        pop();
-      };
+  //     this.show=function(x, y, rot){
+  //       push();
+  //       translate(x,y);
+  //       stroke(200);
+  //       strokeWeight(thick);
+  //       noFill();
+  //       //ellipse(0,0,r*2,r*2);
+  //       myRing(0,0,r,rot);
+  //       pop();
+  //     };
       
-      this.reset=function(){
-        r=gap;
-      };
-    }
+  //     this.reset=function(){
+  //       r=gap;
+  //     };
+  //   }
 
-    function myRing(x,y,r,rot){
-      var segs=40;
-      var maxThick=10;
-      var aInc=TWO_PI/segs;
-      var a=0;//TWO_PI;
-      push();
-      translate(x,y);
-      rotate(rot);
-      //var px=0; var py=0;
-      var px=cos(a)*r;
-      var py=sin(a)*r;
-      for(var i=0; i<segs; i++){
-        a+=aInc;
-        var rx=cos(a)*r;
-        var ry=sin(a)*r;
-        strokeWeight((sin(a)*maxThick+maxThick+1)*r/width*2);
-        line(px,py,rx,ry);
-        px=rx;
-        py=ry;
-      }
-      pop();
-    }
-  }
+  //   function myRing(x,y,r,rot){
+  //     var segs=40;
+  //     var maxThick=10;
+  //     var aInc=TWO_PI/segs;
+  //     var a=0;//TWO_PI;
+  //     push();
+  //     translate(x,y);
+  //     rotate(rot);
+  //     //var px=0; var py=0;
+  //     var px=cos(a)*r;
+  //     var py=sin(a)*r;
+  //     for(var i=0; i<segs; i++){
+  //       a+=aInc;
+  //       var rx=cos(a)*r;
+  //       var ry=sin(a)*r;
+  //       strokeWeight((sin(a)*maxThick+maxThick+1)*r/width*2);
+  //       line(px,py,rx,ry);
+  //       px=rx;
+  //       py=ry;
+  //     }
+  //     pop();
+  //   }
+  // }
 }
 
+
+
+
 //*****************************
-// Forth Real Theme
+// Theme Noise1
 //*****************************
-
-function ThemeInstance(name, w, h, instantiator){
-  this.id=nextThemeId++;
-  this.name=name;
-  
-  var instance;
-
-  initTheme();
-
-  function initTheme(){
-    // console.log("!!!!");
-    // console.log(instantiator);
-    instance=new instantiator(w,h);
-  }
-
-  this.init=function(){
-    initTheme();
-  };
-
-  this.run=function(blobPos){
-    instance.run(blobPos);
-  };
-
-}
-
-// function ThemeNoise1(name, w,h){
-//   this.id=nextThemeId++;
-//   this.name=name;
-//   //this.lifeSpan=0;
-//   var noiseSet;
-
-//   initTheme();
-
-//   function initTheme(){
-//     noiseSet=new NoiseStripes();
-//   }
-  
-//   this.init=function(){
-//     initTheme();
-//   };
-
-//   this.run=function(blobPos){
-//     noiseSet.run(blobPos);
-//   };
 
 
   function ThemeNoise1(w,h){
@@ -714,34 +625,11 @@ function ThemeInstance(name, w, h, instantiator){
       };
     }
   }
-// }
 
 //*****************************
-// Forth Real Theme
+// ThemeBounceRings
 //*****************************
 
-
-// function ThemeBounceRings(name, w,h){
-//   this.id=nextThemeId++;
-//   this.name=name;
-//   //this.lifeSpan=0;
-//   var ringSet;
-//   // var aMaster=0;
-//   // var aMInc=PI/500;
-
-//   initTheme();
-
-//   function initTheme(){
-//     ringSet=new RingSet();
-//   }
-  
-//   this.init=function(){
-//     initTheme();
-//   };
-
-//   this.run=function(blobPos){
-//     ringSet.run(blobPos);
-//   };
 
   function ThemeBounceRings(w,h){
 
@@ -750,12 +638,7 @@ function ThemeInstance(name, w, h, instantiator){
     var count=40;
     var thick=1;
 
-    
-    // bouncers[0]=new Bouncer(width/2, height/2, 300, 0.1, 0.9);
-    // bouncers[1]=new Bouncer(width/2, height/2, 50, 0.15, 0.95);
-    // bouncers[2]=new Bouncer(width/2, height/2, 100, 0.2, 0.85);
-  
-    this.add=function(x,y) {
+     this.add=function(x,y) {
       bouncers.push(new Bouncer(x,y,100,0.10,0.90));
     };
 
@@ -776,18 +659,8 @@ function ThemeInstance(name, w, h, instantiator){
           if(i===0) bouncers[j].update(blobPos[j]);
           bouncers[j].show(i*TWO_PI/count, thick);
         }
-        // b1.show(i*TWO_PI/count);
-        // b2.show(i*TWO_PI/count+TWO_PI/count/2);
-        // b3.show(i*TWO_PI/count);
-      }
+       }
       colorMode(RGB);
-      // b.show(0);
-      // b.show(PI);
-      
-      // b1.update();
-      // b2.update();
-      // b3.update();
-      // aMaster+=aMInc;
     };
   }
 
@@ -826,30 +699,15 @@ function ThemeInstance(name, w, h, instantiator){
     };
     
   }
-// }
 
-function ThemePsychaRing(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var pRing;
-
-  initTheme();
-
-  function initTheme(){
-    pRing=new PsychaRing();
-  }
-  
-  this.init=function(){
-    initTheme();
-  };
-
-  this.run=function(blobPos){
-    pRing.run(blobPos);
-  };
+//*****************************
+// ThemePsychaRing
+//*****************************
 
 
-  function PsychaRing(){
+  function ThemePsychaRing(w,h){
+
+  // function PsychaRing(){
     var numCircles=40;
     var shift;
     var newCount=0;
@@ -901,7 +759,7 @@ function ThemePsychaRing(name, w,h){
           }
         }
       }
-    }
+    // }
     
     
     function BrokenCircle(r, sw, numSegs, phase, startRad, maxRad){
@@ -941,27 +799,13 @@ function ThemePsychaRing(name, w,h){
 
 }
 
-function ThemeTVStatic(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var ts;
+//*****************************
+// ThemeTVStatic
+//*****************************
 
-  initTheme();
 
-  function initTheme(){
-    ts=new TVStatic();
-  }
-  
-  this.init=function(){
-    initTheme();
-  };
-
-  this.run=function(blobPos){
-    ts.run(blobPos);
-  };
-
-  function TVStatic(){
+  function ThemeTVStatic(w,h){
+  // function TVStatic(){
     var numStrikes=200;
     var swipe1=0;
     var swipeH=100;
@@ -1005,30 +849,12 @@ function ThemeTVStatic(name, w,h){
 
   }
 
-}
+//*****************************
+// ThemeHairBall
+//*****************************
 
-
-function ThemeHairBall(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var hb;
-
-  initTheme();
-
-  function initTheme(){
-    hb=new HairBall();
-  }
-  
-  this.init=function(){
-    initTheme();
-  };
-
-  this.run=function(blobPos){
-    hb.run(blobPos);
-  };
-
-  function HairBall(){
+  function ThemeHairBall(w,h){
+  // function HairBall(){
     var segs=[];
     var maxSegs=30;
     var len=10;
@@ -1179,30 +1005,15 @@ function ThemeHairBall(name, w,h){
       };
     }
   }
-}
 
-function ThemeSwisher(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var s;
 
-  initTheme();
+//*****************************
+// ThemeSwisher
+//*****************************
 
-  function initTheme(){
-    s=new SwisherSet();
-  }
-  
-  this.init=function(){
-    initTheme();
-  };
 
-  this.run=function(blobPos){
-    s.run(blobPos);
-  };
-
-  
-  function SwisherSet(){
+  function ThemeSwisher(w,h){
+  // function SwisherSet(){
     var threshold=height/2;
     var swishers=[];
     var numS=50;
@@ -1245,33 +1056,15 @@ function ThemeSwisher(name, w,h){
       pop();
     }
   }
-}
 
-function ThemeSparker(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var s;
 
-  initTheme();
+//*****************************
+// ThemeSparker
+//*****************************
 
-  function initTheme(){
-    s=new Sparker();
-  }
-  
-  this.init=function(){
-    initTheme();
-  };
 
-  this.shutdown=function(){
-    s.shutdown();
-  };
-
-  this.run=function(blobPos, soundOn){
-    s.run(blobPos, soundOn);
-  };
-
-  function Sparker(){
+  function ThemeSparker(w,h){
+  // function Sparker(){
     var sparks=[];
     var noise1=new p5.Noise('white');
     var env = new p5.Env();
@@ -1337,31 +1130,15 @@ function ThemeSparker(name, w,h){
       pop();
     };
   }
-}
 
 
-function ThemeCracker(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var cracker;
-
-  initTheme();
-
-  function initTheme(){
-    cracker=new Cracker();
-  }
-  
-  this.init=function(){
-    initTheme();
-  };
-
-  this.run=function(blobPos){
-    return cracker.run(blobPos);
-  };
+//*****************************
+// ThemeCracker
+//*****************************
 
 
-  function Cracker(){
+  function ThemeCracker(w,h){
+  // function Cracker(){
     var numSegs=100;
     var crack;
     var count=0;
@@ -1396,15 +1173,7 @@ function ThemeCracker(name, w,h){
         }
       }
       return (count>500);
-      // if(count<500){
-      //   // r=map(count,100,200,r1,rt);
-      //   // g=map(count,100,200,g1,gt);
-      //   // b=map(count,100,200,b1,bt);
-      //   //background(r,g,b);
-      // } else {
-      //   crack.generate();
-      //   count=0;
-      // }
+ 
     };
     
     function Crack(x,y,numSegs){
@@ -1511,28 +1280,12 @@ function ThemeCracker(name, w,h){
       }
     }
   }
-}
 
 
-// function ThemePlasma1(name, w,h){
-//   this.id=nextThemeId++;
-//   this.name=name;
-//   //this.lifeSpan=0;
-//   var plasma;
+//*****************************
+// ThemePlasma1
+//*****************************
 
-//   initTheme();
-
-//   function initTheme(){
-//     plasma=new PlasmaBalls();
-//   }
-  
-//   this.init=function(){
-//     initTheme();
-//   };
-
-//   this.run=function(blobPos){
-//     plasma.run(blobPos);
-//   };
 
   function ThemePlasma1(w,h){
   // function PlasmaBalls(){
@@ -1557,16 +1310,6 @@ function ThemeCracker(name, w,h){
     
     this.run=function(x,y){
       if(particles.length<numParticles){
-        // var d=dist(pmouseX, pmouseY,mouseX, mouseY);
-        // if(d<20){
-        //   if(radNow<radMax){
-        //     radNow++;
-        //   }
-        // } else {
-        //   if(radNow>50){
-        //     radNow-=5;
-        //   }
-        // }
         for(var i=0; i<5; i++){
           particles.push(new Particle(x,y, radNow));
         }
@@ -1609,31 +1352,14 @@ function ThemeCracker(name, w,h){
     }
   }
 
-// }
+
+//*****************************
+// ThemeStrings
+//*****************************
 
 
-
-function ThemeStrings(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var strings;
-
-  initTheme();
-
-  function initTheme(){
-    strings=new Strings();
-  }
-  
-  this.init=function(){
-    initTheme();
-  };
-
-  this.run=function(blobPos){
-    strings.run(blobPos);
-  };
-
-  function Strings(){
+  function ThemeStrings(w,h){
+  // function Strings(){
     var strings=[];
     var numStrings=16;
     var pitch;
@@ -1710,10 +1436,6 @@ function ThemeStrings(name, w,h){
           w=map(nTot,prox,0,1,10);
           p=map(nTot,prox,0,1,4);
           alph=map(nTot,prox/2,0,255,100);
-          // c=map(nTot,prox/2,0*nCount,255,0);
-          // w=map(nTot,prox/2,0,8,25);
-          // p=map(nTot,prox/2,0,1,8);
-          // alph=map(nTot,prox/2,0,255,100);
         }
         stroke(hue,c,255,alph);
         strokeWeight(w);
@@ -1735,32 +1457,15 @@ function ThemeStrings(name, w,h){
 
   }
 
-}
 
+//*****************************
+// ThemeBounceChain
+//*****************************
 
-
-function ThemeBounceChain(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var bChain;
-
-  initTheme();
-
-  function initTheme(){
-    bChain=new ChainSet();
-  }
   
-  this.init=function(){
-    initTheme();
-  };
+  function ThemeBounceChain(w,h){
 
-  this.run=function(blobPos){
-    bChain.run(blobPos);
-  };
-  
-
-  function ChainSet(){
+  // function ChainSet(){
     var chains=[];
     var numChains=3;
     
@@ -1819,15 +1524,7 @@ function ThemeBounceChain(name, w,h){
           } else d=0;
           dTot+=d;
         });
-        // var d=dist(spot.x, spot.y, x, y);
         acc=createVector(x,0);
-        // if(d<threshold){
-        //   d=(threshold-d)/2;
-        //   //var dir=spot.y<y?1:-1;
-        //   var dir=opposite;
-        //   //pos.y=d*dir;
-        //   acc.y=d*dir;
-        // } else acc.y=0;
         acc.y=dTot;
         acc.sub(pos);
         acc.mult(strength);
@@ -1848,27 +1545,11 @@ function ThemeBounceChain(name, w,h){
     }
   }
 
-}
 
-// function ThemeRepelWobble(name, w,h){
-//   this.id=nextThemeId++;
-//   this.name=name;
-//   //this.lifeSpan=0;
-//   var bChain;
+//*****************************
+// ThemeRepelWobble
+//*****************************
 
-//   initTheme();
-
-//   function initTheme(){
-//     bChain=new ChainSet();
-//   }
-  
-//   this.init=function(){
-//     initTheme();
-//   };
-
-//   this.run=function(blobPos){
-//     bChain.run(blobPos);
-//   };
   
   function ThemeRepelWobble(w,h){
   // function ChainSet(){
@@ -1968,30 +1649,14 @@ function ThemeBounceChain(name, w,h){
     }
   }
 
-// }
-
-function ThemeFlipper1(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var flipset;
-
-  initTheme();
-
-  function initTheme(){
-    flipset=new FlipSet();
-  }
-  
-  this.init=function(){
-    initTheme();
-  };
-
-  this.run=function(blobPos){
-    flipset.run(blobPos);
-  };
+//*****************************
+// ThemeFlipper
+//*****************************
 
 
-  function FlipSet(){
+  function ThemeFlipper1(w,h){
+
+  // function FlipSet(){
     var flippers=[];
     var step=50;
     var w,h;
@@ -2091,27 +1756,11 @@ function ThemeFlipper1(name, w,h){
     
   }
 
-}
 
-// function ThemeFlyThrough(name, w,h){
-//   this.id=nextThemeId++;
-//   this.name=name;
-//   //this.lifeSpan=0;
-//   var f;
+//*****************************
+// ThemeFlyThrough
+//*****************************
 
-//   initTheme();
-
-//   function initTheme(){
-//     f=new FlyThrough();
-//   }
-  
-//   this.init=function(){
-//     initTheme();
-//   };
-
-//   this.run=function(blobPos){
-//     f.run();
-//   };
   
   function ThemeFlyThrough(w,h){
   // function FlyThrough(){
@@ -2244,27 +1893,10 @@ function ThemeFlipper1(name, w,h){
     }
   }
 
-// }
+//*****************************
+// ThemeCrapTextScroller
+//*****************************
 
-// function ThemeTextScroller(name, w,h){
-//   this.id=nextThemeId++;
-//   this.name=name;
-//   //this.lifeSpan=0;
-//   var ts;
-
-//   initTheme();
-
-//   function initTheme(){
-//     ts=new CrapTextScroll();
-//   }
-  
-//   this.init=function(){
-//     initTheme();
-//   };
-
-//   this.run=function(blobPos){
-//     ts.run();
-//   };
 
   function getGlobalParamPos(span){
     var relPos=0;
@@ -2353,29 +1985,14 @@ function ThemeFlipper1(name, w,h){
     };
   }
 
-// }
 
-function ThemeDefault(name, w,h){
-  this.id=nextThemeId++;
-  this.name=name;
-  //this.lifeSpan=0;
-  var f;
+//*****************************
+// ThemeDefault
+//*****************************
 
-  initTheme();
 
-  function initTheme(){
-    f=new Filler();
-  }
-  
-  this.init=function(){
-    initTheme();
-  };
-
-  this.run=function(blobPos){
-    f.run();
-  };
-
-  function Filler(){
+  function ThemeDefault(w,h){
+  // function Filler(){
     var incX=3;
     var incY=2;
     var message="No Theme";
@@ -2400,4 +2017,4 @@ function ThemeDefault(name, w,h){
     };
   }
 
-}
+
