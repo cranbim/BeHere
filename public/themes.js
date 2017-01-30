@@ -330,7 +330,7 @@ function ThemeInstance(name, w, h, instantiator){
     }
   }
 
-  
+
 //*****************************
 // Theme HypnoRIng
 //*****************************
@@ -1917,7 +1917,7 @@ function ThemeHypno(name, w,h){
 
   function ThemeTextScroller(w,h){
   // function CrapTextScroll(){
-    var o=new OSB(w,h,"hello my friends, the time has come");
+    var o=new OSB(w,h,"My God! It's full of stars.... ");
     // var o=new OSB(w,h,"hello...");
     this.run=function(){
       // var textPos=absParamPos;

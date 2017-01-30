@@ -3,13 +3,13 @@ module.exports={
 	ThemeRunner: ThemeRunner
 };
 
-var themeMaster=require('./themes.js');
-var narrative1=themeMaster.narrative1;
-var themeLoader=themeMaster.themeLoader;
+//var themeMaster=require('./themes.js');
+// var narrative1=themeMaster.narrative1;
+// var themeLoader=themeMaster.themeLoader;
 
 var nextThemeId=0;
 
-var tm=require('./themes.js');
+var tm=require('./themeMaster.js');
 
 
 function ThemeRunner(){

@@ -20,6 +20,8 @@ var canFullWidth=400;
 var canFullHeight=200;
 var lastTouch=0;
 var soundOn=false;
+var marginLeft=50;
+var marginRight=0;
 
 
 //Core vars
