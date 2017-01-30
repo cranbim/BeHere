@@ -700,7 +700,8 @@ function MyBlobs(){
     blobs.forEach(function(b){
       bPos.push({
         x:b.pos.x-myStartX-marginLeft,
-        y:b.pos.y
+        y:b.pos.y,
+        vel: {x: b.vel.x, y: b.vel.y}
       });
     });
     return bPos;
@@ -718,6 +719,9 @@ function MyBlobs(){
     this.y=data.y;
     this.pos=createVector(this.x,this.y);
     this.vel=createVector(1,0);
+    if(data.vel){
+      this.vel=createVector(data.vel.x, data.vel.y);
+    }
     this.prevailing=createVector(1,0);
     var rr=0; var rg=255; var rb=150;
     var er=255; var eg=0; var eb=0;
@@ -769,11 +773,23 @@ function MyBlobs(){
       this.ttl--;
       if(this.x>=myEndX || this.x<myStartX){
         console.log("blob "+this.id+" just exited");
-        socket.emit('blobUpdate',{id:this.id, x:this.x, y:this.y, ttl:this.ttl});
+        socket.emit('blobUpdate',{
+          id:this.id,
+          x:this.x,
+          y:this.y,
+          vel: {x: this.vel.x, y: this.vel.y},
+          ttl:this.ttl
+        });
       }
       if(this.y<0) this.y=height;
       if(this.y>height) this.y=0;
-      if(this.ttl%30<1) socket.emit('blobUpdate',{id:this.id, x:this.x, y:this.y, ttl:this.ttl});
+      if(this.ttl%30<1) socket.emit('blobUpdate',{
+        id:this.id,
+         x:this.x,
+         y:this.y,
+         vel: {x: this.vel.x, y: this.vel.y},
+         ttl:this.ttl
+       });
       return this.x>=myStartX && this.x<myEndX && this.ttl>0;
     };
   }
@@ -960,78 +976,7 @@ function StatusBar(start, end){
   }
 }
 
-/*****************************************
-  Old status bar object constructor
-  ******************************************/
 
-// function NoStatusBar(){
-//   this.flashes=0;
-//   this.x=0;
-//   this.y=0;
-//   this.w=width;
-//   this.h=height;
-//   this.thick=50;
-//   this.thickStep=this.thick/5;
-//   var ttlMax=60;
-//   this.ttl=0;
-//   var r=20;
-//   var g=225;
-//   var b=100;
-//   var alpha=255;
-//   var statusColors={
-//     request: {r: 20, g:80, b:255 },
-//     permit: {r: 255, g:20, b:150 },
-//     grant: {r: 125, g:20, b:255 },
-//     offer: {r: 255, g:130, b:0 },
-//     accept: {r: 255, g:230, b:0 },
-//     accepted: {r: 0, g:255, b:50 },
-//     attach: {r: 0, g:180, b:0 },
-//     detach: {r: 255, g:0, b:0 },
-//     attached: {r: 0, g:180, b:0 },
-//     blob: {r: 200, g:80, b:20 },
-//     none: {r: 0, g:0, b:0 }
-//   };
-
-//   this.setSize=function(w,h){
-//     this.w=w;
-//     this.h=h;
-//   };
-
-//   this.run=function(){
-//     if(this.ttl>0){
-//       this.ttl--;
-//     } else {
-//       if(this.flashes>0){
-//         this.flashes--;
-//         this.ttl=ttlMax;
-//       }
-//     }
-//   };
-
-//   this.trigger=function(trigKey, count){
-//     this.flashes=count||0;
-//     this.ttl=ttlMax;
-//     if(!statusColors[trigKey]){
-//       trigKey="none";
-//     }
-//     r=statusColors[trigKey].r;
-//     g=statusColors[trigKey].g;
-//     b=statusColors[trigKey].b;
-//   };
-
-//   this.show=function(){
-//     if(this.ttl>0){
-//       for(var i=0; i<5; i++){
-//         alpha=map(this.ttl,ttlMax,0,(5-i)*50,50);
-//         noFill();
-//         stroke(r,g,b,alpha);
-//         strokeWeight(this.thickStep);
-//         rect(this.x+this.thickStep*(i+0.5),this.y+this.thickStep*(i+0.5),this.w-this.thickStep*(i+0.5)*2, this.h-this.thickStep*(i+0.5)*2);
-//         strokeWeight(1);
-//       }
-//     }
-//   };
-// }
 
 function Logger(){
   const CONSOLE=0;

@@ -339,7 +339,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	};
 
 	this.updateBlob=function(data){
-		var bData=this.blobList.updateBlob(data.id, data.x, data.y, data.ttl, this.ringLengthPixels);
+		var bData=this.blobList.updateBlob(data.id, data.x, data.y, data.vel, data.ttl, this.ringLengthPixels);
 		//need to also check wraparound on ring length
 		//console.log("blobData:"+bData);
 		sendBlobData(bData);//bData

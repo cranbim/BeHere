@@ -7,11 +7,11 @@ function BlobList(){
 	var nextBlobID=1000;
 	var blobs=[];
 
-	this.updateBlob=function(id, x, y, ttl, maxX){
+	this.updateBlob=function(id, x, y, vel, ttl, maxX){
 		//console.log("update blob "+id+" with x:"+x);
 		var b=this.findBlob(id);
 		if(b) {
-			b.updateVals(x,y, ttl);
+			b.updateVals(x,y, vel, ttl);
 			b.update(maxX);
 		} else {
 		}
@@ -26,7 +26,7 @@ function BlobList(){
 		});
 	};
 
-	this.newBlob=function(x,y,dev){
+	this.newBlob=function(x,y, dev){
 		var b=new Blob(x,y, dev);
 		blobs.push(b);
 		return [b.getPos()];
@@ -52,13 +52,15 @@ function BlobList(){
 	***********************************************/
 	function Blob(x, y, devid){
 		var ttl=1000;
+		var vel={};
 		var id=nextBlobID++;
 		// console.log("New Blob ${id} from ${devid} at ${x}, ${y}");
 		console.log("New Blob "+id+" from "+devid+" at "+x+", "+y);
 
-		this.updateVals=function(ux,uy,uTTL){
+		this.updateVals=function(ux,uy, uVel, uTTL){
 			x=ux;
 			y=uy;
+			vel=uVel;
 			ttl=uTTL;
 		};
 
@@ -81,7 +83,7 @@ function BlobList(){
 		};
 
 		this.getPos=function(){
-			return {x:x, y:y, id:id, ttl:ttl};
+			return {x:x, y:y, id:id, vel: vel, ttl:ttl};
 		};
 	}
 
