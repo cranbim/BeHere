@@ -20,8 +20,6 @@ var canFullWidth=400;
 var canFullHeight=200;
 var lastTouch=0;
 var soundOn=false;
-var marginLeft=50;
-var marginRight=0;
 
 
 //Core vars
@@ -35,6 +33,10 @@ var devWidth;
 var devHeight=200;
 var myStartX=null;
 var myEndX=null;
+var marginLeft=50;
+var marginRight=0;
+var dispStartX=0;
+var dispEndX=0;
 var myBlobs=new MyBlobs();
 var allBlobs=new AllBlobs();
 var statusBar; //stores the visual cue to actions
@@ -66,7 +68,7 @@ function setup() {
   //get display capabilities
   devWidth=windowWidth;
   devHeight=windowHeight;
-  myWidth=devWidth;
+  myWidth=devWidth+marginLeft+marginRight;
   canFullWidth=devWidth;
   canSmallWidth=devWidth;
   canFullHeight=devHeight;
@@ -131,7 +133,7 @@ function setupButtons(){
 function windowResized(){
   devWidth=windowWidth;
   devHeight=windowHeight;
-  myWidth=devWidth;
+  myWidth=devWidth+marginLeft+marginRight;
   canFullWidth=devWidth;
   canSmallWidth=devWidth;
   canFullHeight=devHeight;
@@ -142,10 +144,9 @@ function windowResized(){
 function switchFullScreen(){
   isFullScreen = fullscreen();
   fullscreen(!isFullScreen);
-
   devWidth=windowWidth;
   devHeight=windowHeight;
-  myWidth=devWidth;
+  myWidth=devWidth+marginLeft+marginRight;
   canFullWidth=devWidth;
   canSmallWidth=devWidth;
   canFullHeight=devHeight;
@@ -298,7 +299,7 @@ function touchEnded(){
       touchX<=width &&
       touchY>=0 &&
       touchY<=height){
-        newClick(touchX+myStartX, touchY);
+        newClick(touchX+marginLeft+myStartX, touchY);
     }
     lastTouch=Date.now();
   }
@@ -313,7 +314,7 @@ function mouseClicked(){
       mouseX<=width &&
       mouseY>=0 &&
       mouseY<=height){
-        newClick(mouseX+myStartX, mouseY);
+        newClick(mouseX+marginLeft+myStartX, mouseY);
     }
     lastTouch=Date.now();
   }
@@ -579,7 +580,7 @@ function runClicks(){
 }
 
 function newClick(x,y){
-  var c=new Click(x-myStartX,y);
+  var c=new Click(x-myStartX-marginLeft,y);
   clicks.push(c);
   //statusBar.trigger("blob",0,10);
   socket.emit("newBlob",{device:id, x:x, y:y});
@@ -698,7 +699,7 @@ function MyBlobs(){
     bPos=[];
     blobs.forEach(function(b){
       bPos.push({
-        x:b.pos.x-myStartX,
+        x:b.pos.x-myStartX-marginLeft,
         y:b.pos.y
       });
     });
@@ -740,7 +741,7 @@ function MyBlobs(){
     };
 
     this.show=function(){
-      this.bloboid.addPoint(this.x-myStartX, this.y);
+      this.bloboid.addPoint(this.x-myStartX-marginLeft, this.y);
       var ra=map(this.ttl, maxTTL, 100, 0, 255);
       var ga=255-ra;
       var ba=0;
@@ -1060,6 +1061,9 @@ function DeviceData(){
     fullDisplay: false,
     position: -1,
     myWidth: myWidth,
+    displayWidth: devWidth,
+    marginLeft: marginLeft,
+    marginRight: marginRight,
     myHeight: devHeight,
     startX: -1,
     endX: -1
