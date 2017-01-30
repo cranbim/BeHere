@@ -343,8 +343,18 @@ function switchTheme(data){
   themeRunner.switchThemeByName(data.name);
 }
 
-function notifyAttached(){
-  statusBar.trigger('attached',5,30);
+function notifyAttached(data){
+  if(data.next===id){
+    console.log(">>>> next");
+    statusBar.trigger('attachedNext',5,30);
+  } else if(data.prev===id){
+    console.log(">>>> prev");
+    statusBar.trigger('attachedPrev',5,30);
+  } else if(data.incoming===id){
+    console.log(">>>> Me joining");
+    statusBar.trigger('attachedMe',5,30);
+  }
+  // statusBar.trigger('attached',5,30);
 }
 
 function handleBlobData(data){
@@ -893,6 +903,9 @@ function StatusBar(start, end){
     attach: {r: 0, g:180, b:0, m:"ATTACHING" },
     detach: {r: 255, g:0, b:0, m:"DETACH" },
     attached: {r: 0, g:180, b:0, m:"ATTACH HERE" },
+    attachedPrev: {r: 0, g:180, b:0, m:">>>>>" },
+    attachedNext: {r: 0, g:180, b:0, m:"<<<<<" },
+    attachedMe: {r: 0, g:180, b:0, m:"^^^^^" },
     blob: {r: 200, g:80, b:20, m:"BLOB" },
     none: {r: 0, g:0, b:0, m:"NOTHING" }
   };

@@ -168,7 +168,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 
 	function notifyAttached(devs){
 		devs.forEach(function(dev){
-			findDevShadow(dev).session.socket.emit('notifyAttached',{});
+			findDevShadow(dev).session.socket.emit('notifyAttached',{incoming: devs[0], prev: devs[1], next:devs[2]});
 		});
 	}
 
