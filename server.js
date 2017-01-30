@@ -69,6 +69,11 @@ function newConnection(socket){
   socket.on('echo', logEcho);
   socket.on('themeKiller', themeKiller);
   socket.on('gimmeTheme', gimmeTheme);
+  socket.on('soundControl', soundControl);
+
+  function soundControl(data){
+  	io.sockets.emit('soundControl', data); 
+  }
 
   function gimmeTheme(data){
 		ring.gimmeTheme(data);

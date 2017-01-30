@@ -133,8 +133,8 @@ function ThemeInstance(name, w, h, instantiator){
     initTheme();
   };
 
-  this.run=function(blobPos){
-    instance.run(blobPos);
+  this.run=function(blobPos, soundOn){
+    instance.run(blobPos, soundOn);
   };
 
 }
@@ -1075,12 +1075,15 @@ function ThemeHypno(name, w,h){
 
     this.shutdown=function(){
       noise1.stop();
+      noise1.amp(0);
       console.log("********* noise stopped");
     };
 
     this.run=function(points, soundOn){
       if(!soundOn){
         noise1.stop();
+      } else {
+        noise1.start();
       }
       while (sparks.length<points.length){
         sparks.push(new Spark(20));

@@ -3,6 +3,7 @@ var id;
 var beatnum;
 var consoleid;
 var lobbyDiv;
+var buttonDiv;
 var lobbyUL, themeUL, narraUL;
 var ringDiv;
 var themeDiv;
@@ -10,6 +11,10 @@ var narrDiv;
 var ringUL=null;
 var MetaDiv;
 var metaULreq, metaULgrant, metaULoffer, metaBlobs;
+
+var state={
+  soundOn: false
+}
 
 function setup() {
   noCanvas();
@@ -26,6 +31,15 @@ function setup() {
   metaDiv=select('#metadata');
   themeDiv=select('#themes');
   narraDiv=select('#narrative');
+  buttonDiv=select('#button-bar');
+  var soundButton=createButton('Turn Sound On');
+  soundButton.parent(buttonDiv);
+  soundButton.mouseClicked(function(){
+    state.soundOn=!state.soundOn;
+    if(state.soundOn) soundButton.html('Turn Sound Off');
+    else soundButton.html('Turn Sound On');
+    socket.emit('soundControl', {soundOn: state.soundOn});
+  });
 }
 
 function connected(data){
@@ -201,7 +215,6 @@ function consoleData(data){
       devString=("0"+i).slice(-2)+" Theme: "+theme.id+" "+theme.name;
       var el=createElement('li',devString);
       el.parent(themeUL);
-
     });
     var devString="Current Theme: "+("0"+td.current.index).slice(-2)+", ttl: "+td.current.ttl;
     var el=createElement('li',devString);

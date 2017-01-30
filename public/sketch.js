@@ -18,6 +18,7 @@ var canSmallWidth=400;
 var canSmallHeight=50;
 var canFullWidth=400;
 var canFullHeight=200;
+var buttonBarHeight=25;
 var lastTouch=0;
 var soundOn=false;
 
@@ -105,7 +106,7 @@ function setupCanvas(){
 
 function changeCanvas(full){
   if(full){
-    resizeCanvas(canFullWidth, canFullHeight);
+    resizeCanvas(canFullWidth, canFullHeight-buttonBarHeight);
   } else {
     resizeCanvas(canSmallWidth, canSmallHeight);
   }
@@ -283,6 +284,7 @@ function connected(){
   socket.on('notifyAttached',notifyAttached);
   socket.on('notifyDetached',notifyDetached);
   socket.on('themeSwitch',switchTheme);
+  socket.on('soundControl',soundControl);
 }
 
 function disconnected(){
@@ -334,6 +336,11 @@ function dataRefreshPoll(){
   });
   checkOffers();
   renderOffers();
+}
+
+function soundControl(data){
+  console.log(data);
+  soundOn=data.soundOn;
 }
 
 function switchTheme(data){
@@ -1118,6 +1125,7 @@ function renderOffers(){
     if(!offersList){
       console.log("create offers list");
       offersList=createElement('ul');
+      offersList.addClass('simple-list');
       offersList.parent(offersDiv);
     }
     var oListTemp=selectAll('li',offersList);
@@ -1125,13 +1133,13 @@ function renderOffers(){
       li.remove();
     });
     offers.forEach(function (offer){
-      var offerString="Attach between"+offer.prev+" and "+offer.next+" exp:"+(offer.expires-Date.now());
+      var offerString="  Between"+offer.prev+" and "+offer.next+" exp:"+(offer.expires-Date.now());
       var li=createElement('li');
       li.parent(offersList);
       var el=createP(offerString);
-      var acceptOfferButton=createButton("Accept!");
-      li.child(el);
+      var acceptOfferButton=createButton("Accept Offer");
       li.child(acceptOfferButton);
+      li.child(el);
       acceptOfferButton.mouseClicked(handleAcceptOffer);
       acceptOfferButton.attribute("data-offer",offer.id);
     });
