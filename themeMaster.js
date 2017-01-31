@@ -7,8 +7,8 @@ function ThemeMaster(){
 
 	this.narrative1={
 		sequence: [
-			{name: 'ThemePlasma1', duration: 8, params:[]},
-			{name: 'ThemeTVStatic', duration: 8, params:[]},
+			// {name: 'ThemePlasma1', duration: 8, params:[]},
+			// {name: 'ThemeTVStatic', duration: 8, params:[]},
 			// {name: 'ThemeSpark', duration : 8, params: []},
 			// {name: 'ThemeStrings', duration: 8, params: []},
 			// {name: 'ThemeHairBall', duration: 8, params:[]},
@@ -18,8 +18,9 @@ function ThemeMaster(){
 			// {name: 'ThemeBounceChain', duration: 8, params:[]},
 			{name: 'ThemeSparker', duration: 8, params:[]},
 			// {name: 'ThemeSwisher', duration: 8, params:[]},
-			{name: 'ThemeTextScroller', duration: 15, params: []},
-			// {name: 'ThemeRepelWobble', duration: 8, params:[]},
+			// {name: 'ThemeTextScroller', duration: 15, params: []},
+			{name: 'ThemeTheyGrowBack', duration: 8, params:[]},
+			{name: 'ThemeRepelWobble', duration: 8, params:[]},
 			// {name: 'ThemeCracker', duration: 8, params:[]},
 			// {name: 'ThemeDust', duration : 8, params: []},
 			// {name: 'ThemeNoise1', duration : 8, params: []},
@@ -45,7 +46,8 @@ function ThemeMaster(){
 		"ThemeSwisher",
 		"ThemeCracker",
 		"ThemeStrings",
-		"ThemeTextScroller"
+		"ThemeTextScroller",
+		"ThemeTheyGrowBack"
 	];
 
 
