@@ -17,6 +17,7 @@ var nextAttachRequest=0;
 var nextAttachOffer=0;
 var heartbeat=1000;
 var consoleSession;
+var currentSoundControl=null;
 
 var themes=new themeRunner.ThemeRunner();
 var unattached=new ringMod.Ring("LOBBY", io); //ring to monitor unattached devices
@@ -72,6 +73,7 @@ function newConnection(socket){
   socket.on('soundControl', soundControl);
 
   function soundControl(data){
+  	currentSoundControl=data;
   	io.sockets.emit('soundControl', data); 
   }
 
@@ -114,6 +116,9 @@ function newConnection(socket){
   function joiner(data){
 		var newUnAttached=new ringMod.DeviceShadow(session, data.id, data.width, data.height);
 		unattached.joinNewDevShadow(newUnAttached);
+		if(currentSoundControl){
+			 io.sockets.emit('soundControl', currentSoundControl);
+		}
 	}
 
 	function unjoiner(data){

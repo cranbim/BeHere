@@ -42,11 +42,16 @@ function setup() {
   });
 }
 
+function sendSoundControl(){
+  socket.emit('soundControl', {soundOn: state.soundOn});
+}
+
 function connected(data){
   console.log("Console connected");
   consoleid.html(id);
   socket.on('heartbeat',beat);
   socket.on('consoleData',consoleData);
+  sendSoundControl();
 }
 
 function consoleData(data){

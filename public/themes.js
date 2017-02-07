@@ -35,7 +35,8 @@ function ThemeRunner(w,h){
     ThemeCracker: ThemeCracker,
     ThemeStrings: ThemeStrings,
     ThemeTextScroller: ThemeTextScroller,
-    ThemeTheyGrowBack: ThemeTheyGrowBack
+    ThemeTheyGrowBack: ThemeTheyGrowBack,
+    ThemeCountdown: ThemeCountdown
   };
 
 
@@ -79,7 +80,7 @@ function ThemeRunner(w,h){
 
   this.switchThemeByName=function(themeName){
     //exit old theme first
-    console.log("Switch to them: "+themeName);
+    console.log("Switch to theme: "+themeName);
     if(nowTheme){
       if(typeof(nowTheme.shutdown)!=='undefined'){
         console.log("Theme shutdown");
@@ -140,7 +141,163 @@ function ThemeInstance(name, w, h, instantiator){
 
 }
 
+//*****************************
+// ThemeCountdown
+//*****************************
 
+
+function ThemeCountdown(w,h){
+  var particles=[];
+  var numParticles=500;
+  var attracting=false;
+  var osb;
+  var counter=10;
+  var myFCount;
+  var changeCol=false;
+  var newCol=255;
+
+  for(var i=0; i<numParticles; i++){
+    particles[i]=new Particle();
+  }
+  osb=new OSB();
+  
+
+  this.run=function(bPos){
+    colorMode(HSB,255);
+    background((newCol+128)%255,110,100);
+    particles.forEach(function(p){
+      p.update(attracting);
+      if(changeCol) p.changeCol(newCol);
+      p.show(osb);
+    });
+    run();
+    osb.show();
+    colorMode(RGB);
+  };
+
+  function run(){
+    changeCol=false;
+    if(frameCount%60===0){
+      attracting=true;
+      newCol=random(255);
+      myFCount=20;
+    }
+    if(attracting && myFCount--<0){
+      attracting=false;
+      osb.drawNum(counter--);
+      changeCol=true;
+    }  
+  }
+
+
+  function Particle(){
+    var pos=createVector(random(w), random(h));
+    var noMove=createVector(0,0);
+    var vel=createVector(1,0);
+    var acc;
+    var move;
+    var c;
+    var col;
+    changeCol();
+
+    
+    this.update=function(attracting){
+      move=noMove;
+      c=osb.getPixelsXY(pos.x, pos.y);
+      acc=p5.Vector.random2D();
+      acc.mult(3);
+      if(attracting){
+        this.attract(w/2, h/2);
+      }
+      vel.add(move);
+      vel.add(acc);
+      vel.limit(c.r===255?20:8);
+      pos.add(vel);
+      edges();
+    }
+    
+    
+    this.attract=function(x,y){
+      move=createVector(x,y);
+      move.sub(pos);
+      move.mult(0.3);
+    }
+    
+    function edges(){
+      if(pos.x>w) pos.x=0;
+      if(pos.x<0) pos.x=w;
+      if(pos.y<0) pos.y=h;
+      if(pos.y>h) pos.y=0;
+    }
+    
+    this.changeCol=changeCol;
+    
+    function changeCol(ncol){
+      col=ncol;
+    }
+    
+    this.show=function(osb){
+      var rad=c.r===255?4:12
+      push();
+      //console.log(pos.x+" "+pos.y+" "+c.r);
+      // colorMode(HSB,255);
+      // if(c.r===255) noFill();
+      // else 
+      fill(col,200,200);
+      //fill(c.r===255?255:150,150);
+      noStroke();
+      ellipse(pos.x, pos.y, rad,rad);
+      // colorMode(RGB);
+      pop();
+    }
+  }
+
+  function OSB(){
+    var buffer=createGraphics(w, h);
+    var d=pixelDensity();
+    
+    buffer.background(255);
+    buffer.fill(0);
+    buffer.noStroke();
+    // buffer.textSize(height*0.7);
+    // var tw=buffer.textWidth("10");
+    // buffer.text("10",buffer.width/2-tw/2,buffer.height*0.7);
+    buffer.ellipse(w/2, h/2,200,200);
+    buffer.loadPixels();
+
+    this.getPixelsXY=function(x,y){
+      x=constrain(floor(x),0,w-1);
+      y=constrain(floor(y),0,h-1);
+      var pixelsOffset=(y*d*width*d+x*d)*4;
+      // var pixelsOffset=0;
+      return {
+        r:buffer.pixels[pixelsOffset+0],
+        g:buffer.pixels[pixelsOffset+1],
+        b:buffer.pixels[pixelsOffset+2],
+        a:buffer.pixels[pixelsOffset+3],
+      };
+    };
+
+    this.show=function(){
+      // scale(0.5);
+      //image(buffer,0,0);
+    };
+    
+    this.drawNum=function(num){
+      colorMode(RGB);
+      buffer.background(255);
+      buffer.fill(0);
+      buffer.stroke(0);
+      // buffer.noStroke();
+      buffer.textSize(800);//h*0.9);
+      var tw=buffer.textWidth(num);
+      buffer.text(num,buffer.w/2-tw/2,buffer.h*0.9);
+      buffer.ellipse(width/2, height/2,200,200);
+      buffer.loadPixels();
+    };
+    
+  }
+}
 
 //*****************************
 // Theme Dust
@@ -1147,7 +1304,7 @@ function ThemeTheyGrowBack(){
   const damping=0.98;
   const drag=0.99;
   var fallers=[];
-  const numFallers=500;
+  const numFallers=100;//200
   var knocks=[];
   var soundLoaded=0;
   var numSounds=15;
@@ -1159,7 +1316,7 @@ function ThemeTheyGrowBack(){
   }
 
   for(var i=0; i<numFallers; i++){
-    fallers.push(new Faller(random(width), random(-100,height-50), 10,100));
+    fallers.push(new Faller(random(width), random(-100,height-50), random(5,20),random(60,200)));
   }
   
   this.run=function(bPos, soundIsOn){
