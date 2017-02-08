@@ -43,6 +43,17 @@ function ThemeRunner(){
 	// 	console.log(themes);
 	// }
 
+	this.reloadThemes=function(){
+		tm=require('./themeMaster.js');
+		themeMaster=new tm.ThemeMaster();
+		narrative1=themeMaster.narrative1;
+		themeLoader=themeMaster.themeLoader;
+		loadThemes();
+		loadNarrative();
+		nextTheme=0;
+		actualTheme.endMe();
+	}
+
 	function loadThemes(){
 		themeLoader.forEach(function(theme){
 			themes.push(new GenericServerTheme(theme));
@@ -117,26 +128,40 @@ function ThemeRunner(){
 		}
 	};
 
-	this.run=function(){
+	this.run=function(heartbeat){
 		if(!actualTheme){
 			switchTheme();
 		}
 		if(!actualTheme.run()){
+			///at end of counter theme life
+			if(nowTheme.params.hasOwnProperty('beat')){
+				nowTheme.params.beat=true;
+			}
 			switchTheme();
+			//at start of counter theme life
+			if(nowTheme.params.hasOwnProperty('beat')){
+				if(nowTheme.params.beat===true) nowTheme.params.beat=heartbeat;
+			}
 			return {
 				index: currentTheme,
-				name: currentThemeName
+				name: currentThemeName,
+				params: nowTheme.params
 				};
 			// return currentThemeName;
 		}
 		return {index: -1, name:"none"};
 	};
 
-	this.getCurrentTheme=function(){
+	this.getCurrentTheme=function(heartbeat){
 		if(actualTheme){
+			//this is specific to one theme, so need away to embed it in theme def
+			if(nowTheme.params.hasOwnProperty('beat')){
+				if(nowTheme.params.beat===true) nowTheme.params.beat=heartbeat;
+			}
 			return {
 				index: currentTheme,
-				name: currentThemeName
+				name: currentThemeName,
+				params: nowTheme.params
 				};
 		}	else {
 			return {index: -1, name:"none"};
@@ -164,7 +189,7 @@ function ThemeRunner(){
 		currentThemeName=nowTheme.name;
 		console.log("Switch theme to" + currentThemeName);
 		actualTheme=getThemeByName(currentThemeName);
-		actualTheme.init(nowTheme.duration);
+		actualTheme.init(nowTheme.duration, nowTheme.params);
 		changingTheme=false;
 	}
 }
@@ -176,8 +201,12 @@ function GenericServerTheme(name){
 	this.ttl=0;
 	console.log("New Theme: "+this.id+" "+this.name);
 
-	this.init=function(duration){
+	this.init=function(duration, themeParams){
 		this.ttl=duration;
+		if(themeParams.beat){
+
+			//somehow send parameter to the client
+		}
 		console.log("Theme "+this.id+" loaded and initialised");
 	};
 

@@ -369,7 +369,7 @@ function switchTheme(data){
   console.log("switching theme");
   console.log(data);
   // themeRunner.switchThemeByIndex(data.index);
-  themeRunner.switchThemeByName(data.name);
+  themeRunner.switchThemeByName(data.name, data.params);
 }
 
 function notifyAttached(data){

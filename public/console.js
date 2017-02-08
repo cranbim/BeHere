@@ -4,6 +4,7 @@ var beatnum;
 var consoleid;
 var lobbyDiv;
 var buttonDiv;
+var buttonResetThemes;
 var lobbyUL, themeUL, narraUL;
 var ringDiv;
 var themeDiv;
@@ -32,6 +33,8 @@ function setup() {
   themeDiv=select('#themes');
   narraDiv=select('#narrative');
   buttonDiv=select('#button-bar');
+  buttonResetThemes=select('#resetThemes');
+  buttonResetThemes.mouseClicked(resetThemes);
   var soundButton=createButton('Turn Sound On');
   soundButton.parent(buttonDiv);
   soundButton.mouseClicked(function(){
@@ -40,6 +43,10 @@ function setup() {
     else soundButton.html('Turn Sound On');
     socket.emit('soundControl', {soundOn: state.soundOn});
   });
+}
+
+function resetThemes(){
+  socket.emit('resetThemes',{});
 }
 
 function sendSoundControl(){

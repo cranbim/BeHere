@@ -71,6 +71,11 @@ function newConnection(socket){
   socket.on('themeKiller', themeKiller);
   socket.on('gimmeTheme', gimmeTheme);
   socket.on('soundControl', soundControl);
+  socket.on('resetThemes', resetThemes);
+
+  function resetThemes(data){
+  	ring.resetThemes(data);
+  }
 
   function soundControl(data){
   	currentSoundControl=data;
@@ -114,7 +119,7 @@ function newConnection(socket){
   }
 
   function joiner(data){
-		var newUnAttached=new ringMod.DeviceShadow(session, data.id, data.width, data.height);
+		var newUnAttached=new ringMod.DeviceShadow(session, data.id, data.width, data.height, data.nickName);
 		unattached.joinNewDevShadow(newUnAttached);
 		if(currentSoundControl){
 			 io.sockets.emit('soundControl', currentSoundControl);

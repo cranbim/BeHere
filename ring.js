@@ -14,8 +14,9 @@ var nextRingID=0;
 /**********************************************
 		Constructor for Device Shadow Object
 ***********************************************/
-function DeviceShadow(session, devid, devWidth, devHeight){
+function DeviceShadow(session, devid, devWidth, devHeight, nickName){
 	this.session=session;
+	this.nickName=nickName;
 	this.devid=devid;
 	this.lastBeat=0;
 	this.devWidth=devWidth;
@@ -23,7 +24,7 @@ function DeviceShadow(session, devid, devWidth, devHeight){
 	this.startX=null;
 	this.endX=null;
 	this.suspended=false;
-	console.log("New device shadow "+this.session.id+", Device"+devid+", Width:"+devWidth+" Height:"+devHeight);
+	console.log("New device shadow "+this.session.id+", Device"+devid+", Width:"+devWidth+" Height:"+devHeight+" user:"+nickName);
 
 	this.requestForPermit=function(){
 		console.log(this.session.id+" received request for attach permit. Pass to device");
@@ -71,7 +72,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		this.blobList.run(this.ringLengthPixels);
 		sendBlobData();
 		checkShadowHealth(heartbeat);
-		var themeStatus=themes.run();
+		var themeStatus=themes.run(heartbeat);
 		// var newTheme=themeStatus.index;
 		// var newThemeName=themeStatus.name;//themes.run();
 		// //var oldTheme=themes.getCurrent();
@@ -109,9 +110,14 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		}
 	}
 
+	this.resetThemes=function(data){
+		themes.reloadThemes();
+	};
+
+
 	this.gimmeTheme=function(data){
 		//get current active theme
-		var themeStatus=themes.getCurrentTheme();
+		var themeStatus=themes.getCurrentTheme(this.heartbeat);
 		//send back to requesting device
 		var ds=findDevShadow(data.device);
 		ds.session.socket.emit("themeSwitch", themeStatus);

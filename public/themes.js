@@ -78,7 +78,7 @@ function ThemeRunner(w,h){
 		nowTheme.init();
 	};
 
-  this.switchThemeByName=function(themeName){
+  this.switchThemeByName=function(themeName, params){
     //exit old theme first
     console.log("Switch to theme: "+themeName);
     if(nowTheme){
@@ -91,7 +91,8 @@ function ThemeRunner(w,h){
     }
     nowTheme=this.themeByName(themeName);
     console.log("Current Theme: "+nowTheme.id+" "+nowTheme.name);
-    nowTheme.init();
+    // console.log(params);
+    nowTheme.init(params);
   };
 
 	this.run=function(blobPos, soundOn){
@@ -122,23 +123,26 @@ function ThemeRunner(w,h){
 function ThemeInstance(name, w, h, instantiator){
   this.id=nextThemeId++;
   this.name=name;
+  params={};
   
   var instance;
 
   initTheme();
 
-  function initTheme(){
+  function initTheme(paramsIn){
+    console.log("1) "+paramsIn);
     // console.log("!!!!");
     // console.log(instantiator);
     instance=new instantiator(w,h);
+    params=paramsIn;
   }
 
-  this.init=function(){
-    initTheme();
+  this.init=function(paramsIn){
+    initTheme(paramsIn);
   };
 
   this.run=function(blobPos, soundOn){
-    return instance.run(blobPos, soundOn);
+    return instance.run(blobPos, soundOn, params);
   };
 
 }
@@ -149,14 +153,18 @@ function ThemeInstance(name, w, h, instantiator){
 
 
 function ThemeCountdown(w,h){
+  var startBeat=deviceData.currentBeat;
+  var lastBeat=startBeat;
   var particles=[];
   var numParticles=500;
   var attracting=false;
   var osb;
-  var counter=10;
+  var counterInit=10;
+  var counter=99;
   var myFCount;
   var changeCol=false;
   var newCol=255;
+  var params={};
 
   for(var i=0; i<numParticles; i++){
     particles[i]=new Particle();
@@ -164,7 +172,15 @@ function ThemeCountdown(w,h){
   osb=new OSB();
   
 
-  this.run=function(bPos){
+  this.run=function(bPos, soundOn, paramsIn){
+    params=paramsIn;
+    if(counter===99){
+      if(params.hasOwnProperty('beat')){
+        console.log("!!!"+params.beat);
+        counter=counterInit-floor((lastBeat-params.beat)/2);
+      }
+    }
+    // console.log("Theme Params "+params);
     colorMode(HSB,255);
     background((newCol+128)%255,110,100);
     particles.forEach(function(p){
@@ -180,7 +196,10 @@ function ThemeCountdown(w,h){
 
   function run(){
     changeCol=false;
-    if(frameCount%60===0){
+    if(deviceData.currentBeat-lastBeat===2){
+      console.log(deviceData.currentBeat+" "+params.beat);
+      lastBeat=deviceData.currentBeat;
+    // if(frameCount%60===0){
       attracting=true;
       newCol=random(255);
       myFCount=20;
@@ -189,7 +208,7 @@ function ThemeCountdown(w,h){
       attracting=false;
       osb.drawNum(counter--);
       changeCol=true;
-    }  
+    }
   }
 
 
