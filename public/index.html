@@ -15,16 +15,34 @@
     <!--<style> body {padding: 0; margin: 0;} canvas {vertical-align: top;} </style> -->
   </head>
   <body>
+    <div id="titleBar">
+      <h1>PlasmaRing <span class="subtitle">people place device</span></h1>
+    </div>
     <div id="p5"></div>
     <div class="buttons_div clearfix" id="buttons">
       <button id="fullScreen">Full Screen</button>
-      <button id="join">Join</button>
+      
       <button id="attach">Attach</button>
       <button id="detach">Detach</button>
       <button id="permit">Permit</button>
+      <button id="join">Join</button>
+      <!-- <button id="reload">reload</button> -->
     </div>
-    <div class="buttons_div clearfix" id="attach_offers">
-        
+    <div class="buttons_div clearfix" id="attachoffers">
+    </div>
+    <div class="buttons_div clearfix" id="welcome">
+      <h2>Welcome to the Plasma Ring</h2>
+      <h4>Enter a name or nickname below</h4>
+      <h4>And then tap <strong>Join</strong></h4>
+      <p>Call me by: 
+        <input id="nickName" type="text" name="nickname" placeholder="My Nickname">
+      </p>
+      <button id="join2">Join</button>
+    </div>
+    <div class="buttons_div clearfix" id="attachme">
+      <h2>Welcome to the ring <strong><span id="myNickName">nobody</span></strong></h2>
+      <h4>To start or join the ring, press <strong>Attach</strong> and wait for an offer</h4>
+      <h4>Accept an offer and join where you see the other screens flashing</h4>
     </div>
     <div id="idbar">
       <h2><span id="status">Nothing</span></h2>
@@ -33,13 +51,13 @@
       <div>
         <!-- <h2>Status: <span id="idnum">999999</span> 
           <span id="status">Nothing</span> <span id="position">none</span></h2> -->
-        <h4 id="geometry">Nothing</h4>
+        <h3 id="geometry">Nothing</h3>
         
         
       </div>
       
       <div>
-        <h4><a href="console.html">Console View</a></h4>
+        <!-- <h4><a href="console.html">Console View</a></h4> -->
       </div>
     </div>  
   </body>

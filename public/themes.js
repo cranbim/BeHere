@@ -102,11 +102,13 @@ function ThemeRunner(w,h){
     }
 		if(nowTheme) {
       themeEnding=nowTheme.run(blobPos, soundOn);
-      fill(200);
-      textSize(20);
-      noStroke();
-      fill(200,200);
-      text(nowTheme.name,100,100);
+      if(!hideMeta){
+        fill(200);
+        textSize(20);
+        noStroke();
+        fill(200,200);
+        text(nowTheme.name,100,100);
+      }
     }
     return themeEnding; 
 	};
@@ -136,7 +138,7 @@ function ThemeInstance(name, w, h, instantiator){
   };
 
   this.run=function(blobPos, soundOn){
-    instance.run(blobPos, soundOn);
+    return instance.run(blobPos, soundOn);
   };
 
 }
@@ -173,6 +175,7 @@ function ThemeCountdown(w,h){
     run();
     osb.show();
     colorMode(RGB);
+    return(counter<0);
   };
 
   function run(){
@@ -195,6 +198,8 @@ function ThemeCountdown(w,h){
     var noMove=createVector(0,0);
     var vel=createVector(1,0);
     var acc;
+    var recentre=createVector(0,0);
+    var centre=createVector(w/2,h/2);
     var move;
     var c;
     var col;
@@ -211,6 +216,7 @@ function ThemeCountdown(w,h){
       }
       vel.add(move);
       vel.add(acc);
+      vel.add(recentre);
       vel.limit(c.r===255?20:8);
       pos.add(vel);
       edges();
@@ -224,10 +230,24 @@ function ThemeCountdown(w,h){
     }
     
     function edges(){
-      if(pos.x>w) pos.x=0;
-      if(pos.x<0) pos.x=w;
-      if(pos.y<0) pos.y=h;
-      if(pos.y>h) pos.y=0;
+      // if(pos.x>w) pos.x=0;
+      // if(pos.x<0) pos.x=w;
+      // if(pos.y<0) pos.y=h;
+      // if(pos.y>h) pos.y=0;
+      if(dist(pos.x, pos.y,w/2, h/2)>h/2){
+        recentre=p5.Vector.sub(centre,pos);
+        recentre.mult(100);
+      }else{
+        recentre=createVector(0,0);
+      }
+        // vel.mult(-1);
+        // var newPos=pos.copy();
+        // var centre=createVector(w/2,h/2);
+        // newPos.sub(centre);
+        // newPos.setMag(w/2);
+        // centre.add(newPos);
+        // pos=centre;
+      
     }
     
     this.changeCol=changeCol;
@@ -237,7 +257,7 @@ function ThemeCountdown(w,h){
     }
     
     this.show=function(osb){
-      var rad=c.r===255?4:12
+      var rad=c.r===255?w/100:w/30;
       push();
       //console.log(pos.x+" "+pos.y+" "+c.r);
       // colorMode(HSB,255);
@@ -259,40 +279,47 @@ function ThemeCountdown(w,h){
     buffer.background(255);
     buffer.fill(0);
     buffer.noStroke();
-    // buffer.textSize(height*0.7);
-    // var tw=buffer.textWidth("10");
-    // buffer.text("10",buffer.width/2-tw/2,buffer.height*0.7);
+    buffer.textSize(h*0.7);
+    var tw=buffer.textWidth("10");
+    buffer.text("10",buffer.width/2-tw/2,buffer.height*0.7);
     buffer.ellipse(w/2, h/2,200,200);
     buffer.loadPixels();
 
     this.getPixelsXY=function(x,y){
-      x=constrain(floor(x),0,w-1);
-      y=constrain(floor(y),0,h-1);
-      var pixelsOffset=(y*d*width*d+x*d)*4;
+      x=constrain(floor(x),0,buffer.width-1);
+      y=constrain(floor(y),0,buffer.height-1);
+      var pixelsOffset=(y*d*buffer.width*d+x*d)*4;
       // var pixelsOffset=0;
       return {
-        r:buffer.pixels[pixelsOffset+0],
-        g:buffer.pixels[pixelsOffset+1],
-        b:buffer.pixels[pixelsOffset+2],
-        a:buffer.pixels[pixelsOffset+3],
+        r:pixels[pixelsOffset+0],
+        g:pixels[pixelsOffset+1],
+        b:pixels[pixelsOffset+2],
+        a:pixels[pixelsOffset+3],
       };
     };
 
     this.show=function(){
-      // scale(0.5);
-      //image(buffer,0,0);
+      //scale(0.5);
+      // image(buffer,0,0);
+      // fill(255,0,0);
+      // textSize(50);
+      // var c=this.getPixelsXY(mouseX, mouseY);
+      // console.log(c);
+      // if(c)
+      //   text(c.r,20,50);
     };
     
     this.drawNum=function(num){
       colorMode(RGB);
       buffer.background(255);
       buffer.fill(0);
-      buffer.stroke(0);
-      // buffer.noStroke();
-      buffer.textSize(800);//h*0.9);
+      // buffer.stroke(0);
+      buffer.noStroke();
+      buffer.textSize(h*0.9);
       var tw=buffer.textWidth(num);
-      buffer.text(num,buffer.w/2-tw/2,buffer.h*0.9);
-      buffer.ellipse(width/2, height/2,200,200);
+      //buffer.text("Hi?",100,100);
+      buffer.text(num,buffer.width/2-tw/2,buffer.height*0.7);
+      //buffer.ellipse(width/2, height/2,200,200);
       buffer.loadPixels();
     };
     

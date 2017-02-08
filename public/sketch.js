@@ -5,14 +5,16 @@
 var p5div,p5canvas;
 var metaDiv;
 var idBar;
+var userNickName="unknown";
 var buttonBar;
 var geometry;
-var offersDiv;
-var button, attachButton, detachButton, permitButton, fsButton;
+var offersDiv, welcomeDiv, joinerDiv;
+var titleBar;
+var button, joinButton, attachButton, detachButton, permitButton, fsButton;
 var isFullScreen;
 var statusMessage, position, idnum;
 var offersList; //HTML offers
-var hideMeta=false;
+var hideMeta=true;
 var canvasFull=false;
 var canSmallWidth=400;
 var canSmallHeight=50;
@@ -21,6 +23,8 @@ var canFullHeight=200;
 var buttonBarHeight=25;
 var lastTouch=0;
 var soundOn=false;
+var pD;
+
 
 
 //Core vars
@@ -47,6 +51,7 @@ var ringLength=10;
 var ringDevs=1;
 var globalParams=[];
 var distances;
+var whenStarted;
 
 //noisefield vars - camn these be held elsewhere?
 var noisePerWorldPixel=0.005;
@@ -97,6 +102,7 @@ function setupCanvas(){
   p5div=select('#p5');
   //switch off retina capability to improve performance?
   pixelDensity(1);
+  pD=pixelDensity();
   p5canvas=createCanvas(canSmallWidth, canSmallHeight);
   p5canvas.parent(p5div);
   isFullScreen = fullscreen();
@@ -116,6 +122,7 @@ function changeCanvas(full){
 function setupButtons(){
   buttonBar=select('#buttons');
   button = select('#join');
+  joinButton = select('#join2');
   fsButton= select('#fullScreen');
   attachButton = select('#attach');
   attachButton.hide();
@@ -125,10 +132,15 @@ function setupButtons(){
   permitButton.hide();
   statusMessage = select('#status');
   button.mouseClicked(joinMe);
+  joinButton.mouseClicked(joinMe);
   fsButton.mouseClicked(switchFullScreen);
   attachButton.mouseClicked(attachMe);
   detachButton.mouseClicked(detachFromRing);
   permitButton.mouseClicked(permitAttacher);
+}
+
+function reloadPage(){
+  location.reload();
 }
 
 function windowResized(){
@@ -151,18 +163,23 @@ function switchFullScreen(){
   canFullWidth=devWidth;
   canSmallWidth=devWidth;
   canFullHeight=devHeight;
-
   changeCanvas(deviceData.fullDisplay);
 }
 
 function setupMeta(){
+  titleBar=select('#titleBar');
   idBar=select('#idbar');
   metaDiv=select('#meta');
   geometry = select('#geometry');
   position = select('#position');
-  offersDiv = select('#attach_offers');
+  offersDiv = select('#attachoffers');
+  offersDiv.hide();
   idnum = select('#idnum');
+  changeHTMLMetaDisplay();
+  welcomeDiv=select('#welcome');
+  joinerDiv=select('#attachme');
 }
+
 
 function draw() {
   background(40);
@@ -191,19 +208,24 @@ function draw() {
   // statusBar.run();
 
   //Helper, debug stuff on the display
-  stroke(0);
-  strokeWeight(2);
-  fill(255);
-  textSize(20);
-  text(parseInt(frameRate(),0),10,height-10);
+  if(!hideMeta){
+    stroke(0);
+    strokeWeight(2);
+    fill(255);
+    textSize(20);
+    text(parseInt(frameRate(),0),10,height-10);
+    //parameter tracking lines
+    stroke(255,0,0,255);
+    strokeWeight(2);
+    // translate(paramPos,0);
+    line(paramPos,0,paramPos,height);
+    stroke(0,255,255);
+    line(test,0,test,height);
+  }
   //send a heartbeat echo every 0.5-1 frame
   echoHeartBeat();
-  stroke(255,0,0,255);
-  strokeWeight(2);
-  // translate(paramPos,0);
-  line(paramPos,0,paramPos,height);
-  stroke(0,255,255);
-  line(test,0,test,height);
+
+
 }
 
 function processParams(){
@@ -548,6 +570,10 @@ function permitAttacher(){
 }
 
 function setID(data){
+  if(whenStarted){
+    reloadPage();
+  }
+  whenStarted=Date.now();
   id=data.id;
   deviceData.id=id;
   refreshHTMLStatus();
@@ -562,9 +588,12 @@ function requestForPermit(){
 //early implementation and seems to mix up the mvc
 function joinMe(){
   if(deviceData.status=="connected"){
+    userNickName=select('#nickName').value();
+    console.log("New user: "+userNickName);
+    select('#myNickName').html(userNickName);
     deviceData.status="joined";
     refreshHTMLStatus();
-    socket.emit('join',{id: id, width:myWidth, height:devHeight});
+    socket.emit('join',{id: id, width:myWidth, height:devHeight, nickName:userNickName});
     console.log("request join to unattached");
   }else if(deviceData.status=="joined"){
     deviceData.status="connected";
@@ -573,6 +602,7 @@ function joinMe(){
     console.log("request unjoin from unattached");
   }
 }
+
 
 function attachMe(){
   socket.emit('attach',{id: id});
@@ -739,11 +769,12 @@ function MyBlobs(){
     if(data.vel){
       this.vel=createVector(data.vel.x, data.vel.y);
     }
-    this.prevailing=createVector(1,0);
+    this.prevailing=createVector(5,0);
     var rr=0; var rg=255; var rb=150;
     var er=255; var eg=0; var eb=0;
-    var drag=0.90;
-    var steer=2;
+    var drag=0.98;
+    var lim=20;
+    var steer=5;
     var maxTTL=1000;
 
 
@@ -782,7 +813,7 @@ function MyBlobs(){
       this.vel.mult(drag);
       this.vel.add(acc);
       this.vel.add(this.prevailing);
-      this.vel.limit(10);
+      this.vel.limit(lim);
       this.pos.add(this.vel);
       this.x=this.pos.x;
       this.y=this.pos.y;
@@ -850,13 +881,15 @@ function MyBlobs(){
       var relPos=floor((x+myStartX)/ringLength*100);
       // console.log(myStartX+" "+x+" "+ringLength+" "+relPos);
       //fill(255);
-      textSize(14);
-      stroke(0);
-      strokeWeight(1);
-      fill(200,200);
-      text(id,x+15,y-15);
-      text((relPos+"%"),x+15,y);
-      text(ttl,x+15,y+15);
+      if(!hideMeta){
+        textSize(14);
+        stroke(0);
+        strokeWeight(1);
+        fill(200,200);
+        text(id,x+15,y-15);
+        text((relPos+"%"),x+15,y);
+        text(ttl,x+15,y+15);
+      }
       pop();
     };
   }
@@ -887,6 +920,7 @@ function StatusBar(start, end){
   var message="none";
   var flashes=0;
   var tPosX=100;
+  var messageSize;
 
   this.setValues=function(){
     inc=(end-start)/duration;
@@ -901,18 +935,18 @@ function StatusBar(start, end){
   this.setValues();
   
   var statusColors={
-    request: {r: 20, g:80, b:255, m:"REQUEST" },
-    permit: {r: 255, g:20, b:150, m:"ALLOW?" },
-    grant: {r: 125, g:20, b:255, m:"PERMIT" },
-    offer: {r: 255, g:130, b:0, m:"OFFER" },
-    accept: {r: 255, g:230, b:0, m:"ACCEPT" },
-    accepted: {r: 0, g:255, b:50, m:"ACCEPTED" },
-    attach: {r: 0, g:180, b:0, m:"ATTACHING" },
-    detach: {r: 255, g:0, b:0, m:"DETACH" },
-    attached: {r: 0, g:180, b:0, m:"ATTACH HERE" },
-    attachedPrev: {r: 0, g:180, b:0, m:">>>>>" },
-    attachedNext: {r: 0, g:180, b:0, m:"<<<<<" },
-    attachedMe: {r: 0, g:180, b:0, m:"^^^^^" },
+    request: {r: 20, g:80, b:255, m:"REQUEST", ms:0.2 },
+    permit: {r: 255, g:20, b:150, m:"ALLOW?", ms:0.2 },
+    grant: {r: 125, g:20, b:255, m:"PERMIT", ms:0.2 },
+    offer: {r: 255, g:130, b:0, m:"OFFER", ms:0.2 },
+    accept: {r: 255, g:230, b:0, m:"ACCEPT", ms:0.2 },
+    accepted: {r: 0, g:255, b:50, m:"ACCEPTED", ms:0.2 },
+    attach: {r: 0, g:180, b:0, m:"ATTACHING", ms:0.2 },
+    detach: {r: 255, g:0, b:0, m:"DETACH", ms:0.2 },
+    attached: {r: 0, g:180, b:0, m:"ATTACH HERE", ms:0.2 },
+    attachedPrev: {r: 255, g:255, b:255, m:"☛☛☛", ms:0.2 },
+    attachedNext: {r: 255, g:255, b:255, m:"☚☚☚", ms:0.2 },
+    attachedMe: {r: 255, g:255, b:255, m:"⬆︎⬆︎⬆︎", ms:0.2 },
     blob: {r: 200, g:80, b:20, m:"BLOB" },
     none: {r: 0, g:0, b:0, m:"NOTHING" }
   };
@@ -955,7 +989,7 @@ function StatusBar(start, end){
         //noStroke();
         stroke(0);
         strokeWeight(4);
-        textSize(this.w*0.2);
+        textSize(this.w*messageSize);
         text(message,this.w/2-tL/2,tPos);
         pos+=inc;
         tPos-=tSpeed;
@@ -981,6 +1015,7 @@ function StatusBar(start, end){
     b=statusColors[trigKey].b;
     duration=dur;
     message=statusColors[trigKey].m;
+    messageSize=statusColors[trigKey].ms;
     running=true;
     pos=start-10;
     tPos=this.h;
@@ -1049,14 +1084,25 @@ function DeviceData(){
 //*********************************
 
   function changeHTMLMetaDisplay(){
-    if(hideMeta) metaDiv.hide();
-    else metaDiv.show();
+    if(hideMeta){ 
+      metaDiv.hide();
+      idBar.hide();
+    }
+    else {
+      metaDiv.show();
+      idBar.show();
+    }
   }
 
 
   function refreshHTMLStatus(){
     if(deviceData.status=="nothing"){
+      titleBar.show();
+      offersDiv.hide();
+      welcomeDiv.hide();
+      joinerDiv.hide();
       deviceData.fullDisplay=false;
+      p5canvas.hide();
       statusMessage.html("Status: not connected   ID:"+deviceData.id);
       button.hide();
       fsButton.show();
@@ -1066,7 +1112,12 @@ function DeviceData(){
       //p5canvas.hide();
       changeCanvas(deviceData.fullDisplay);
     } else if(deviceData.status=="connected"){
+      titleBar.show();
+      offersDiv.hide();
+      welcomeDiv.show();
+      joinerDiv.hide();
       deviceData.fullDisplay=false;
+      p5canvas.hide();
       statusMessage.html("Status: connected   ID:"+deviceData.id);
       button.show();
       button.html('Join');
@@ -1078,7 +1129,12 @@ function DeviceData(){
       //p5canvas.hide();
       changeCanvas(deviceData.fullDisplay);
     } else if(deviceData.status=="joined"){
+      titleBar.show();
+      offersDiv.show();
+      welcomeDiv.hide();
+      joinerDiv.show();
       deviceData.fullDisplay=false;
+      p5canvas.hide();
       statusMessage.html("Status: joined to lobby   ID:"+deviceData.id);
       button.show();
       button.html('un-Join');
@@ -1090,7 +1146,12 @@ function DeviceData(){
       //p5canvas.hide();
       changeCanvas(deviceData.fullDisplay);
     } else if(deviceData.status=="attached"){
+      titleBar.hide();
+      offersDiv.hide();
+      welcomeDiv.hide();
+      joinerDiv.hide();
       deviceData.fullDisplay=true;
+      p5canvas.show();
       statusMessage.html("Status: attached to ring   ID:"+deviceData.id);
       button.hide();
       fsButton.hide();
@@ -1100,7 +1161,12 @@ function DeviceData(){
       //p5canvas.show();
       changeCanvas(deviceData.fullDisplay);
     } else {
+      titleBar.hide();
+      offersDiv.show();
+      welcomeDiv.hide();
+      joinerDiv.hide();
       deviceData.fullDisplay=false;
+      p5canvas.show();
       statusMessage.html("Status: I have no idea   ID:"+deviceData.id);
       button.hide();
       fsButton.hide();
@@ -1114,7 +1180,7 @@ function DeviceData(){
   }
 
   function refreshHTMLGeometry(){
-    var tempHTML="pos: "+deviceData.geometry.position+ " startX: "+deviceData.geometry.startX+" endX: "+deviceData.geometry.endX+" width: "+deviceData.geometry.myWidth+" height: "+deviceData.geometry.myHeight;
+    var tempHTML="|pos: "+deviceData.geometry.position+ "   |startX: "+deviceData.geometry.startX+"   |endX: "+deviceData.geometry.endX+"   |width: "+deviceData.geometry.myWidth+"   |height: "+deviceData.geometry.myHeight;
     geometry.html(tempHTML);
   }
 
