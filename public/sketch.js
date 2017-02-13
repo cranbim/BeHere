@@ -182,32 +182,52 @@ function setupMeta(){
 
 
 function draw() {
-  background(40);
-  //backGroundFromParams();
-  processParams();
-  mapParamToRing();
-  var test=mapParamToOther(ringLength);
-  //backgroundDistanceMeter();
   var showing=false;
+  var backgroundRendered=false;
   if(deviceData.status=="attached"){
-    //noiseField.show();
-    //noiseField.update();
     var blobPos=myBlobs.getPos();
     if(themeRunner) {
+      if(!themeRunner.themeRendersBackground){
+        background(40);
+      }
+      // else {
+        // backgroundRendered=true;
+      // }
+      backgroundRendered=true;
       themeRunner.setCurrentParams(absParamPos);
-      if(themeRunner.run(blobPos, soundOn)){
+      if(themeRunner.run(myBlobs, blobPos, soundOn)){
         console.log("Theme calling end");
         socket.emit('themeKiller',{id: id});
       }
     }
     showing=true;
   }
+  if(!backgroundRendered){
+    background(40);
+  }
+  //backGroundFromParams();
+  processParams();
+  mapParamToRing();
+  //backgroundDistanceMeter();
+ 
   runClicks();
-  myBlobs.run(showing);
+  if(themeRunner){
+    if(themeRunner.themeControlsBlobs()){
+      myBlobs.runOnly(showing);
+    } else {
+      myBlobs.runPlusMove(showing);
+    }
+  }
   statusBar.show();
-  // statusBar.run();
-
   //Helper, debug stuff on the display
+  drawMeta();
+  //send a heartbeat echo every 0.5-1 frame
+  echoHeartBeat();
+}
+
+function drawMeta(){
+  var test=mapParamToOther(ringLength);
+
   if(!hideMeta){
     stroke(0);
     strokeWeight(2);
@@ -222,10 +242,6 @@ function draw() {
     stroke(0,255,255);
     line(test,0,test,height);
   }
-  //send a heartbeat echo every 0.5-1 frame
-  echoHeartBeat();
-
-
 }
 
 function processParams(){
@@ -480,10 +496,11 @@ function setStartX(data){
   deviceData.geometry.endX=myEndX;
   refreshHTMLGeometry();
   console.log("new StartX post: "+myStartX+" "+myEndX);
-  noiseField.calcOffset(myStartX);
-  noiseField.syncOffset();
+  // noiseField.calcOffset(myStartX);
+  // noiseField.syncOffset();
   //empty existing blobs
   myBlobs.empty();
+  updateRingPos(data);
 }
 
 function updateRingPos(data){
@@ -722,6 +739,10 @@ function AllBlobs(){
 function MyBlobs(){
   blobs=[];
 
+  this.getBlobs=function(){
+    return blobs;
+  };
+
   this.addBlob=function(data){
     var b=new Blob(data);
     blobs.push(b);
@@ -733,14 +754,25 @@ function MyBlobs(){
     });
   };
 
-  this.run=function(showBlobs){
+  this.runPlusMove=function(showBlobs){
     for(var i=blobs.length-1; i>=0; i--){
       if(showBlobs) blobs[i].show();
-      if(!blobs[i].update()){
+      blobs[i].update();
+      if(!blobs[i].life()){
         blobs.splice(i,1);
       }
     }
   };
+
+  this.runOnly=function(showBlobs){
+    for(var i=blobs.length-1; i>=0; i--){
+      // if(showBlobs) blobs[i].show();
+      // blobs[i].update();
+      if(!blobs[i].life()){
+        blobs.splice(i,1);
+      }
+    }
+  }
 
   this.getPos=function(){
     bPos=[];
@@ -756,6 +788,10 @@ function MyBlobs(){
 
   this.empty=function(){
     blobs=[];
+  };
+
+  this.howMany=function(){
+    return blobs.length;
   };
 
   function Blob(data){
@@ -792,11 +828,14 @@ function MyBlobs(){
       pop();
     };
 
-    this.show=function(){
+    this.show=function(green){
       this.bloboid.addPoint(this.x-myStartX-marginLeft, this.y);
       var ra=map(this.ttl, maxTTL, 100, 0, 255);
       var ga=255-ra;
       var ba=0;
+      if(green){
+        ra=0; ga=255; ba=0;
+      }
       var flicker=false;
       if(this.ttl<200){
         flicker=true;
@@ -818,6 +857,30 @@ function MyBlobs(){
       this.x=this.pos.x;
       this.y=this.pos.y;
       // this.x+=xInc;
+      // this.ttl--;
+      // if(this.x>=myEndX || this.x<myStartX){
+      //   console.log("blob "+this.id+" just exited");
+      //   socket.emit('blobUpdate',{
+      //     id:this.id,
+      //     x:this.x,
+      //     y:this.y,
+      //     vel: {x: this.vel.x, y: this.vel.y},
+      //     ttl:this.ttl
+      //   });
+      // }
+      if(this.y<0) this.y=height;
+      if(this.y>height) this.y=0;
+      // if(this.ttl%30<1) socket.emit('blobUpdate',{
+      //   id:this.id,
+      //    x:this.x,
+      //    y:this.y,
+      //    vel: {x: this.vel.x, y: this.vel.y},
+      //    ttl:this.ttl
+      //  });
+      // return this.x>=myStartX && this.x<myEndX && this.ttl>0;
+    };
+
+    this.life=function(){
       this.ttl--;
       if(this.x>=myEndX || this.x<myStartX){
         console.log("blob "+this.id+" just exited");
@@ -829,18 +892,20 @@ function MyBlobs(){
           ttl:this.ttl
         });
       }
-      if(this.y<0) this.y=height;
-      if(this.y>height) this.y=0;
-      if(this.ttl%30<1) socket.emit('blobUpdate',{
-        id:this.id,
-         x:this.x,
-         y:this.y,
-         vel: {x: this.vel.x, y: this.vel.y},
-         ttl:this.ttl
-       });
+      if(this.ttl%30<1){
+        socket.emit('blobUpdate',{
+          id:this.id,
+          x:this.x,
+          y:this.y,
+          vel: {x: this.vel.x, y: this.vel.y},
+          ttl:this.ttl
+        });
+      }
       return this.x>=myStartX && this.x<myEndX && this.ttl>0;
     };
+
   }
+
 
   function Bloboid(id){
     var x, y;

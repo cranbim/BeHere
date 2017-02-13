@@ -7,7 +7,8 @@ function ThemeMaster(){
 
 	this.narrative1={
 		sequence: [
-			{name: 'ThemeCountdown', duration: 30, params:{beat:true}},
+			{name: 'ThemeCountdown', duration: 5, params:{beat:true}},
+			{name: 'ThemeFlowDraw', duration: 15, params:{seed:13}},
 			{name: 'ThemePlasma1', duration: 8, params:{}},
 			{name: 'ThemeTVStatic', duration: 8, params:{}},
 			// {name: 'ThemeSpark', duration : 8, params: {}},
@@ -49,7 +50,8 @@ function ThemeMaster(){
 		"ThemeStrings",
 		"ThemeTextScroller",
 		"ThemeTheyGrowBack",
-		"ThemeCountdown"
+		"ThemeCountdown",
+		"ThemeFlowDraw"
 	];
 
 

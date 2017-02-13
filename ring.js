@@ -31,10 +31,10 @@ function DeviceShadow(session, devid, devWidth, devHeight, nickName){
 		this.session.socket.emit('rfpermit',{});
 	};
 
-	this.setStartX=function(sx){
+	this.setStartX=function(sx,pos){
 		this.startX=sx;
 		this.endX=this.startX+this.devWidth;
-		this.session.socket.emit("startX", {sx:sx});
+		this.session.socket.emit("startX", {sx:sx, pos:pos});
 	};
 
 	this.unsetStartX=function(){
@@ -426,11 +426,11 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		var endX=shadow.endX;
 		for(var i=next+1; i<this.deviceShadows.length; i++){
 			if(!this.deviceShadows[i].suspended){
-				this.deviceShadows[i].setStartX(endX);
+				this.deviceShadows[i].setStartX(endX,i);
 				endX=this.deviceShadows[i].endX;
 			}
 		}
-		console.log(this.name+" "+this.ringID+" "+"new dev shadow joins ring, "+this.ringLengthDevs+" "+this.ringLengthPixels);
+		console.log(this.name+" "+this.ringID+" "+"new dev shadow joins ring, "+this.ringLengthDevs+" "+this.ringLengthPixels+" at position:"+next);
 //		console.log(this.deviceShadows);
 		return next; //position on inserted device
 	};

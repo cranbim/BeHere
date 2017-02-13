@@ -142,6 +142,9 @@ function ThemeRunner(){
 			if(nowTheme.params.hasOwnProperty('beat')){
 				if(nowTheme.params.beat===true) nowTheme.params.beat=heartbeat;
 			}
+			if(nowTheme.params.hasOwnProperty('seed')){
+				nowTheme.params.seed=1+Date.now()%100;
+			}
 			return {
 				index: currentTheme,
 				name: currentThemeName,
@@ -190,8 +193,13 @@ function ThemeRunner(){
 		console.log("Switch theme to" + currentThemeName);
 		actualTheme=getThemeByName(currentThemeName);
 		actualTheme.init(nowTheme.duration, nowTheme.params);
-		changingTheme=false;
+		// changingTheme=false;
+		setTimeout(delayedClearThemeChange,500);
 	}
+}
+
+function delayedClearThemeChange(){
+	changingTheme=false;
 }
 
 
