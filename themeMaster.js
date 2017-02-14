@@ -9,6 +9,7 @@ function ThemeMaster(){
 		sequence: [
 			{name: 'ThemeCountdown', duration: 5, params:{beat:true}},
 			{name: 'ThemeFlowDraw', duration: 15, params:{seed:13}},
+			{name: 'ThemeCalmRings', duration: 8, params:{}},
 			{name: 'ThemePlasma1', duration: 8, params:{}},
 			{name: 'ThemeTVStatic', duration: 8, params:{}},
 			// {name: 'ThemeSpark', duration : 8, params: {}},
@@ -51,7 +52,8 @@ function ThemeMaster(){
 		"ThemeTextScroller",
 		"ThemeTheyGrowBack",
 		"ThemeCountdown",
-		"ThemeFlowDraw"
+		"ThemeFlowDraw",
+		"ThemeCalmRings"
 	];
 
 
