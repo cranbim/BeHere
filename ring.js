@@ -72,7 +72,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		this.blobList.run(this.ringLengthPixels);
 		sendBlobData();
 		checkShadowHealth(heartbeat);
-		var themeStatus=themes.run(heartbeat);
+		var themeStatus=themes.run(heartbeat, parameters);
 		// var newTheme=themeStatus.index;
 		// var newThemeName=themeStatus.name;//themes.run();
 		// //var oldTheme=themes.getCurrent();

@@ -109,6 +109,10 @@ function Parameters(){
 		return params[ind].get();
 	};
 
+	this.reset=function(paramIndex){
+		params[paramIndex].reset();
+	}
+
 	console.log("New Parameters");
 	console.log("0: "+params[0].get());
 
@@ -131,9 +135,13 @@ function Parameters(){
 
 	function ParamLoop(){
 		var value=0;
+
+		this.reset=function(){
+			value=0;
+		}
 		
 		this.run=function(ringLengthPixels){
-			value-=250;
+			value-=500;
 			// if(value>ringLengthPixels){
 			// 	value=0;
 			// }

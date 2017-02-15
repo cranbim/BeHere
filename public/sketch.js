@@ -14,7 +14,7 @@ var button, joinButton, attachButton, detachButton, permitButton, fsButton;
 var isFullScreen;
 var statusMessage, position, idnum;
 var offersList; //HTML offers
-var hideMeta=true;
+var hideMeta=false;
 var canvasFull=false;
 var canSmallWidth=400;
 var canSmallHeight=50;
@@ -38,7 +38,7 @@ var devWidth;
 var devHeight=200;
 var myStartX=null;
 var myEndX=null;
-var marginLeft=50;
+var marginLeft=0;//50
 var marginRight=0;
 var dispStartX=0;
 var dispEndX=0;
@@ -195,7 +195,7 @@ function draw() {
       // }
       backgroundRendered=true;
       themeRunner.setCurrentParams(absParamPos);
-      if(themeRunner.run(myBlobs, blobPos, soundOn)){
+      if(themeRunner.run(myBlobs, ringLength, blobPos, soundOn)){
         console.log("Theme calling end");
         socket.emit('themeKiller',{id: id});
       }
@@ -264,7 +264,7 @@ function mapParamToRing(){
 
 function mapParamToOther(other){
   var localPos;
-  var newVal=other+absParamPos%other+20;
+  var newVal=other+absParamPos%other;
   if(newVal>myStartX && newVal<myEndX){
     localPos=newVal-myStartX;
   } else {

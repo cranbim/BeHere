@@ -3,6 +3,7 @@
 
 //global counter for nextTheme
 var nextThemeId=0;
+var themesRingLength=0;
 
 //Object for client side running the themes and swicthing
 function ThemeRunner(w,h){
@@ -40,7 +41,8 @@ function ThemeRunner(w,h){
     ThemeTheyGrowBack: ThemeTheyGrowBack,
     ThemeCountdown: ThemeCountdown,
     ThemeFlowDraw: ThemeFlowDraw,
-    ThemeCalmRings: ThemeCalmRings
+    ThemeCalmRings: ThemeCalmRings,
+    ThemeHoneyCombLight: ThemeHoneyCombLight
   };
 
 
@@ -105,7 +107,8 @@ function ThemeRunner(w,h){
     nowTheme.init(params);
   };
 
-	this.run=function(blobs, blobPos, soundOn){
+	this.run=function(blobs, ringLen, blobPos, soundOn){
+    themesRingLength=ringLen;
     var themeEnding;
     if(!nowTheme){
       this.switchThemeByName('ThemeDefault');
@@ -2301,81 +2304,103 @@ function ThemeTheyGrowBack(){
     return relPos;
   }
   
-  function mapParamToBuffSize(other){
-    var newVal=other+absParamPos%other;
-    return newVal;
-  }
+
 
   function ThemeTextScroller(w,h){
+    var textSet=false;
   // function CrapTextScroll(){
-    var o=new OSB(w,h,"My God! It's full of stars.... ");
-    // var o=new OSB(w,h,"hello...");
-    this.run=function(){
+    // var o=new OSB(w,h,"My God! It's full of stars.... ");
+    var o=null;
+    var ringsWithinBuffCount=0;
+
+    this.run=function(bPos, soundOn, paramsIn){
+    //this.run=function(){
       // var textPos=absParamPos;
       // var off=myStartX-textPos;
       // o.show(width, off);
-      o.show(w);
-    };
-  }
-
-  function OSB(w,h,myText){
-    var scl=1;
-    var myH=floor(h*scl);
-    var myW=floor(w*scl);
-    textSize(myH*0.7);
-    var txtSize=floor(textWidth(myText));
-    //console.log(txtSize+" "+myW);
-    var buffSize=txtSize;//+myW*2;
-    //console.log(buffSize);
-    var offX=0;
-    
-    var buffer=createGraphics(buffSize, myH);
-    buffer.background(0);
-    buffer.fill(255);
-    buffer.noStroke(0);
-    buffer.textSize(myH*0.7);
-    buffer.text(myText,0,myH*0.7);
-    
-    
-    this.show=function(chunkW){//(chunkW, offX){
-       
-      var newRelPos=buffSize-mapParamToBuffSize(floor(buffSize/scl));
-      // var newRelPos=getGlobalParamPos(floor(buffSize/scl));
-      //var textPos=absParamPos;
-      var offX=newRelPos+myStartX;
-      // if(frameCount%10===0) console.log(">>>>> "+newRelPos);
-      myOffX=floor(offX*scl);//%buffSize;
-      if(myOffX<0){
-        myOffX+=buffSize;
-      }
-      if(myOffX>buffSize){
-        myOffX-=buffSize;
-      }
-      // console.log(buffSize+" "+newRelPos+" "+offX+" "+myOffX);
-      var chunk;
-      var ch=floor(chunkW*scl);
-      var ch2;
-      if(myOffX+ch>buffSize){
-        ch2=myOffX+ch-buffSize;
-        ch=ch-ch2;
-        chunk=buffer.get(myOffX,0,ch,myH);
-        var chunk2=buffer.get(0,0,ch2,myH);
-        push();
-        scale(1/scl);
-        image(chunk,0,0);
-        image(chunk2,ch,0);
-        pop();
-
+      if(!textSet){
+        o=new OSB(w,h,paramsIn.messages[0]);
+        textSet=true;
       }else{
-        chunk=buffer.get(myOffX,0,ch,myH);
-        push();
-        scale(1/scl);
-        image(chunk,0,0);
-        pop();
+        o.show(w);
       }
     };
-  }
+  
+    function mapParamToBuffSize(bs, sx){
+      // var bs=floor(buffSize/scl);
 
+      var newVal=(absParamPos-sx)%bs;
+      // var over=floor(bs/themesRingLength);
+      
+      //newVal=absParamPos;
+      return newVal;
+    }
+
+    function OSB(w,h,myText){
+      var scl=1;
+      var myH=floor(h*scl);
+      var myW=floor(w*scl);
+      textSize(300);//myH*0.7);
+      var txtSize=floor(textWidth(myText));
+      //console.log(txtSize+" "+myW);
+      var buffSize=txtSize;//+myW*2;
+      //console.log(buffSize);
+      var offX=0;
+      
+      var buffer=createGraphics(buffSize, myH);
+      buffer.background(0);
+      buffer.fill(255);
+      buffer.noStroke(0);
+      buffer.textSize(300);//myH*0.7);
+      buffer.text(myText,0,(myH-300)/2+300*0.7);
+      
+      
+      this.show=function(chunkW){//(chunkW, offX){
+        var newRelPos=buffSize-mapParamToBuffSize(floor(buffSize/scl), myStartX);
+        // var newRelPos=getGlobalParamPos(floor(buffSize/scl));
+        //var textPos=absParamPos;
+        var offX=newRelPos;//+myStartX;
+        //console.log("OSB buffsize:"+buffSize+" app:"+floor(absParamPos)+" nrp: "+floor(newRelPos)+" offX:"+floor(offX));
+        // if(frameCount%10===0) console.log(">>>>> "+newRelPos);
+        myOffX=floor(offX*scl);//%buffSize;
+        if(myOffX<0){
+          myOffX+=buffSize;
+        }
+        if(myOffX>buffSize){
+          myOffX-=buffSize;
+        }
+        //console.log(floor(absParamPos)+" "+floor(newRelPos)+" "+myOffX+" "+buffSize);
+        // console.log(buffSize+" "+newRelPos+" "+offX+" "+myOffX);
+        var chunk;
+        var ch=floor(chunkW*scl);
+        var ch2;
+        if(myOffX+ch>buffSize){
+          ch2=myOffX+ch-buffSize;
+          ch=ch-ch2;
+          chunk=buffer.get(myOffX,0,ch,myH);
+          var chunk2=buffer.get(0,0,ch2,myH);
+          push();
+          scale(1/scl);
+          image(chunk,0,0);
+          // fill(100,255,0);
+          // stroke(255,0,0);
+          // strokeWeight(2);
+          // rect(0,0,ch,myH);
+          // fill(100,0,255);
+          // rect(ch,0,ch2,myH);
+          image(chunk2,ch,0);
+          pop();
+
+        }else{
+          chunk=buffer.get(myOffX,0,ch,myH);
+          push();
+          scale(1/scl);
+          image(chunk,0,0);
+          pop();
+        }
+      };
+    }
+  }
 
 //*****************************
 // ThemeDefault
@@ -2729,4 +2754,128 @@ function ThemeCalmRings(w,h){
     }
   }
 
+}
+
+//*****************************
+// ThemeHoneyCombLight
+//*****************************
+
+
+function ThemeHoneyCombLight(ww, wh){
+  var w,h;
+  var step=25;
+  var hStep;
+  var dots=[];
+  var a=0;
+  var aInc;
+  var rMult=1;
+  var shiftA=0;
+  var shiftAInc;
+  var shiftPhaseInc=0;//PI/100;
+  var shiftDisplace=20;
+  var centre;
+  
+  shiftAInc=-PI/20;
+  centre =createVector(ww/2, wh/2);
+  aInc=PI/1000;
+  //background(0);
+  hStep=sin(PI/3)*step;
+  w=floor(ww/step/sin(PI/6));
+  h=floor(wh/step/sin(PI/6));
+  yPos=hStep/2;
+  for(var y=0; y<h; y++){
+    yPos+=hStep;
+    xPos=(y%2)*step/2;
+    for(var x=0; x<w; x++){
+      xPos+=step;
+      if((x-(y%2))%3!==0){
+        var d=new Dot(xPos, yPos);
+        // stroke(255);
+        // ellipse(xPos,yPos,step,step);
+        dots.push(d);
+      }
+    }
+  }
+  
+  this.run=function(bPos){
+    dots.forEach(function(dot){
+      dot.update(bPos);
+      dot.shift(shiftA, shiftDisplace, shiftPhaseInc);
+      dot.show();
+    });
+    shiftA+=shiftAInc;
+    rMult=0;
+    bPos.forEach(function(b){
+      var d=dist(b.x, b.y, ww/2, wh/2);
+      if(d<wh/8)
+        rMult+=map(wh/8-d,0,wh/8,1,4);
+      else
+        rMult=+1;
+    });
+    
+  }
+
+  function Dot(x,y){
+    var alph;
+    var r;
+    var  shiftX=0;
+    var shiftY=0;
+    var trail=[];
+    var maxTrail=5;
+    
+    this.noupdate=function(tx, ty){
+      var d=dist(x+shiftX,y+shiftY,tx,ty);
+      var invD=ww-d;
+      
+        if(d<ww/2)
+          r=map(d,0,ww/2,step,2);
+        else
+          r=1;
+        alph=map(d, 0, ww, 255,100);
+      // r*=rMult;
+      
+    }
+    
+    this.update=function(blobPos){
+      r=1;
+      alph=1;
+      
+      blobPos.forEach(function(b){
+        var d=dist(x+shiftX,y+shiftY,b.x, b.y);
+        var invD=ww-d;
+        if(d<ww/2)
+          r+=map(d,0,ww/2,step,2);
+        else
+          r=0;
+        alph+=map(d, 0, ww, 255,100);
+      });
+    }
+    
+    this.shift=function(shiftAngle, shiftDisplace, phaseInc){
+      var d=dist(x,y,centre.x, centre.y);
+      var shiftPhase=d*PI/100;//TWO_PI*(d%shiftDisplace)/shiftDisplace;
+      var sinAngle=sin(shiftAngle+shiftPhase)*shiftDisplace;
+      var pos=createVector(x,y);
+      pos.sub(centre);
+      pos.normalize();
+      var m=pos.mag();
+      pos.setMag(m+sinAngle);
+      //pos.mult(sinAngle);
+      shiftX=pos.x;
+      shiftY=pos.y;
+    }
+    
+    this.show=function(){
+      noStroke();
+      fill(255,0,0,alph);
+      ellipse(x+shiftX-5,y+shiftY+3,r,r);
+      fill(0,255,0,alph);
+      ellipse(x+shiftX,y+shiftY-5,r,r);
+      fill(0,0,255,alph);
+      ellipse(x+shiftX+5,y+shiftY+3,r,r);
+      fill(255,255);
+      ellipse(x+shiftX,y+shiftY,r*rMult,r*rMult);
+    }
+    
+  }
 }

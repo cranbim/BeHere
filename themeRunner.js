@@ -128,7 +128,7 @@ function ThemeRunner(){
 		}
 	};
 
-	this.run=function(heartbeat){
+	this.run=function(heartbeat, parameters){
 		if(!actualTheme){
 			switchTheme();
 		}
@@ -144,6 +144,12 @@ function ThemeRunner(){
 			}
 			if(nowTheme.params.hasOwnProperty('seed')){
 				nowTheme.params.seed=1+Date.now()%100;
+			}
+			if(nowTheme.params.hasOwnProperty('resetParamLoop')){
+				if(nowTheme.params.resetParamLoop){
+					parameters.reset(2);
+					//nowTheme.params.resetParamLoop=false;
+				}
 			}
 			return {
 				index: currentTheme,
