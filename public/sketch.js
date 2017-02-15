@@ -14,7 +14,7 @@ var button, joinButton, attachButton, detachButton, permitButton, fsButton;
 var isFullScreen;
 var statusMessage, position, idnum;
 var offersList; //HTML offers
-var hideMeta=false;
+var hideMeta=true;
 var canvasFull=false;
 var canSmallWidth=400;
 var canSmallHeight=50;

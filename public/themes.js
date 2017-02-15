@@ -2763,7 +2763,7 @@ function ThemeCalmRings(w,h){
 
 function ThemeHoneyCombLight(ww, wh){
   var w,h;
-  var step=25;
+  var step=50;
   var hStep;
   var dots=[];
   var a=0;
@@ -2800,7 +2800,7 @@ function ThemeHoneyCombLight(ww, wh){
   this.run=function(bPos){
     dots.forEach(function(dot){
       dot.update(bPos);
-      dot.shift(shiftA, shiftDisplace, shiftPhaseInc);
+      //dot.shift(shiftA, shiftDisplace, shiftPhaseInc);
       dot.show();
     });
     shiftA+=shiftAInc;
@@ -2846,7 +2846,7 @@ function ThemeHoneyCombLight(ww, wh){
         if(d<ww/2)
           r+=map(d,0,ww/2,step,2);
         else
-          r=0;
+          r+=0;
         alph+=map(d, 0, ww, 255,100);
       });
     }
