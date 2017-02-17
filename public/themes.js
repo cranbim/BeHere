@@ -9,6 +9,7 @@ var themesRingLength=0;
 function ThemeRunner(w,h){
 	console.log("New theme runner "+w+" "+h);
 	var themes=[];
+  var themesLoadedFromServer=false;
 	var currentTheme=-1;
 	var nextTheme=0;
 	var lastTheme=-1;
@@ -19,43 +20,111 @@ function ThemeRunner(w,h){
   this.themeRendersBackground=false;
 
 
-  var themeLoader={
-    ThemeDefault: ThemeDefault,
-    ThemePlasma1: ThemePlasma1, //Theme1,
-    ThemeFlyThrough: ThemeFlyThrough,
-    ThemeRepelWobble:  ThemeRepelWobble, //Theme2,
-    ThemeBounceRings: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
-    ThemeFlipper1: ThemeFlipper1,
-    ThemePsychaRing: ThemePsychaRing,
-    ThemeBounceChain: ThemeBounceChain,
-    ThemeSpark: ThemeSpark,
-    ThemeSparker: ThemeSparker,
-    ThemeDust: ThemeDust,
-    ThemeNoise1: ThemeNoise1, //ThemeInstance, //
-    ThemeTVStatic: ThemeTVStatic,
-    ThemeHairBall: ThemeHairBall,
-    ThemeSwisher: ThemeSwisher,
-    ThemeCracker: ThemeCracker,
-    ThemeStrings: ThemeStrings,
-    ThemeTextScroller: ThemeTextScroller,
-    ThemeTheyGrowBack: ThemeTheyGrowBack,
-    ThemeCountdown: ThemeCountdown,
-    ThemeFlowDraw: ThemeFlowDraw,
-    ThemeCalmRings: ThemeCalmRings,
-    ThemeHoneyCombLight: ThemeHoneyCombLight
+  // var themeLoader={
+  //   ThemeDefault: ThemeDefault,
+  //   ThemePlasma1: ThemePlasma1, //Theme1,
+  //   ThemeFlyThrough: ThemeFlyThrough,
+  //   ThemeRepelWobble:  ThemeRepelWobble, //Theme2,
+  //   ThemeBounceRings: ThemeBounceRings, //ThemeNoise1, //Theme3 //ThemeNoise1
+  //   ThemeFlipper1: ThemeFlipper1,
+  //   ThemePsychaRing: ThemePsychaRing,
+  //   ThemeBounceChain: ThemeBounceChain,
+  //   ThemeSpark: ThemeSpark,
+  //   ThemeSparker: ThemeSparker,
+  //   ThemeDust: ThemeDust,
+  //   ThemeNoise1: ThemeNoise1, //ThemeInstance, //
+  //   ThemeTVStatic: ThemeTVStatic,
+  //   ThemeHairBall: ThemeHairBall,
+  //   ThemeSwisher: ThemeSwisher,
+  //   ThemeCracker: ThemeCracker,
+  //   ThemeStrings: ThemeStrings,
+  //   ThemeTextScroller: ThemeTextScroller,
+  //   ThemeTheyGrowBack: ThemeTheyGrowBack,
+  //   ThemeCountdown: ThemeCountdown,
+  //   ThemeFlowDraw: ThemeFlowDraw,
+  //   ThemeCalmRings: ThemeCalmRings,
+  //   ThemeHoneyCombLight: ThemeHoneyCombLight
+  // };
+
+  var themeArrayBase=[
+    "ThemeDefault"
+  ];
+
+  // var nothemesFromServer=[
+  //   "ThemePlasma1",
+  //   "ThemeFlyThrough",
+  //   "ThemeRepelWobble",
+  //   "ThemeBounceRings",
+  //   "ThemeFlipper1",
+  //   "ThemePsychaRing",
+  //   "ThemeBounceChain",
+  //   "ThemeSparker",
+  //   "ThemeSpark",
+  //   "ThemeDust",
+  //   "ThemeNoise1",
+  //   "ThemeTVStatic",
+  //   "ThemeHairBall",
+  //   "ThemeSwisher",
+  //   "ThemeCracker",
+  //   "ThemeStrings",
+  //   "ThemeTextScroller",
+  //   "ThemeTheyGrowBack",
+  //   "ThemeCountdown",
+  //   "ThemeFlowDraw",
+  //   "ThemeCalmRings",
+  //   "ThemeHoneyCombLight"
+  // ];
+
+  loadThemes(w,h);
+
+  this.checkThemes=function(){
+    if(!themesLoadedFromServer){
+      // console.log("I have no themes!");
+      socket.emit('getServerThemes',{});
+    } else {
+      // console.log("I have my server themes!");
+    }
   };
 
+  this.loadServerThemes=function(data){
+    console.log("Themes received from server");
+    loadThemesFromServer(data.themes, w, h);
+  };
 
-	loadThemes(w,h);
+	//loadThemesFromServer(themesFromServer, w,h);
 
+  function loadThemesFromServer(themesArray, w, h){
+    //themeArray=themeArrayBase.concat(themesArray);
+    if(themesLoadedFromServer){
+      console.log("Themes Already Loaded");
+    } else {
+      themesArray.forEach(function(t){
+        console.log("st>> "+t);
+        var themeInstance=new ThemeInstance(t, w, h, window[t]);
+        themes.push(themeInstance);// new ThemeInstance(t, w, h, t));
+      });
+      console.log("Server Themes Loaded");
+    }
+    // loadThemes(w,h);
+    themesLoadedFromServer=true;
+  }
 
-	function loadThemes(w,h){
+  function loadThemes(w,h){
+    themeArrayBase.forEach(function(t){
+      var themeInstance=new ThemeInstance(t, w, h, window[t]);
+      themes.push(themeInstance);// new ThemeInstance(t, w, h, t));
+    });
+    console.log("Default Theme Loaded");
+    // console.log(themes);
+  }
+
+	function noloadThemes(w,h){
 		for(var key in themeLoader){
       // themes.push(new themeLoader[key](key, w,h));
       themes.push(new ThemeInstance(key, w,h, themeLoader[key]));
 		}
     console.log("Themes Loaded");
-    console.log(themes);
+    // console.log(themes);
 	}
 
   this.setCurrentParams=function(absPos){
@@ -66,6 +135,9 @@ function ThemeRunner(w,h){
     var t=themes.find(function(theme){
       return theme.name===themeName;
     });
+    if(!t){
+      t=themes[0];
+    }
     return t;
   };
 
@@ -125,7 +197,7 @@ function ThemeRunner(w,h){
         text(nowTheme.name,100,100);
       }
     }
-    return themeEnding; 
+    return themeEnding;
 	};
 }
 
@@ -144,10 +216,10 @@ function ThemeInstance(name, w, h, instantiator){
   initTheme();
   this.isBlobController=instance.hasOwnProperty('runBlobs');
   this.themeRendersBackground=instance.hasOwnProperty('renderBackground');
-  console.log("renders background: "+this.themeRendersBackground);
+  console.log(this.name+" loaded");
+  // console.log("renders background: "+this.themeRendersBackground);
 
   function initTheme(paramsIn){
-    console.log("1) "+paramsIn);
     // console.log("!!!!");
     // console.log(instantiator);
     instance=new instantiator(w,h);
@@ -2238,7 +2310,7 @@ function ThemeTheyGrowBack(){
         var f=map(ind,0,numScreens,255,30);
         var a=map(zPos,-2000*numScreens,0,0,255);
         fill(fg*f/100,f,0,a);
-        var scl=(maxBack-zPos)/maxBack;
+        var scl=(maxBack-zPos)/maxBack*2;
         scale(scl);
         translate(-spaceWidth/2,0);
         beginShape();

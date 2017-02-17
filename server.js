@@ -70,8 +70,15 @@ function newConnection(socket){
   socket.on('echo', logEcho);
   socket.on('themeKiller', themeKiller);
   socket.on('gimmeTheme', gimmeTheme);
+  socket.on('getServerThemes', sendThemesToClient);
   socket.on('soundControl', soundControl);
   socket.on('resetThemes', resetThemes);
+
+  function sendThemesToClient(data){
+  	console.log("Sending Themes to client");
+  	var themeList=themes.themeLoader;
+  	socket.emit('serverThemes', {themes: themeList});
+  }
 
   function resetThemes(data){
   	ring.resetThemes(data);

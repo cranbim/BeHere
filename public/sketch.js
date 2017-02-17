@@ -323,6 +323,7 @@ function connected(){
   socket.on('notifyDetached',notifyDetached);
   socket.on('themeSwitch',switchTheme);
   socket.on('soundControl',soundControl);
+  socket.on('serverThemes',loadServerThemes);
 }
 
 function disconnected(){
@@ -374,6 +375,11 @@ function dataRefreshPoll(){
   });
   checkOffers();
   renderOffers();
+}
+
+function loadServerThemes(data){
+  console.log("Server sending themes");
+  themeRunner.loadServerThemes(data);
 }
 
 function soundControl(data){
@@ -630,6 +636,7 @@ function attachMe(){
 function beat(data){
   console.log(data.beat);
   deviceData.currentBeat=data.beat;
+  themeRunner.checkThemes();
 }
 
 /*****************************************

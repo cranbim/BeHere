@@ -9,11 +9,18 @@ module.exports={
 
 var nextThemeId=0;
 
-var tm=require('./themeMaster.js');
+//var tm=require('./themeMaster.js');
+
+var fs = require('fs');
+
 
 
 function ThemeRunner(){
+	var self=this;
 	var themes=[];
+	var themesLoaded=false;
+	var allThemes;
+	var firstLoad=true;
 	var narrative;
 	var lastTheme=-1;
 	var currentTheme=-1;
@@ -23,48 +30,54 @@ function ThemeRunner(){
 	var currentThemeName="";
 	var changingTheme=false;
 
+	this.themeLoader=[];
+
 	//var themeTTL=0;
 	console.log("Theme Runner started");
-
-	var themeMaster=new tm.ThemeMaster();
-	var narrative1=themeMaster.narrative1;
-	var themeLoader=themeMaster.themeLoader;
 
 	var nextThemeId=0;
 
 	loadThemes();
 	loadNarrative();
 
-	// function oldloadThemes(){
-	// 	for(var key in themeLoader){
-	// 		themes.push(new GenericServerTheme(key));
-	// 		// themes.push(new themeLoader[key].func(key, themeLoader[key].ttl));
-	// 	}
-	// 	console.log(themes);
-	// }
 
 	this.reloadThemes=function(){
-		tm=require('./themeMaster.js');
-		themeMaster=new tm.ThemeMaster();
-		narrative1=themeMaster.narrative1;
-		themeLoader=themeMaster.themeLoader;
-		loadThemes();
+		themesLoaded=false;
 		loadNarrative();
-		nextTheme=0;
-		actualTheme.endMe();
-	}
+	};
+
 
 	function loadThemes(){
-		themeLoader.forEach(function(theme){
-			themes.push(new GenericServerTheme(theme));
-		});
-		console.log(themes);
+		fs.readFile('./themes.json', readThemes);
 	}
 
 	function loadNarrative(){
-		narrative=narrative1.sequence;
-		//console.log(narrative);
+		fs.readFile('./narrative.json', readNarrative);
 	}
+
+	function readThemes(err, data) {
+    if (err) throw err;
+    var tm = JSON.parse(data);
+    allThemes=tm.themeLoader;
+    self.themeLoader=allThemes;
+    allThemes.forEach(function(theme){
+			themes.push(new GenericServerTheme(theme));
+		});
+	}
+
+	function readNarrative(err,data){
+    if (err) throw err;
+    var tm = JSON.parse(data);
+    narrative=tm.narrative1.sequence;
+    themesLoaded=true;
+    if(firstLoad){
+    	firstLoad=false;
+    } else {
+	    nextTheme=0;
+			actualTheme.endMe();
+		}		
+	}
+
 
 	function getThemeByName(name){
 		console.log(name);
@@ -129,34 +142,38 @@ function ThemeRunner(){
 	};
 
 	this.run=function(heartbeat, parameters){
-		if(!actualTheme){
-			switchTheme();
-		}
-		if(!actualTheme.run()){
-			///at end of counter theme life
-			if(nowTheme.params.hasOwnProperty('beat')){
-				nowTheme.params.beat=true;
+		if(themesLoaded){
+			if(!actualTheme){
+				switchTheme();
 			}
-			switchTheme();
-			//at start of counter theme life
-			if(nowTheme.params.hasOwnProperty('beat')){
-				if(nowTheme.params.beat===true) nowTheme.params.beat=heartbeat;
-			}
-			if(nowTheme.params.hasOwnProperty('seed')){
-				nowTheme.params.seed=1+Date.now()%100;
-			}
-			if(nowTheme.params.hasOwnProperty('resetParamLoop')){
-				if(nowTheme.params.resetParamLoop){
-					parameters.reset(2);
-					//nowTheme.params.resetParamLoop=false;
+			if(!actualTheme.run()){
+				///at end of counter theme life
+				if(nowTheme.params.hasOwnProperty('beat')){
+					nowTheme.params.beat=true;
 				}
+				switchTheme();
+				//at start of counter theme life
+				if(nowTheme.params.hasOwnProperty('beat')){
+					if(nowTheme.params.beat===true) nowTheme.params.beat=heartbeat;
+				}
+				if(nowTheme.params.hasOwnProperty('seed')){
+					nowTheme.params.seed=1+Date.now()%100;
+				}
+				if(nowTheme.params.hasOwnProperty('resetParamLoop')){
+					if(nowTheme.params.resetParamLoop){
+						parameters.reset(2);
+						//nowTheme.params.resetParamLoop=false;
+					}
+				}
+				return {
+					index: currentTheme,
+					name: currentThemeName,
+					params: nowTheme.params
+					};
+				// return currentThemeName;
 			}
-			return {
-				index: currentTheme,
-				name: currentThemeName,
-				params: nowTheme.params
-				};
-			// return currentThemeName;
+		} else {
+			console.log("Themes not loaded yet");
 		}
 		return {index: -1, name:"none"};
 	};

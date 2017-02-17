@@ -1,0 +1,8 @@
+{"narrative1":{
+		"sequence": [
+			{"name": "ThemeCountdown", "duration": 5, "params":{"beat":true}},
+			{"name": "ThemeCalmRings", "duration": 5, "params":{}},
+			{"name": "ThemeFlyThrough", "duration": 8, "params":{}}
+		]
+	}
+}

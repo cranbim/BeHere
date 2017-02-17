@@ -1,0 +1,23 @@
+{"narrative1":{
+		"sequence": [
+			{"name": "ThemeCountdown", "duration": 5, "params":{"beat":true}},
+			// {"name": "ThemeFlowDraw", "duration": 15, "params":{"seed":13}},
+			{"name": "ThemeCalmRings", "duration": 5, "params":{}},
+			// {"name": "ThemePlasma1", "duration": 8, "params":{}},
+			// {"name": "ThemeTVStatic", "duration": 8, "params":{}},
+			// {"name": "ThemeSpark", "duration" : 8, "params": {}},
+			// {"name": "ThemeStrings", "duration": 8, "params": {}},
+			// {"name": "ThemeHairBall", "duration": 8, "params":{}},
+			{"name": "ThemeFlyThrough", "duration": 8, "params":{}}
+			// {"name": "ThemeFlipper1", "duration": 8, "params":{}},
+			// {"name": "ThemePsychaRing", "duration": 8, "params":{}},
+			// {"name": "ThemeBounceChain", "duration": 8, "params":{}},
+			// {"name": "ThemeSparker", "duration": 8, "params":{}},
+			// {"name": "ThemeSwisher", "duration": 8, "params":{}},
+			// {"name": "ThemeHoneyCombLight", "duration": 10, "params":{}},
+			// {"name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Life is Good... ", "test2"]}},
+			// {"name": "ThemeCalmRings", "duration": 5, "params":{}},
+			// {"name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Save Me from Myself... ", "test2"]}}
+		]
+	}
+}
