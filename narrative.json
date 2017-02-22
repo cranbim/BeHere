@@ -1,8 +1,24 @@
 {"narrative1":{
 		"sequence": [
-			{"name": "ThemeCountdown", "duration": 5, "params":{"beat":true}},
-			{"name": "ThemeCalmRings", "duration": 5, "params":{}},
-			{"name": "ThemeFlyThrough", "duration": 8, "params":{}}
+			{"on": true, "name": "ThemeCountdown", "duration": 5, "params":{"beat":true}},
+			{"on": true, "name": "ThemeCalmRings", "duration": 5, "params":{}},
+			{"on": false, "name": "ThemeFlyThrough", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Life is Good... ", "test2"]}},
+			{"on": false, "name": "ThemeFlowDraw", "duration": 15, "params":{"seed":13}},
+			{"on": false, "name": "ThemePlasma1", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeTVStatic", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeSpark", "duration" : 8, "params": {}},
+			{"on": false, "name": "ThemeStrings", "duration": 8, "params": {}},
+			{"on": false, "name": "ThemeHairBall", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeFlipper1", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemePsychaRing", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeBounceChain", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeSparker", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeSwisher", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeHoneyCombLight", "duration": 10, "params":{}},
+			{"on": false, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Life is Good... ", "test2"]}},
+			{"on": false, "name": "ThemeCalmRings", "duration": 5, "params":{}},
+			{"on": false, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Save Me from Myself... ", "test2"]}}
 		]
 	}
 }

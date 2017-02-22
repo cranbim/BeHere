@@ -89,6 +89,16 @@ function ThemeRunner(){
 		//handle unmatched name with a generic theme???
 	}
 
+	this.themeOnOff=function(index, status){
+		console.log("Turning theme #"+index+" "+status);
+		narrative[index].on=status;
+	};
+
+	this.themeDuration=function(index, duration){
+		console.log("Change duration theme #"+index+" "+duration);
+		narrative[index].duration=duration;
+	};
+
 	this.getThemes=function(){
 		var themeList=[];
 		themes.forEach(function(t){
@@ -122,6 +132,7 @@ function ThemeRunner(){
 			var theme={
 				name: t.name,
 				duration: t.duration,
+				on: t.on,
 				other: "stuff"
 			};
 			meta.themes.push(theme);
@@ -151,7 +162,11 @@ function ThemeRunner(){
 				if(nowTheme.params.hasOwnProperty('beat')){
 					nowTheme.params.beat=true;
 				}
+				var preSwitch=currentTheme;
 				switchTheme();
+				while(!nowTheme.on && currentTheme!==preSwitch){
+					switchTheme();
+				}
 				//at start of counter theme life
 				if(nowTheme.params.hasOwnProperty('beat')){
 					if(nowTheme.params.beat===true) nowTheme.params.beat=heartbeat;

@@ -12,10 +12,14 @@ var narrDiv;
 var ringUL=null;
 var MetaDiv;
 var metaULreq, metaULgrant, metaULoffer, metaBlobs;
+var narrativeChanging=true;
+var narrativeLive;
+
 
 var state={
-  soundOn: false
-}
+  soundOn: false,
+  narrative: null
+};
 
 function setup() {
   noCanvas();
@@ -75,7 +79,7 @@ function consoleData(data){
   showGrantMeta(md);
   showOfferMeta(md);
   showBlobMeta(bd);
-  showThemeMeta(td);
+  // showThemeMeta(td);
   showNarrative(nd);
 }
 
@@ -233,29 +237,66 @@ function consoleData(data){
     el.parent(themeUL);
   }
 
-  function showNarrative(nd){
-    if(!narraUL) {
-      narraUL=createElement('ul');
-      var el=createElement('li',"something");
-      el.parent(narraUL);
-      narraUL.parent(narraDiv);
-    }
-    var narraList=selectAll('li',narraUL);
-    narraList.forEach(function(li){
-      li.remove();
-    });
-    nd.themes.forEach(function(theme,i){
-      //devString=("00"+dev.position).slice(-3)+" "+dev.connection+" "+dev.socket;
-      devString=("0"+i).slice(-2)+" Theme: "+theme.name;
-      var el=createElement('li',devString);
-      el.parent(narraUL);
 
-    });
+  function showNarrative(nd){
+    if(narrativeChanging){
+      narrativeChanging=false;
+      if(!narraUL) {
+        narraUL=createElement('ul');
+        narraUL.addClass('simple-list');
+        var el=createElement('li',"something");
+        el.parent(narraUL);
+        narraUL.parent(narraDiv);
+      }
+      var narraList=selectAll('li',narraUL);
+      narraList.forEach(function(li){
+        li.remove();
+      });
+      nd.themes.forEach(function(theme,i){
+        //devString=("00"+dev.position).slice(-3)+" "+dev.connection+" "+dev.socket;
+       var themeOn=createCheckbox('',theme.on);
+       var themeDuration=createInput(theme.duration);
+       themeOn.attribute("index",i);
+       themeDuration.attribute("index",i);
+       themeOn.changed(themeOnChanged);
+       themeDuration.changed(themeDurChanged);
+        devString=("0"+i).slice(-2)+" Theme: "+theme.name;
+        var el=createElement('li');
+        themeOn.addClass("simple-list-item");
+        el.addClass("container");
+        var elString=createP(devString);
+        el.child(themeOn);
+        el.child(elString);
+        el.child(themeDuration);
+        el.parent(narraUL);
+      });
+      narrativeLive=createElement('li',devString);
+      narrativeLive.parent(narraUL);
+    }
     var devString="Current Theme: "+nd.current.name+", ttl: "+nd.current.ttl;
-    var el=createElement('li',devString);
-    el.parent(narraUL);
+    narrativeLive.html(devString);
+    narrativeLive.parent(narraUL);
   }
 
+  function themeOnChanged(){
+    narrativeChanging=true;
+    changeThemeStatus(this.attribute("index"),this.checked());
+  }
+
+  function themeDurChanged(){
+    narrativeChanging=true;
+    changeThemeDuration(this.attribute("index"),this.value());
+  }
+
+  function changeThemeStatus(index, onOff){
+    console.log("Turning theme #"+index+" "+onOff);
+    socket.emit('themeOnOff',{index: index, status: onOff});
+  }
+
+  function changeThemeDuration(index, duration){
+    console.log("Change Duration theme #"+index+" "+duration);
+    socket.emit('themeDuration',{index: index, duration: duration});
+  }
 
 function setID(data){
   console.log(data.id);

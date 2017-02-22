@@ -73,6 +73,16 @@ function newConnection(socket){
   socket.on('getServerThemes', sendThemesToClient);
   socket.on('soundControl', soundControl);
   socket.on('resetThemes', resetThemes);
+  socket.on('themeOnOff', themeOnOff);
+  socket.on('themeDuration', themeDuration);
+
+  function themeDuration(data){
+  	themes.themeDuration(data.index, data.duration);
+  }
+
+  function themeOnOff(data){
+  	themes.themeOnOff(data.index, data.status);
+  }
 
   function sendThemesToClient(data){
   	console.log("Sending Themes to client");

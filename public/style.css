@@ -57,6 +57,14 @@ button hover {
 .simple-list {
   list-style:none;
   padding-left:0;
+  float:left;
+}
+
+.simple-list-item {
+  /*list-style:none;*/
+  padding-left:0;
+  float:left;
+  color: orange;
 }
 
 .subtitle {
