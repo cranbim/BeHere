@@ -5,44 +5,13 @@ module.exports={
 
 var serverState=require('./serverState.js');
 var blobList=require('./blobs.js');
-var parameters=new blobList.Parameters();
+var paramsMod=require('./parameters');
+var parameters=new paramsMod.Parameters();
 
 //Gobal Var  - check for conflicts
 var nextRingID=0;
 
 
-/**********************************************
-		Constructor for Device Shadow Object
-***********************************************/
-function DeviceShadow(session, devid, devWidth, devHeight, nickName){
-	this.session=session;
-	this.nickName=nickName;
-	this.devid=devid;
-	this.lastBeat=0;
-	this.devWidth=devWidth;
-	this.devHeight=devHeight;
-	this.startX=null;
-	this.endX=null;
-	this.suspended=false;
-	console.log("New device shadow "+this.session.id+", Device"+devid+", Width:"+devWidth+" Height:"+devHeight+" user:"+nickName);
-
-	this.requestForPermit=function(){
-		console.log(this.session.id+" received request for attach permit. Pass to device");
-		this.session.socket.emit('rfpermit',{});
-	};
-
-	this.setStartX=function(sx,pos){
-		this.startX=sx;
-		this.endX=this.startX+this.devWidth;
-		this.session.socket.emit("startX", {sx:sx, pos:pos});
-	};
-
-	this.unsetStartX=function(){
-		this.startX=null;
-		this.endX=null;
-		this.session.socket.emit("startX", {sx:null});
-	};
-}
 
 /**********************************************
 		Constructor for Blob Ring Object - does most of the work
@@ -65,27 +34,26 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	//main operational driver for the ring, called by heartbeat
 	this.run=function(heartbeat){
 		this.heartbeat=heartbeat;
-		//console.log(this.name+" "+this.ringID+" running");
 		processAttachRequests();
 		processAttachGrants();
 		processAttachOffers();
+		//run blobs
 		this.blobList.run(this.ringLengthPixels);
 		sendBlobData();
+		//check devices are active
 		checkShadowHealth(heartbeat);
+		//run themes
 		var themeStatus=themes.run(heartbeat, parameters);
-		// var newTheme=themeStatus.index;
-		// var newThemeName=themeStatus.name;//themes.run();
-		// //var oldTheme=themes.getCurrent();
-		// if(oldTheme>-1){
-		// 	//shutdown old theme
-		// }
+		//themeStatus will contain new theme name iff theme is switching
 		if(themeStatus.index>-1){
-			io.sockets.emit("themeSwitch", themeStatus); //{name: newThemeName, index:newTheme}
+			io.sockets.emit("themeSwitch", themeStatus);
 		}
+		//run parameters
 		parameters.run(this.ringLengthPixels);
 		sendParamData();
 	};
 
+	//shadowhealth not being used properly yet
 	function checkShadowHealth(heartbeat){
 		//don't do this for unattached ring
 		for(var i=self.deviceShadows.length-1; i>=0; i--){
@@ -113,7 +81,6 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	this.resetThemes=function(data){
 		themes.reloadThemes();
 	};
-
 
 	this.gimmeTheme=function(data){
 		//get current active theme
@@ -244,10 +211,10 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 					//check that an active offer does not exist already
 					var pv=self.deviceShadows[prevPos].session.id;
 					var nx=self.deviceShadows[currPos].session.id;
-					//CREATE AN OFFER devid's not positions, which could change
 					if(offers.offerExists(pv,nx)||offers.offerExists(nx,pv)){ //because when there are only two existing devices, the offer is valid both ways around
 						console.log("Offer "+pv+" "+nx+" exists already");
 					} else {
+						//CREATE AN OFFER devid's not positions, which could change
 						//create the offer
 						var o=offers.newOffer(pv,nx);
 						//assign to the first available requester
@@ -307,10 +274,6 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 			allBlobs: allBlobs,
 			ringLength: self.ringLengthPixels,
 			numDevs: self.ringLengthDevs,
-			// params: {
-			// 	time: Date.now(),
-			// 	params:[parameters.getVal(0), parameters.getVal(1), parameters.getVal(2)]
-			// },
 			blobs: blobs
 		});
 		console.log("sendBlobData:"+blobs.length+" All?:"+allBlobs);
@@ -324,12 +287,8 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 			}
 		});
 	}
-
-			// console.log("PP: "+parameters.getVal(0));
-		// console.log("PP: "+parameters.getVal(1));
-
-
-		//new blob creation from the client
+	
+	//new blob creation from the client
 	this.clientBlob=function(data){
 		var pos=findDevRingPos(data.device);
 		var bData=null;
@@ -358,7 +317,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	******************************************/
 
 	function attachToRing(devid, prev, next){
-		console.log(self.name+" "+self.ringID+" Attaching device to ring, dev: "+devid+" twixt: "+prev+" and: "+next);
+		console.log(self.name+" "+self.ringID+" Attaching device to ring, dev: "+devid+" between: "+prev+" and: "+next);
 		//assign device shadow to this ring
 		var pos=self.joinRing(devid,next);
 		//remove from lobby
@@ -400,7 +359,9 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	this.joinRing=function(devid, nextid){
 		var next;
 		var shadow=unattached.findShadow(devid);
-		if(nextid) next=findDevRingPos(nextid);
+		if(nextid){
+			next=findDevRingPos(nextid);
+		} 
 		else if(this.ringLengthDevs===0){
 			next=0;
 		} else {
@@ -422,7 +383,6 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		this.ringLengthDevs++;
 		this.ringLengthPixels+=shadow.devWidth;
 		//update all subsequent devices
-
 		var endX=shadow.endX;
 		for(var i=next+1; i<this.deviceShadows.length; i++){
 			if(!this.deviceShadows[i].suspended){
@@ -431,7 +391,6 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 			}
 		}
 		console.log(this.name+" "+this.ringID+" "+"new dev shadow joins ring, "+this.ringLengthDevs+" "+this.ringLengthPixels+" at position:"+next);
-//		console.log(this.deviceShadows);
 		return next; //position on inserted device
 	};
 
@@ -547,5 +506,38 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	}
 }
 
+
+/**********************************************
+		Constructor for Device Shadow Object
+***********************************************/
+function DeviceShadow(session, devid, devWidth, devHeight, nickName){
+	this.session=session;
+	this.nickName=nickName;
+	this.devid=devid;
+	this.lastBeat=0;
+	this.devWidth=devWidth;
+	this.devHeight=devHeight;
+	this.startX=null;
+	this.endX=null;
+	this.suspended=false;
+	console.log("New device shadow "+this.session.id+", Device"+devid+", Width:"+devWidth+" Height:"+devHeight+" user:"+nickName);
+
+	this.requestForPermit=function(){
+		console.log(this.session.id+" received request for attach permit. Pass to device");
+		this.session.socket.emit('rfpermit',{});
+	};
+
+	this.setStartX=function(sx,pos){
+		this.startX=sx;
+		this.endX=this.startX+this.devWidth;
+		this.session.socket.emit("startX", {sx:sx, pos:pos});
+	};
+
+	this.unsetStartX=function(){
+		this.startX=null;
+		this.endX=null;
+		this.session.socket.emit("startX", {sx:null});
+	};
+}
 
 

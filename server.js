@@ -2,6 +2,7 @@
 //DJW, Cranbim, November 2016
 //
 
+//imports
 var express = require('express');
 var ringMod= require('./ring.js');
 var themeRunner= require ('./themeRunner.js');
@@ -11,6 +12,7 @@ var app=express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 
+//global vars
 var nextID=10000;
 var nextRingID=0;
 var nextAttachRequest=0;
@@ -19,14 +21,17 @@ var heartbeat=1000;
 var consoleSession;
 var currentSoundControl=null;
 
+//setup principle objects
 var themes=new themeRunner.ThemeRunner();
-var unattached=new ringMod.Ring("LOBBY", io); //ring to monitor unattached devices
-var ring=new ringMod.Ring("RING_01", io, themes); //ring to monitor attached devices
+//ring to monitor unattached devices
+var unattached=new ringMod.Ring("LOBBY", io);
+//ring to hold attached devices
+var ring=new ringMod.Ring("RING_01", io, themes);
 ring.setUnattached(unattached);
 var sessions=[];
 
+//start http server
 app.use(express.static('public'));
-
 server.listen(4000,"0.0.0.0");
 
 console.log("The Plasma Ring Server is running");
@@ -34,14 +39,16 @@ console.log("Listening on port:4000");
 
 io.sockets.on('connection', newConnection);
 
-var h=setInterval(beat,1000);//set one second heartbeat
+//set one second heartbeat
+var h=setInterval(beat,1000);
 
 function beat(){
 	heartbeat++;
 	console.log("heartbeat "+heartbeat);
 	if(sessions.length>0) io.sockets.emit('heartbeat',{beat:heartbeat});
+	//run the ring processes each heartbeat
 	ring.run(heartbeat);
-	//themes.run();
+	//update console
 	sendConsoleData();
 }
 
@@ -176,7 +183,7 @@ function sendConsoleData(){
 			ring: buildJSONRing(ring),
 			ringMeta: ring.buildJSONRingMeta(),
 			blobMeta: ring.buildJSONBlobMeta(),
-			themeMeta: themes.buildMetaData(),
+			// themeMeta: themes.buildMetaData(),
 			narrative: themes.buildNarrativeData()
 		});
 	} else {
@@ -210,7 +217,7 @@ function buildJSONRing(thisRing){
 }
 
 //Object to store the session Id and socket
-function Session(socket){ //class to hold session info
+function Session(socket){
 	this.socket=socket;
 	this.id=nextID++; //increment the ID number
 	socket.emit('id',{id:this.id});

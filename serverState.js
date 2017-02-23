@@ -15,25 +15,6 @@ New implemntation of objects to manage state
 var nextAttachRequest=0;
 var nextAttachOffer=0;
 
-//vars that would be part of the ring
-	// var requesters=new RequestList(ring.name, ring.id);
-	// var grants=new GrantList(ring.name, ring.id);
-	// var offers=new OffersList(ring.name, ring.id);
-
-//this run function will be a method on the ring
-// function run(){
-	// //processRequests();
-	// 	requesters.run();
-	// //processGrants();
-	// //grants.run();
-	// //processOffers();
-	// 	offers.run();
-	// //processAttachers();
-	// 	attachers.run();
-	// //processDetachers();
-// }
-
-
 
 //Object class for requesters
 function RequestList(ringName,ringID){
@@ -61,12 +42,6 @@ function RequestList(ringName,ringID){
 	};
 
 	this.checkForExpired=function(){
-		// requests.forEach(function(r){
-		//	if(r.isExpired()){
-
-		// }
-		// });
-		// console.log("Pre Requests Still active: "+requests.length);
 		requests=requests.filter(function(r){
 			if(r.isExpired()){
 				//expired.push(r);
@@ -74,8 +49,6 @@ function RequestList(ringName,ringID){
 			}
 			return true;
 		});
-		// console.log("Post Requests Still active: "+requests.length);
-		// console.log("Expired requests: "+expired.length);
 	};
 
 	this.cleanupExpired=function(){};
@@ -118,7 +91,6 @@ function RequestList(ringName,ringID){
 	};
 
 	this.run=function(){
-		//var expired=[];
 		//remove expired requests
 		this.checkForExpired();
 		//Process expired requests?
@@ -131,17 +103,15 @@ function RequestList(ringName,ringID){
 }
 
 
-//Ojject class for granst to attach
+//Oject class for grants to attach
 function GrantsList(){
 	var grants=[];
 	var expired=[];
 
 	this.grantExists=function(devid){
-		//needs to be implemented
 		return grants.some(function(g){
 			return g.device===devid && g.active;
 		});
-		//return null;
 	};
 
 	this.remove=function(devid){
@@ -165,7 +135,6 @@ function GrantsList(){
 	this.checkForExpired=function(){
 		grants=grants.filter(function(g){
 			if(g.isExpired()){
-				//expired.push(g);
 				return false;
 			}
 			return true;
@@ -253,11 +222,6 @@ function OffersList(){
 			if(o.id===offerID)
 				console.log("remove offer "+offerID);
 			return o.id!==offerID;
-			// if(o.id===offerID){
-			// 	//remove grants
-			// 	return false;
-			// }
-			// return true;
 		});
 	};
 
@@ -287,14 +251,12 @@ function OffersList(){
 		//remove expired requests
 		offers=offers.filter(function(o){
 			if(o.isExpired()){
-				console.log("RING"+/*ringID+" "+ringName+*/" offer"+o.id+" has expired");
-				// o.active=false;
+				console.log("RING offer"+o.id+" has expired");
 				expired.push(o);
 			}
 			return o.active;
 		});
 		//do something with expired offers?
-
 		//process offers to send out?
 		//process offers acceptd or rejected
 		//withdraw unused offers
@@ -326,9 +288,7 @@ function AttachRequest(devid){
 	this.offer=null;
 
 	this.isExpired=function(){
-		// var d=Date.now();
-		// console.log(this.expires+" "+d+" "+d>this.expires);
-		this.active=!(Date.now()>this.expires);
+		this.active=Date.now()<=this.expires;
 		return !this.active;
 	};
 }
@@ -343,7 +303,7 @@ function AttachGrant(devid){
 	this.expires=this.timeGranted+ttl;
 
 	this.isExpired=function(){
-		this.active=!(Date.now()>this.expires);
+		this.active=Date.now()<=this.expires;
 		return !this.active;
 	};
 }
@@ -362,7 +322,7 @@ function AttachOffer(prev, next){
 	this.offerSent=false;
 
 	this.isExpired=function(){
-		this.active=!(Date.now()>this.expires);
+		this.active=Date.now()<=this.expires;
 		return !this.active;
 	};
 }

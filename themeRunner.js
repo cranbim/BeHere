@@ -1,27 +1,28 @@
+//PlasmaRing by Dave Webb 2016-2017
+//Server side Theme loading and running
+//needs themes.json and narrative.json to load
+
 module.exports={
 	//exportname: internalName
 	ThemeRunner: ThemeRunner
 };
 
-//var themeMaster=require('./themes.js');
-// var narrative1=themeMaster.narrative1;
-// var themeLoader=themeMaster.themeLoader;
-
 var nextThemeId=0;
-
-//var tm=require('./themeMaster.js');
 
 var fs = require('fs');
 
 
-
 function ThemeRunner(){
 	var self=this;
+
+	//Theme loading
 	var themes=[];
 	var themesLoaded=false;
 	var allThemes;
 	var firstLoad=true;
 	var narrative;
+
+	//Theme running
 	var lastTheme=-1;
 	var currentTheme=-1;
 	var nextTheme=0;
@@ -30,9 +31,8 @@ function ThemeRunner(){
 	var currentThemeName="";
 	var changingTheme=false;
 
-	this.themeLoader=[];
+//	this.themeLoader=[];
 
-	//var themeTTL=0;
 	console.log("Theme Runner started");
 
 	var nextThemeId=0;
@@ -40,12 +40,10 @@ function ThemeRunner(){
 	loadThemes();
 	loadNarrative();
 
-
 	this.reloadThemes=function(){
 		themesLoaded=false;
 		loadNarrative();
 	};
-
 
 	function loadThemes(){
 		fs.readFile('./themes.json', readThemes);
@@ -78,7 +76,6 @@ function ThemeRunner(){
 		}		
 	}
 
-
 	function getThemeByName(name){
 		console.log(name);
 		var found=themes.find(function(t){
@@ -107,24 +104,6 @@ function ThemeRunner(){
 		return themeList;
 	};
 
-	this.buildMetaData=function(){
-		var meta={};
-		meta.themes=[];
-		themes.forEach(function(t){
-			var theme={
-				id: t.id,
-				name: t.name,
-				other: "stuff"
-			};
-			meta.themes.push(theme);
-		});
-		meta.current={
-			index: currentTheme,
-			ttl: nowTheme.ttl
-		};
-		return meta;
-	};
-
 	this.buildNarrativeData=function(){
 		var meta={};
 		meta.themes=[];
@@ -133,7 +112,6 @@ function ThemeRunner(){
 				name: t.name,
 				duration: t.duration,
 				on: t.on,
-				other: "stuff"
 			};
 			meta.themes.push(theme);
 		});
@@ -152,44 +130,50 @@ function ThemeRunner(){
 		}
 	};
 
+	function runThemeParameters(heartbeat){
+		//at start of counter theme life
+		if(nowTheme.params.hasOwnProperty('beat')){
+			if(nowTheme.params.beat===true) nowTheme.params.beat=heartbeat;
+		}
+		if(nowTheme.params.hasOwnProperty('seed')){
+			nowTheme.params.seed=1+Date.now()%100;
+		}
+		if(nowTheme.params.hasOwnProperty('resetParamLoop')){
+			if(nowTheme.params.resetParamLoop){
+				parameters.reset(2);
+				//nowTheme.params.resetParamLoop=false;
+			}
+		}
+	}
+
 	this.run=function(heartbeat, parameters){
-		if(themesLoaded){
-			if(!actualTheme){
+		if(themesLoaded){ //can't run if no themes
+			if(!actualTheme){ //load a theme if none is active
 				switchTheme();
 			}
-			if(!actualTheme.run()){
-				///at end of counter theme life
+			if(!actualTheme.run()){ //theme.run returns false if end of life
+				//at end of counter theme life
 				if(nowTheme.params.hasOwnProperty('beat')){
 					nowTheme.params.beat=true;
 				}
-				var preSwitch=currentTheme;
+				//runThemeParameters();
+				var preSwitch=currentTheme; //a terminal to test if no themes are active
 				switchTheme();
 				while(!nowTheme.on && currentTheme!==preSwitch){
 					switchTheme();
 				}
-				//at start of counter theme life
-				if(nowTheme.params.hasOwnProperty('beat')){
-					if(nowTheme.params.beat===true) nowTheme.params.beat=heartbeat;
-				}
-				if(nowTheme.params.hasOwnProperty('seed')){
-					nowTheme.params.seed=1+Date.now()%100;
-				}
-				if(nowTheme.params.hasOwnProperty('resetParamLoop')){
-					if(nowTheme.params.resetParamLoop){
-						parameters.reset(2);
-						//nowTheme.params.resetParamLoop=false;
-					}
-				}
+				runThemeParameters(heartbeat);
 				return {
 					index: currentTheme,
 					name: currentThemeName,
 					params: nowTheme.params
-					};
+				};
 				// return currentThemeName;
 			}
 		} else {
 			console.log("Themes not loaded yet");
 		}
+		// theme still running so return null object
 		return {index: -1, name:"none"};
 	};
 
@@ -209,17 +193,6 @@ function ThemeRunner(){
 		}
 	};
 
-	// function OLDswitchTheme(){
-	// 	lastTheme=currentTheme;
-	// 	currentTheme=nextTheme;
-	// 	nextTheme++;
-	// 	if(nextTheme>=themes.length) nextTheme=0;
-	// 	nowTheme=themes[currentTheme];
-	// 	currentThemeName=nowTheme.name;
-	// 	console.log("Switch theme to" + currentThemeName);
-	// 	nowTheme.init();
-	// 	changingTheme=false;
-	// }
 
 	function switchTheme(){
 		lastTheme=currentTheme;
@@ -231,7 +204,7 @@ function ThemeRunner(){
 		console.log("Switch theme to" + currentThemeName);
 		actualTheme=getThemeByName(currentThemeName);
 		actualTheme.init(nowTheme.duration, nowTheme.params);
-		// changingTheme=false;
+		//to prevent late theme change request from changing the next theme
 		setTimeout(delayedClearThemeChange,500);
 	}
 }
@@ -249,10 +222,7 @@ function GenericServerTheme(name){
 
 	this.init=function(duration, themeParams){
 		this.ttl=duration;
-		if(themeParams.beat){
-
-			//somehow send parameter to the client
-		}
+		// if(themeParams.beat){}
 		console.log("Theme "+this.id+" loaded and initialised");
 	};
 
