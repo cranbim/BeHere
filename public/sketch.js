@@ -397,13 +397,13 @@ function switchTheme(data){
 function notifyAttached(data){
   if(data.next===id){
     console.log(">>>> next");
-    statusBar.trigger('attachedNext',5,30);
+    statusBar.trigger('attachedNext',3,30);
   } else if(data.prev===id){
     console.log(">>>> prev");
-    statusBar.trigger('attachedPrev',5,30);
+    statusBar.trigger('attachedPrev',3,30);
   } else if(data.incoming===id){
     console.log(">>>> Me joining");
-    statusBar.trigger('attachedMe',5,30);
+    statusBar.trigger('attachedMe',3,30);
   }
   // statusBar.trigger('attached',5,30);
 }
@@ -917,7 +917,7 @@ function MyBlobs(){
   function Bloboid(id){
     var x, y;
     var trail=[];
-    var maxTrail=10;
+    var maxTrail=3;
     
     this.run=function(r1,g1,b1, flicker, ttl){
       //this.addPoint(x,y);
@@ -938,6 +938,7 @@ function MyBlobs(){
         // r*=r;
         r=2*i;
         // noFill();
+        strokeWeight(1);
         fill(r1,g1,b1,map(i,0,trail.length, 10,255));
         stroke(r1,g1,b1,map(i,0,trail.length, 10,255));
         if(flicker){
@@ -980,7 +981,7 @@ function StatusBar(start, end){
   var g=0;
   var b=200;
   var sweepMult=12;
-  var sweepThick=6;
+  var sweepThick=3;
   textSize(width*0.05);
   var tL;//=textWidth(message);
   var tLength=height*2;
@@ -1016,9 +1017,9 @@ function StatusBar(start, end){
     attach: {r: 0, g:180, b:0, m:"ATTACHING", ms:0.2 },
     detach: {r: 255, g:0, b:0, m:"DETACH", ms:0.2 },
     attached: {r: 0, g:180, b:0, m:"ATTACH HERE", ms:0.2 },
-    attachedPrev: {r: 255, g:255, b:255, m:"☛☛☛", ms:0.2 },
-    attachedNext: {r: 255, g:255, b:255, m:"☚☚☚", ms:0.2 },
-    attachedMe: {r: 255, g:255, b:255, m:"⬆︎⬆︎⬆︎", ms:0.2 },
+    attachedPrev: {r: 20, g:100, b:255, m:"☛☛☛", ms:0.2 },
+    attachedNext: {r: 20, g:100, b:255, m:"☚☚☚", ms:0.2 },
+    attachedMe: {r: 20, g:100, b:255, m:"⬆︎⬆︎⬆︎", ms:0.2 },
     blob: {r: 200, g:80, b:20, m:"BLOB" },
     none: {r: 0, g:0, b:0, m:"NOTHING" }
   };

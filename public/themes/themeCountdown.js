@@ -33,7 +33,8 @@ function ThemeCountdown(w,h){
     }
     console.log("Theme Params "+params);
     colorMode(HSB,255);
-    background((newCol+128)%255,110,100);
+    background(51);
+    // background((newCol+128)%255,110,100);
     particles.forEach(function(p){
       p.update(attracting);
       if(changeCol) p.changeCol(newCol);
@@ -42,6 +43,7 @@ function ThemeCountdown(w,h){
     run();
     osb.show();
     colorMode(RGB);
+    console.log("Time to end theme?: "+(counter<0));
     return(counter<0);
   };
 
@@ -73,7 +75,7 @@ function ThemeCountdown(w,h){
     var move;
     var c;
     var col;
-    changeCol();
+    changeColor();
 
     
     this.update=function(attracting){
@@ -125,9 +127,9 @@ function ThemeCountdown(w,h){
       
     }
     
-    this.changeCol=changeCol;
+    this.changeCol=changeColor;
     
-    function changeCol(ncol){
+    function changeColor(ncol){
       col=ncol;
     }
     
@@ -136,7 +138,7 @@ function ThemeCountdown(w,h){
       if(attracting){
         rad=w/200;
       } else {
-        rad=c.r===255?w/200:w/40;
+        rad=c.r===255?w/80:w/80;
       }
       // var rad=c.r===255?w/200:w/40;
       push();
@@ -144,13 +146,18 @@ function ThemeCountdown(w,h){
       // colorMode(HSB,255);
       // if(c.r===255) noFill();
       // else 
-      fill(col,200,200);
+      if(c.r===255){
+        noFill();
+      } else {
+        fill(col,200,200);
+      }
       //fill(c.r===255?255:150,150);
-      noStroke();
+      //noStroke();
+      stroke(col,200,200);
       ellipse(pos.x, pos.y, rad,rad);
       // colorMode(RGB);
       pop();
-    }
+    };
   }
 
   function OSB(){

@@ -11,17 +11,13 @@
     var swipe2=height/2+swipeH/2;
     var n;
     var nOff=0;
-    var nInc=0.05;
-    var swipeInc=-5;
-    var maxDur=500;
+    var nInc=0.1;
+    var swipeInc=-15;
+    var maxDur=250;
     var duration=maxDur;
+    var fleckSize;
 
     this.run=function() {
-      if(duration>0)
-        duration --;
-      var fleckSize=map(duration,maxDur,0,5,200);
-      //console.log(">>>>> "+fleckSize);
-      
       n=noise(nOff);
       nOff+=nInc;
       background(noise(nOff+0.5)*100,150);
@@ -41,9 +37,18 @@
         var l=random(30*n+1);
         var c=random(200,255);
         stroke(c);
+        strokeCap(ROUND);
         strokeWeight(noise(nOff+0.1)*fleckSize);
         line(x,y,x+l,y);
       }
+      if(duration>0){
+        fleckSize=map(duration,maxDur,0,50,15);
+        duration --;
+        background(255,map(duration,maxDur,0,255,10));
+      } else {
+        fleckSize=15;
+      }
+
     };
 
   }

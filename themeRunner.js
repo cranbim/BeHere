@@ -127,8 +127,13 @@ function ThemeRunner(){
 			console.log("Client forcing theme end");
 			changingTheme=true;
 			actualTheme.endMe();
+			setTimeout(delayedClearThemeChange,500);
 		}
 	};
+
+	function delayedClearThemeChange(){
+		changingTheme=false;
+	}
 
 	function runThemeParameters(heartbeat){
 		//at start of counter theme life
@@ -159,6 +164,7 @@ function ThemeRunner(){
 				//runThemeParameters();
 				var preSwitch=currentTheme; //a terminal to test if no themes are active
 				switchTheme();
+				//check that new theme is enabled, else search for next enabled theme
 				while(!nowTheme.on && currentTheme!==preSwitch){
 					switchTheme();
 				}
@@ -205,12 +211,8 @@ function ThemeRunner(){
 		actualTheme=getThemeByName(currentThemeName);
 		actualTheme.init(nowTheme.duration, nowTheme.params);
 		//to prevent late theme change request from changing the next theme
-		setTimeout(delayedClearThemeChange,500);
+		// setTimeout(delayedClearThemeChange,500);
 	}
-}
-
-function delayedClearThemeChange(){
-	changingTheme=false;
 }
 
 

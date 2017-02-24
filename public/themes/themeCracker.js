@@ -58,7 +58,7 @@
         currX=0;
         for(var i=0; i<numSegs; i++){
           var remainSegs=numSegs-1-i;
-          var remainX=width-currX;
+          var remainX=w*1.1-currX;
           var seed=remainX/remainSegs;
           segs[i]=p5.Vector.fromAngle(random(-PI/3,PI/3));
           segs[i].mult(random(seed*3));
@@ -105,16 +105,16 @@
       var xOff=0;
       
       if(f==1){
-        vertices[0]={x:width, y:height};
-        vertices[1]={x:0, y:height};
-        vertices[2]={x:0, y:height/2};
+        vertices[0]={x:w, y:h};
+        vertices[1]={x:0, y:h};
+        vertices[2]={x:0, y:h/2};
       } else {
-        vertices[0]={x:width, y:0};
+        vertices[0]={x:w, y:0};
         vertices[1]={x:0, y:0};
-        vertices[2]={x:0, y:height/2};
+        vertices[2]={x:0, y:h/2};
       }
       var cx=0;
-      var cy=height/2;
+      var cy=h/2;
       inVertices.forEach(function(v,i){
         cx+=v.x;
         cy+=v.y;
@@ -126,7 +126,7 @@
         var speed=map(abs(yOff),0,50,0.1,1);
         push();
         translate(xOff,yOff);
-        if(abs(yOff)<height/2){ 
+        if(abs(yOff)<h/2){ 
           if(abs(yOff)>3){
             yOff+=random(5)*f*speed;
             xOff=random(3);
@@ -136,7 +136,7 @@
         }
         stroke(0);
         fill(0);
-        translate(x,y);
+        translate(x-w*0.05,y);
         beginShape();
         vertices.forEach(function(v){
           vertex(v.x, v.y);
