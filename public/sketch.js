@@ -3,36 +3,23 @@
 
 //html/display vars
 var p5div,p5canvas;
-var metaDiv;
-var idBar;
-var userNickName="unknown";
-var buttonBar;
-var geometry;
-var offersDiv, welcomeDiv, joinerDiv;
-var titleBar;
-var button, joinButton, attachButton, detachButton, permitButton, fsButton;
-var isFullScreen;
-var statusMessage, position, idnum;
-var offersList; //HTML offers
-var hideMeta=true;
-var canvasFull=false;
-var canSmallWidth=400;
-var canSmallHeight=50;
-var canFullWidth=400;
-var canFullHeight=200;
-var buttonBarHeight=25;
-var lastTouch=0;
 var soundOn=false;
 var pD;
-
+var lastTouch=0;
 
 
 //Core vars
 var logger; //object to log to console of file
 var deviceData; // store current contect data
 var offers=[]; //actual offers
-var dataRefresh; //timer for updating the display
+// var dataRefresh; //timer for updating the display
 var clicks=[]; //stores recent mouse click echoes
+var myBlobs;
+var allBlobs;
+var statusBar; //stores the visual cue to actions
+var socket;
+var id;
+
 var myWidth=400;
 var devWidth;
 var devHeight=200;
@@ -42,11 +29,6 @@ var marginLeft=0;//50
 var marginRight=0;
 var dispStartX=0;
 var dispEndX=0;
-var myBlobs=new MyBlobs();
-var allBlobs=new AllBlobs();
-var statusBar; //stores the visual cue to actions
-var socket;
-var id;
 var ringLength=10;
 var ringDevs=1;
 var globalParams=[];
@@ -64,41 +46,40 @@ var xInc=10;
 //theme vars
 var themeRunner;
 
-//Temporary variable
+//Parameter variable
 var paramPos;
 var absParamPos;
 
 //need some sort of subfunction to setup some of these
 
 function setup() {
-  //get display capabilities
+  setupCanvas();
+  setupMeta();
+  setupButtons();
+  myBlobs=new MyBlobs();
+  allBlobs=new AllBlobs();
+  noiseField=new NoiseField();
+  statusBar=new StatusBar(devWidth,devHeight);
+  logger=new Logger();
+  deviceData=new DeviceData();
+  themeRunner=new ThemeRunner(canFullWidth, canFullHeight);
+  //initialise socket
+  socket=io.connect('/');
+  socket.on('connect', connected);
+  // dataRefresh=setInterval(dataRefreshPoll, 1000);
+  //initial display
+  refreshHTMLStatus();
+  refreshHTMLGeometry();
+  frameRate(30);
+}
+
+function setupCanvas(){
   devWidth=windowWidth;
   devHeight=windowHeight;
   myWidth=devWidth+marginLeft+marginRight;
   canFullWidth=devWidth;
   canSmallWidth=devWidth;
   canFullHeight=devHeight;
-  //setup html/display sections
-  setupCanvas();
-  setupMeta();
-  setupButtons();
-  noiseField=new NoiseField();
-  statusBar=new StatusBar(p5canvas.width, p5canvas.height);
-  logger=new Logger();
-  deviceData=new DeviceData();
-
-  socket=io.connect('/');
-  //socket=io.connect('http://192.168.0.5:4000');
-  socket.on('connect', connected);
-  dataRefresh=setInterval(dataRefreshPoll, 1000);
-  //initial display
-  refreshHTMLStatus();
-  refreshHTMLGeometry();
-  themeRunner=new ThemeRunner(canFullWidth, canFullHeight);
-  frameRate(30);
-}
-
-function setupCanvas(){
   p5div=select('#p5');
   //switch off retina capability to improve performance?
   pixelDensity(1);
@@ -106,209 +87,66 @@ function setupCanvas(){
   p5canvas=createCanvas(canSmallWidth, canSmallHeight);
   p5canvas.parent(p5div);
   isFullScreen = fullscreen();
-  // p5canvas.hide();
-  // p5Hidden=true;
-}
-
-function changeCanvas(full){
-  if(full){
-    resizeCanvas(canFullWidth, canFullHeight-buttonBarHeight);
-  } else {
-    resizeCanvas(canSmallWidth, canSmallHeight);
-  }
-  statusBar.setSize(p5canvas.width, p5canvas.height);
-}
-
-function setupButtons(){
-  buttonBar=select('#buttons');
-  button = select('#join');
-  joinButton = select('#join2');
-  fsButton= select('#fullScreen');
-  attachButton = select('#attach');
-  attachButton.hide();
-  detachButton = select('#detach');
-  detachButton.hide();
-  permitButton = select('#permit');
-  permitButton.hide();
-  statusMessage = select('#status');
-  button.mouseClicked(joinMe);
-  joinButton.mouseClicked(joinMe);
-  fsButton.mouseClicked(switchFullScreen);
-  attachButton.mouseClicked(attachMe);
-  detachButton.mouseClicked(detachFromRing);
-  permitButton.mouseClicked(permitAttacher);
 }
 
 function reloadPage(){
   location.reload();
 }
 
-function windowResized(){
-  devWidth=windowWidth;
-  devHeight=windowHeight;
-  myWidth=devWidth+marginLeft+marginRight;
-  canFullWidth=devWidth;
-  canSmallWidth=devWidth;
-  canFullHeight=devHeight;
-
-  changeCanvas(deviceData.fullDisplay);
-}
-
-function switchFullScreen(){
-  isFullScreen = fullscreen();
-  fullscreen(!isFullScreen);
-  devWidth=windowWidth;
-  devHeight=windowHeight;
-  myWidth=devWidth+marginLeft+marginRight;
-  canFullWidth=devWidth;
-  canSmallWidth=devWidth;
-  canFullHeight=devHeight;
-  changeCanvas(deviceData.fullDisplay);
-}
-
-function setupMeta(){
-  titleBar=select('#titleBar');
-  idBar=select('#idbar');
-  metaDiv=select('#meta');
-  geometry = select('#geometry');
-  position = select('#position');
-  offersDiv = select('#attachoffers');
-  offersDiv.hide();
-  idnum = select('#idnum');
-  changeHTMLMetaDisplay();
-  welcomeDiv=select('#welcome');
-  joinerDiv=select('#attachme');
-}
-
-
 function draw() {
-  var showing=false;
   var backgroundRendered=false;
   if(deviceData.status=="attached"){
+    backgroundRendered=true;
     var blobPos=myBlobs.getPos();
-    if(themeRunner) {
-      if(!themeRunner.themeRendersBackground){
-        background(40);
-      }
-      // else {
-        // backgroundRendered=true;
-      // }
-      backgroundRendered=true;
-      themeRunner.setCurrentParams(absParamPos);
-      if(themeRunner.run(myBlobs, ringLength, blobPos, soundOn)){
-        console.log("Theme calling end");
-        socket.emit('themeKiller',{id: id});
-      }
-    }
-    showing=true;
+    runThemeAndBlobs(blobPos);
   }
   if(!backgroundRendered){
     background(40);
   }
-  //backGroundFromParams();
   processParams();
   mapParamToRing();
-  //backgroundDistanceMeter();
- 
   runClicks();
-  if(themeRunner){
+  statusBar.show();
+  //Helper, debug stuff on the display
+  drawMeta();
+  echoHeartBeat();
+}
+
+
+function runThemeAndBlobs(blobPos){
+  var showing=false;
+  if(themeRunner) {
+    if(!themeRunner.themeRendersBackground){
+      background(40);
+    }
+    //backgroundRendered=true;
+    themeRunner.setCurrentParams(absParamPos);
+    if(themeRunner.run(myBlobs, ringLength, blobPos, soundOn)){
+      console.log("Theme calling end");
+      socket.emit('themeKiller',{id: id});
+    }
+    showing=true;
     if(themeRunner.themeControlsBlobs()){
       myBlobs.runOnly(showing);
     } else {
       myBlobs.runPlusMove(showing);
     }
   }
-  statusBar.show();
-  //Helper, debug stuff on the display
-  drawMeta();
-  //send a heartbeat echo every 0.5-1 frame
-  echoHeartBeat();
 }
 
-function drawMeta(){
-  var test=mapParamToOther(ringLength);
-
-  if(!hideMeta){
-    stroke(0);
-    strokeWeight(2);
-    fill(255);
-    textSize(20);
-    text(parseInt(frameRate(),0),10,height-10);
-    //parameter tracking lines
-    stroke(255,0,0,255);
-    strokeWeight(2);
-    // translate(paramPos,0);
-    line(paramPos,0,paramPos,height);
-    stroke(0,255,255);
-    line(test,0,test,height);
-  }
-}
-
-function processParams(){
-  if(globalParams[2]){
-    var p2=globalParams[2];
-    var ellapsedSinceRefresh=(Date.now()-p2.myTimeStamp);
-    absParamPos=p2.last+ellapsedSinceRefresh*p2.stepPerMS;
-  }
-}
-
-function mapParamToRing(){
-  var newVal;
-  newVal=ringLength+absParamPos%ringLength;
-  if(newVal>myStartX && newVal<myEndX){
-    paramPos=newVal-myStartX;
-  } else {
-    paramPos=-10;
-  }
-}
-
-function mapParamToOther(other){
-  var localPos;
-  var newVal=other+absParamPos%other;
-  if(newVal>myStartX && newVal<myEndX){
-    localPos=newVal-myStartX;
-  } else {
-    localPos=-10;
-  }
-  return localPos;
-}
-
-
-function backgroundDistanceMeter(){
-  var lerpedPos=0;
-  if(distances){
-    lerpedPos=lerp(distances.last, distances.current, distances.count/30);
-    distances.count++;
-    //console.log(distances.count, lerpedPos);
-  }
-  var r=100;
-  var myX=myStartX+myWidth/2;
-  var dist=abs(myX-lerpedPos);
-  var relDist=dist/ringLength*2;
-  var aspect=width/height;
-  //console.log(myX, dist, relDist);
-  r=map(relDist,0,1,width/2,10);
-  // text(r,20,40);
-  push();
-  noStroke();
-  fill(255,50);
-  ellipse(width/2, height/2, r, r/aspect);
-  pop();
-}
 
 function echoHeartBeat(){
+  //send a heartbeat echo every 0.5-1 frame
   if(frameCount%30===0){ //assume slower framerate
     socket.emit('echo',{device: id, beat: deviceData.currentBeat});
   }
 }
 
-//this is OK
 function connected(){
   logger.log("f connected()", "Connected ("+socket.id+")");
   deviceData.status="connected";
   refreshHTMLStatus();
   refreshHTMLGeometry();
-
   socket.on('id',setID);
   socket.on('disconnect', disconnected);
   socket.on('heartbeat',beat);
@@ -326,6 +164,17 @@ function connected(){
   socket.on('serverThemes',loadServerThemes);
 }
 
+function setID(data){
+  if(whenStarted){
+    reloadPage();
+  }
+  whenStarted=Date.now();
+  id=data.id;
+  deviceData.id=id;
+  refreshHTMLStatus();
+  console.log("My ID="+id);
+}
+
 function disconnected(){
   console.log("Disconnected from server ("+socket.id+")");
   deviceData.status="nothing";
@@ -333,40 +182,51 @@ function disconnected(){
   refreshHTMLGeometry();
 }
 
-function touchEnded(){
-  logger.log("f touchEnded","touched");
-  if(Date.now()>lastTouch+100){
-    if(touchX>=0 &&
-      touchX<=width &&
-      touchY>=0 &&
-      touchY<=height){
-        newClick(touchX+marginLeft+myStartX, touchY);
-    }
-    lastTouch=Date.now();
-  }
-  //return false;
+function beat(data){
+  console.log(data.beat);
+  deviceData.currentBeat=data.beat;
+  themeRunner.checkThemes();
+  dataRefreshPoll();
 }
 
-function mouseClicked(){
-  //click also triggers a touch. why?
-  logger.log("f mouseClicked","clicked");
-  if(Date.now()>lastTouch+100){
-    if(mouseX>=0 &&
-      mouseX<=width &&
-      mouseY>=0 &&
-      mouseY<=height){
-        newClick(mouseX+marginLeft+myStartX, mouseY);
-    }
-    lastTouch=Date.now();
-  }
+function updateRingPos(data){
+  deviceData.geometry.position=data.pos;
+  console.log("new ring pos "+deviceData.geometry.position);
+  refreshHTMLGeometry();
 }
 
-function keyPressed(){
-  if(key=='h' || key=='H'){
-    hideMeta=!hideMeta;
+function setStartX(data){
+  console.log("new StartX Pre: "+myStartX+" "+myEndX);
+  if(data.sx!==null){
+    myStartX=data.sx;
+    myEndX=myStartX+myWidth;
+  } else {
+    myStartX=null;
+    myEndX=null;
   }
-  changeHTMLMetaDisplay();
- }
+  deviceData.geometry.startX=myStartX;
+  deviceData.geometry.endX=myEndX;
+  refreshHTMLGeometry();
+  console.log("new StartX post: "+myStartX+" "+myEndX);
+  // noiseField.calcOffset(myStartX);
+  // noiseField.syncOffset();
+  //empty existing blobs
+  myBlobs.empty();
+  updateRingPos(data);
+}
+
+function soundControl(data){
+  console.log(data);
+  soundOn=data.soundOn;
+}
+
+function switchTheme(data){
+  console.log("switching theme");
+  console.log(data);
+  // themeRunner.switchThemeByIndex(data.index);
+  themeRunner.switchThemeByName(data.name, data.params);
+}
+
 
 //should we just have a run function that takes care of this kind of thing
 function dataRefreshPoll(){
@@ -382,31 +242,7 @@ function loadServerThemes(data){
   themeRunner.loadServerThemes(data);
 }
 
-function soundControl(data){
-  console.log(data);
-  soundOn=data.soundOn;
-}
 
-function switchTheme(data){
-  console.log("switching theme");
-  console.log(data);
-  // themeRunner.switchThemeByIndex(data.index);
-  themeRunner.switchThemeByName(data.name, data.params);
-}
-
-function notifyAttached(data){
-  if(data.next===id){
-    console.log(">>>> next");
-    statusBar.trigger('attachedNext',3,30);
-  } else if(data.prev===id){
-    console.log(">>>> prev");
-    statusBar.trigger('attachedPrev',3,30);
-  } else if(data.incoming===id){
-    console.log(">>>> Me joining");
-    statusBar.trigger('attachedMe',3,30);
-  }
-  // statusBar.trigger('attached',5,30);
-}
 
 function handleBlobData(data){
   console.log("Incoming blob data "+data.blobs.length);
@@ -444,76 +280,66 @@ function processBlobData(data){
   }
 }
 
-function distanceChanged(){
-  //console.log("Dist changed");
-  if(!distances){
-    distances={
-      current: 0,
-      last:0 ,
-      count:0
-    };
-  } else {
-    distances.last=distances.current;
-    distances.current=allBlobs.allAvgX;
-    distances.count=0;
-  }
-}
 
-function handleParameters(data){
-  var params=data.params;
-  params.params.forEach(function(p,i){
-    if(globalParams[i]!==undefined){
-      globalParams[i].last=globalParams[i].current;
-      globalParams[i].current=p;
-      globalParams[i].count=0;
-      globalParams[i].lastTimeServer=globalParams[i].currentTimeServer;
-      globalParams[i].currentTimeServer=params.time;
-      globalParams[i].myTimeStamp=Date.now();
-      globalParams[i].stepPerMS=(p-globalParams[i].last)/(params.time-globalParams[i].lastTimeServer);
-      // var p2=globalParams[2];
-      // var paramStep=(p2.current-p2.last)/(p2.currentTimeServer-p2.lastTimeServer)*333;//333 is ms per frame at 30fps
-      // var ellapsedSinceRefresh=(Date.now()-p2.myTimeStamp)/333;
-      // globalParams[i].stepPerFrame=paramStep;
-    }else{
-      globalParams[i]={
-        lastTimeServer: params.time,
-        currentTimeServer: params.time,
-        myTimeStamp: Date.now(),
-        last: p,
-        current: p,
-        count:0,
-        stepPerMS:0
-      };
+
+
+
+/*****************************************
+  User Interactions
+  ******************************************/
+
+function touchEnded(){
+  logger.log("f touchEnded","touched");
+  if(Date.now()>lastTouch+100){
+    if(touchX>=0 &&
+      touchX<=width &&
+      touchY>=0 &&
+      touchY<=height){
+        newClick(touchX+marginLeft+myStartX, touchY);
     }
-  });
-  // console.log(globalParams);
-}
-
-function setStartX(data){
-  console.log("new StartX Pre: "+myStartX+" "+myEndX);
-  if(data.sx!==null){
-    myStartX=data.sx;
-    myEndX=myStartX+myWidth;
-  } else {
-    myStartX=null;
-    myEndX=null;
+    lastTouch=Date.now();
   }
-  deviceData.geometry.startX=myStartX;
-  deviceData.geometry.endX=myEndX;
-  refreshHTMLGeometry();
-  console.log("new StartX post: "+myStartX+" "+myEndX);
-  // noiseField.calcOffset(myStartX);
-  // noiseField.syncOffset();
-  //empty existing blobs
-  myBlobs.empty();
-  updateRingPos(data);
+  //return false;
 }
 
-function updateRingPos(data){
-  deviceData.geometry.position=data.pos;
-  console.log("new ring pos "+deviceData.geometry.position);
-  refreshHTMLGeometry();
+function mouseClicked(){
+  //click also triggers a touch. why?
+  logger.log("f mouseClicked","clicked");
+  if(Date.now()>lastTouch+100){
+    if(mouseX>=0 &&
+      mouseX<=width &&
+      mouseY>=0 &&
+      mouseY<=height){
+        newClick(mouseX+marginLeft+myStartX, mouseY);
+    }
+    lastTouch=Date.now();
+  }
 }
+
+function keyPressed(){
+  if(key=='h' || key=='H'){
+    hideMeta=!hideMeta;
+  }
+  changeHTMLMetaDisplay();
+ }
+
+/*****************************************
+  Attachment protocol processing
+  ******************************************/
+
+function notifyAttached(data){
+  if(data.next===id){
+    console.log(">>>> next");
+    statusBar.trigger('attachedNext',3,30);
+  } else if(data.prev===id){
+    console.log(">>>> prev");
+    statusBar.trigger('attachedPrev',3,30);
+  } else if(data.incoming===id){
+    console.log(">>>> Me joining");
+    statusBar.trigger('attachedMe',3,30);
+  }
+  // statusBar.trigger('attached',5,30);
+}  
 
 function processOffer(data){
   var offerTemp={
@@ -592,23 +418,11 @@ function permitAttacher(){
   statusBar.trigger("grant",0,30);
 }
 
-function setID(data){
-  if(whenStarted){
-    reloadPage();
-  }
-  whenStarted=Date.now();
-  id=data.id;
-  deviceData.id=id;
-  refreshHTMLStatus();
-  console.log("My ID="+id);
-}
-
 function requestForPermit(){
   console.log("received request for attach permit from ring");
   statusBar.trigger("permit",0,30);
 }
 
-//early implementation and seems to mix up the mvc
 function joinMe(){
   if(deviceData.status=="connected"){
     userNickName=select('#nickName').value();
@@ -633,476 +447,107 @@ function attachMe(){
   statusBar.trigger("request",0,30);
 }
 
-function beat(data){
-  console.log(data.beat);
-  deviceData.currentBeat=data.beat;
-  themeRunner.checkThemes();
-}
 
 /*****************************************
-  Click response code
+  Parameter processing
   ******************************************/
 
-function runClicks(){
-  for(var i=clicks.length-1; i>=0; i--){
-    clicks[i].show();
-    if(!clicks[i].update()) clicks.splice(i,1);
+function handleParameters(data){
+  var params=data.params;
+  params.params.forEach(function(p,i){
+    if(globalParams[i]!==undefined){
+      globalParams[i].last=globalParams[i].current;
+      globalParams[i].current=p;
+      globalParams[i].count=0;
+      globalParams[i].lastTimeServer=globalParams[i].currentTimeServer;
+      globalParams[i].currentTimeServer=params.time;
+      globalParams[i].myTimeStamp=Date.now();
+      globalParams[i].stepPerMS=(p-globalParams[i].last)/(params.time-globalParams[i].lastTimeServer);
+    }else{
+      globalParams[i]={
+        lastTimeServer: params.time,
+        currentTimeServer: params.time,
+        myTimeStamp: Date.now(),
+        last: p,
+        current: p,
+        count:0,
+        stepPerMS:0
+      };
+    }
+  });
+  // console.log(globalParams);
+}
+
+function processParams(){
+  if(globalParams[2]){
+    var p2=globalParams[2];
+    var ellapsedSinceRefresh=(Date.now()-p2.myTimeStamp);
+    absParamPos=p2.last+ellapsedSinceRefresh*p2.stepPerMS;
   }
 }
 
-function newClick(x,y){
-  var c=new Click(x-myStartX-marginLeft,y);
-  clicks.push(c);
-  //statusBar.trigger("blob",0,10);
-  socket.emit("newBlob",{device:id, x:x, y:y});
-}
-
-/*****************************************
-  Click object constructor
-  ******************************************/
-
-function Click(x,y){
-  var r=5;
-  var rInc=3;
-  var alpha=255;
-  var ttl=30;
-
-  this.show=function(){
-    push();
-    translate(x,y);
-    stroke(0,150,230, alpha);
-    strokeWeight(10);
-    noFill();
-    ellipse(0,0,r*2,r*2);
-    strokeWeight(5);
-    ellipse(0,0,r,r);
-    pop();
-  };
-
-  this.update=function(){
-    r+=rInc;
-    ttl--;
-    alpha=map(ttl,30,0,250,20);
-    return ttl>0;
-  };
-}
-
-/*****************************************
-  MyBlobs and integral Blob objects
-  ******************************************/
-function AllBlobs(){
-  var prev=500;
-  var next=500;
-
-  this.allBlobs=[];
-  this.allCount=0;
-  this.allTotalX=0;
-  this.allTotalY=0;
-  this.allAvgX=0;
-  this.allAvgY=0;
-  this.prevCount=0;
-  this.prevTotalX=0;
-  this.prevTotalY=0;
-  this.prevAvgX=0;
-  this.prevAvgY=0;
-
-  this.reset=function(){
-    this.allBlobs=[];
-    this.allCount=0;
-    this.allTotalX=0;
-    this.allTotalY=0;
-    this.allAvgX=0;
-    this.allAvgY=0;
-    this.prevCount=0;
-    this.prevTotalX=0;
-    this.prevTotalY=0;
-    this.prevAvgX=0;
-    this.prevAvgY=0;
-  };
-
-  this.addBlob=function(blob){
-    this.allCount++;
-    this.allTotalX+=blob.x;
-    this.allAvgX=this.allTotalX/this.allCount;
-    this.allTotalY+=blob.y;
-    this.allAvgY=this.allTotalY/this.allCount;
-    this.allBlobs.push({x:blob.x, y:blob.y});
-    if(blob.x>(myStartX-prev) && blob.x<myStartX){
-      this.prevCount++;
-      this.prevTotalX+=blob.x;
-      this.prevTotalY+=blob.y;
-      this.prevAvgX=this.prevTotalX/this.prevCount;
-      this.prevAvgY=this.prevTotalY/this.prevCount;
-    }
-  };
-
-  this.writeAll=function(){
-    console.log("AllBlobs "+this.allCount+" avX:"+this.allAvgX+" avY:"+this.allAvgY);
-    console.log("All prev"+this.prevCount+" avX:"+this.prevAvgX+" avY:"+this.prevAvgY);
-  };
-}
-
-
-function MyBlobs(){
-  blobs=[];
-
-  this.getBlobs=function(){
-    return blobs;
-  };
-
-  this.addBlob=function(data){
-    var b=new Blob(data);
-    blobs.push(b);
-  };
-
-  this.exists=function(data){
-    return blobs.find(function(blob){
-      return data.id===blob.id;
-    });
-  };
-
-  this.runPlusMove=function(showBlobs){
-    for(var i=blobs.length-1; i>=0; i--){
-      if(showBlobs) blobs[i].show();
-      blobs[i].update();
-      if(!blobs[i].life()){
-        blobs.splice(i,1);
-      }
-    }
-  };
-
-  this.runOnly=function(showBlobs){
-    for(var i=blobs.length-1; i>=0; i--){
-      // if(showBlobs) blobs[i].show();
-      // blobs[i].update();
-      if(!blobs[i].life()){
-        blobs.splice(i,1);
-      }
-    }
+function mapParamToRing(){
+  var newVal;
+  newVal=ringLength+absParamPos%ringLength;
+  if(newVal>myStartX && newVal<myEndX){
+    paramPos=newVal-myStartX;
+  } else {
+    paramPos=-10;
   }
+}
 
-  this.getPos=function(){
-    bPos=[];
-    blobs.forEach(function(b){
-      bPos.push({
-        x:b.pos.x-myStartX-marginLeft,
-        y:b.pos.y,
-        vel: {x: b.vel.x, y: b.vel.y}
-      });
-    });
-    return bPos;
-  };
-
-  this.empty=function(){
-    blobs=[];
-  };
-
-  this.howMany=function(){
-    return blobs.length;
-  };
-
-  function Blob(data){
-    this.id=data.id;
-    this.bloboid=new Bloboid(this.id);
-    this.ttl=data.ttl;
-    this.x=data.x;
-    this.y=data.y;
-    this.pos=createVector(this.x,this.y);
-    this.vel=createVector(1,0);
-    if(data.vel){
-      this.vel=createVector(data.vel.x, data.vel.y);
-    }
-    this.prevailing=createVector(5,0);
-    var rr=0; var rg=255; var rb=150;
-    var er=255; var eg=0; var eb=0;
-    var drag=0.98;
-    var lim=20;
-    var steer=5;
-    var maxTTL=1000;
-
-
-
-    this.oldshow=function(){
-      push();
-      translate(this.x-myStartX, this.y);
-      stroke(255,0,150);
-      if(this.ttl>100){
-        fill(0,255,150);
-      } else {
-        fill(255,0,0);
-      }
-      ellipse(0,0,30,30);
-      pop();
-    };
-
-    this.show=function(green){
-      this.bloboid.addPoint(this.x-myStartX-marginLeft, this.y);
-      var ra=map(this.ttl, maxTTL, 100, 0, 255);
-      var ga=255-ra;
-      var ba=0;
-      if(green){
-        ra=0; ga=255; ba=0;
-      }
-      var flicker=false;
-      if(this.ttl<200){
-        flicker=true;
-        ra=255;
-        ga=0;
-      }
-      this.bloboid.run(ra,ga,rb, flicker, this.ttl);
-    };
-
-    this.update=function(){
-      this.pos=createVector(this.x,this.y);
-      var acc=p5.Vector.fromAngle(random(-TWO_PI, TWO_PI));
-      acc.mult(steer);
-      this.vel.mult(drag);
-      this.vel.add(acc);
-      this.vel.add(this.prevailing);
-      this.vel.limit(lim);
-      this.pos.add(this.vel);
-      this.x=this.pos.x;
-      this.y=this.pos.y;
-      // this.x+=xInc;
-      // this.ttl--;
-      // if(this.x>=myEndX || this.x<myStartX){
-      //   console.log("blob "+this.id+" just exited");
-      //   socket.emit('blobUpdate',{
-      //     id:this.id,
-      //     x:this.x,
-      //     y:this.y,
-      //     vel: {x: this.vel.x, y: this.vel.y},
-      //     ttl:this.ttl
-      //   });
-      // }
-      if(this.y<0) this.y=height;
-      if(this.y>height) this.y=0;
-      // if(this.ttl%30<1) socket.emit('blobUpdate',{
-      //   id:this.id,
-      //    x:this.x,
-      //    y:this.y,
-      //    vel: {x: this.vel.x, y: this.vel.y},
-      //    ttl:this.ttl
-      //  });
-      // return this.x>=myStartX && this.x<myEndX && this.ttl>0;
-    };
-
-    this.life=function(){
-      this.ttl--;
-      if(this.x>=myEndX || this.x<myStartX){
-        console.log("blob "+this.id+" just exited");
-        socket.emit('blobUpdate',{
-          id:this.id,
-          x:this.x,
-          y:this.y,
-          vel: {x: this.vel.x, y: this.vel.y},
-          ttl:this.ttl
-        });
-      }
-      if(this.ttl%30<1){
-        socket.emit('blobUpdate',{
-          id:this.id,
-          x:this.x,
-          y:this.y,
-          vel: {x: this.vel.x, y: this.vel.y},
-          ttl:this.ttl
-        });
-      }
-      return this.x>=myStartX && this.x<myEndX && this.ttl>0;
-    };
-
+function mapParamToOther(other){
+  var localPos;
+  var newVal=other+absParamPos%other;
+  if(newVal>myStartX && newVal<myEndX){
+    localPos=newVal-myStartX;
+  } else {
+    localPos=-10;
   }
+  return localPos;
+}
 
 
-  function Bloboid(id){
-    var x, y;
-    var trail=[];
-    var maxTrail=3;
-    
-    this.run=function(r1,g1,b1, flicker, ttl){
-      //this.addPoint(x,y);
-      this.showTrail(r1,g1,b1, flicker, ttl);
+function backgroundDistanceMeter(){
+  var lerpedPos=0;
+  if(distances){
+    lerpedPos=lerp(distances.last, distances.current, distances.count/30);
+    distances.count++;
+    //console.log(distances.count, lerpedPos);
+  }
+  var r=100;
+  var myX=myStartX+myWidth/2;
+  var dist=abs(myX-lerpedPos);
+  var relDist=dist/ringLength*2;
+  var aspect=width/height;
+  //console.log(myX, dist, relDist);
+  r=map(relDist,0,1,width/2,10);
+  // text(r,20,40);
+  push();
+  noStroke();
+  fill(255,50);
+  ellipse(width/2, height/2, r, r/aspect);
+  pop();
+}
+
+function distanceChanged(){
+  //console.log("Dist changed");
+  if(!distances){
+    distances={
+      current: 0,
+      last:0 ,
+      count:0
     };
-    
-    this.addPoint=function(x,y){
-      if(trail.length>maxTrail){
-        trail.splice(0,1);
-      }
-      trail.push({x:x, y:y});
-    };
-    
-    this.showTrail=function(r1,g1,b1, flicker, ttl){
-      push();
-      for(var i=0; i<trail.length; i++){
-        var r=trail.length-i;
-        // r*=r;
-        r=2*i;
-        // noFill();
-        strokeWeight(1);
-        fill(r1,g1,b1,map(i,0,trail.length, 10,255));
-        stroke(r1,g1,b1,map(i,0,trail.length, 10,255));
-        if(flicker){
-          noFill();
-          // if(i%2===0){
-          //   noFill();
-          // }
-        }
-        ellipse(trail[i].x, trail[i].y, r,r );
-      }
-      var x=trail[trail.length-1].x;
-      var y=trail[trail.length-1].y;
-      var relPos=floor((x+myStartX)/ringLength*100);
-      // console.log(myStartX+" "+x+" "+ringLength+" "+relPos);
-      //fill(255);
-      if(!hideMeta){
-        textSize(14);
-        stroke(0);
-        strokeWeight(1);
-        fill(200,200);
-        text(id,x+15,y-15);
-        text((relPos+"%"),x+15,y);
-        text(ttl,x+15,y+15);
-      }
-      pop();
-    };
+  } else {
+    distances.last=distances.current;
+    distances.current=allBlobs.allAvgX;
+    distances.count=0;
   }
 }
 
 /*****************************************
-  status bar object constructor
+  Utilities
   ******************************************/
-function StatusBar(start, end){
-  var w=10;
-  var alphaS=50;
-  var alphaE=200;
-  var pos=start-10;
-  // var inc=(end-start)/duration;
-  var r=200;
-  var g=0;
-  var b=200;
-  var sweepMult=12;
-  var sweepThick=3;
-  textSize(width*0.05);
-  var tL;//=textWidth(message);
-  var tLength=height*2;
-  var tSpeed;//=tLength/duration;
-  var tPos=height;
-  var running=true;
-  this.flashes=0;
-  var duration=30;
-  var message="none";
-  var flashes=0;
-  var tPosX=100;
-  var messageSize;
-
-  this.setValues=function(){
-    inc=(end-start)/duration;
-    //textSize(height*0.5);
-    tLength=this.h;
-    textSize(this.w*0.2);
-    tL=textWidth(message);
-    tPosX=this.w/2-tL/2;
-    tSpeed=this.h/duration;
-  };
-
-  this.setValues();
-  
-  var statusColors={
-    request: {r: 20, g:80, b:255, m:"REQUEST", ms:0.2 },
-    permit: {r: 255, g:20, b:150, m:"ALLOW?", ms:0.2 },
-    grant: {r: 125, g:20, b:255, m:"PERMIT", ms:0.2 },
-    offer: {r: 255, g:130, b:0, m:"OFFER", ms:0.2 },
-    accept: {r: 255, g:230, b:0, m:"ACCEPT", ms:0.2 },
-    accepted: {r: 0, g:255, b:50, m:"ACCEPTED", ms:0.2 },
-    attach: {r: 0, g:180, b:0, m:"ATTACHING", ms:0.2 },
-    detach: {r: 255, g:0, b:0, m:"DETACH", ms:0.2 },
-    attached: {r: 0, g:180, b:0, m:"ATTACH HERE", ms:0.2 },
-    attachedPrev: {r: 20, g:100, b:255, m:"☛☛☛", ms:0.2 },
-    attachedNext: {r: 20, g:100, b:255, m:"☚☚☚", ms:0.2 },
-    attachedMe: {r: 20, g:100, b:255, m:"⬆︎⬆︎⬆︎", ms:0.2 },
-    blob: {r: 200, g:80, b:20, m:"BLOB" },
-    none: {r: 0, g:0, b:0, m:"NOTHING" }
-  };
-
-  this.setSize=function(w,h){
-    this.w=w;
-    this.h=h;
-    start=w;
-    end=0;
-  };
-  
-  this.show=function(){
-    if(running){
-      if(pos>end){
-        for(var i=0; i<w; i++){
-          var a=map(i,w,0,alphaS, alphaE);
-          fill(r,g,b,a);
-          noStroke();
-          rectMode(CORNER);
-          rect(pos+i*sweepMult,0,sweepThick,height);
-          rect(width-pos-i*sweepMult,0,-sweepThick,height);
-          var vPos=map(pos,start,end,height,0);
-          rect(0, vPos+i*sweepMult, width,sweepThick);
-          rect(0, height-vPos-i*sweepMult, width, -sweepThick);
-         //rect(width/2, height/2, pos+i, pos+i, w+i);
-  
-        }
-        var rad=map(pos,start,end,0,width/8);
-        rectMode(CENTER);
-        stroke(r,g,b,a);
-        strokeWeight(sweepThick);
-        noFill();
-        for(var i=0; i<w; i++){
-          var a=map(i,0,w,0, 255);
-          stroke(r,g,b,a);
-          var vPos=map(pos,0,width, 0, height);
-          rect(width/2, height/2, pos+i*sweepThick, vPos+i*sweepThick, rad+i);
-        }
-        fill(r,g,b,150);
-        //noStroke();
-        stroke(0);
-        strokeWeight(4);
-        textSize(this.w*messageSize);
-        text(message,this.w/2-tL/2,tPos);
-        pos+=inc;
-        tPos-=tSpeed;
-      } else{
-        if(flashes>0){
-          flashes--;
-          this.reset();
-        } else {
-          running=false;
-        }
-      }
-    }
-  }
-  
-  this.trigger=function(trigKey, count, dur){
-    flashes=count||0;
-    // this.ttl=ttlMax;
-    if(!statusColors[trigKey]){
-      trigKey="none";
-    }
-    r=statusColors[trigKey].r;
-    g=statusColors[trigKey].g;
-    b=statusColors[trigKey].b;
-    duration=dur;
-    message=statusColors[trigKey].m;
-    messageSize=statusColors[trigKey].ms;
-    running=true;
-    pos=start-10;
-    tPos=this.h;
-    this.setValues();
-  };
-
-
-  
-  this.reset=function(){
-    running=true;
-    pos=start-10;
-    tPos=width;
-  }
-}
 
 
 
@@ -1120,171 +565,4 @@ function Logger(){
     }
   };
 }
-
-//*********************************
-// Object to store status data 
-// used by HTML View
-//*********************************
-
-function DeviceData(){
-  this.id="nothing";
-  this.status="nothing";
-  this.currentBeat=-1;
-  this.geometry={
-    fullDisplay: false,
-    position: -1,
-    myWidth: myWidth,
-    displayWidth: devWidth,
-    marginLeft: marginLeft,
-    marginRight: marginRight,
-    myHeight: devHeight,
-    startX: -1,
-    endX: -1
-  };
-  this.offersChanged=false;
-
-  // this.statusChanged=function(){
-  //   //update relevant bits of html
-  // };
-
-  // this.geometryChanged=function(){
-
-  // };
-}
-
-//*********************************
-// HTML view update functions
-//*********************************
-
-  function changeHTMLMetaDisplay(){
-    if(hideMeta){ 
-      metaDiv.hide();
-      idBar.hide();
-    }
-    else {
-      metaDiv.show();
-      idBar.show();
-    }
-  }
-
-
-  function refreshHTMLStatus(){
-    if(deviceData.status=="nothing"){
-      titleBar.show();
-      offersDiv.hide();
-      welcomeDiv.hide();
-      joinerDiv.hide();
-      deviceData.fullDisplay=false;
-      p5canvas.hide();
-      statusMessage.html("Status: not connected   ID:"+deviceData.id);
-      button.hide();
-      fsButton.show();
-      attachButton.hide();
-      detachButton.hide();
-      permitButton.hide();
-      //p5canvas.hide();
-      changeCanvas(deviceData.fullDisplay);
-    } else if(deviceData.status=="connected"){
-      titleBar.show();
-      offersDiv.hide();
-      welcomeDiv.show();
-      joinerDiv.hide();
-      deviceData.fullDisplay=false;
-      p5canvas.hide();
-      statusMessage.html("Status: connected   ID:"+deviceData.id);
-      button.show();
-      button.html('Join');
-      fsButton.show();
-      connectionStatus=0;
-      attachButton.hide();
-      detachButton.hide();
-      permitButton.hide();
-      //p5canvas.hide();
-      changeCanvas(deviceData.fullDisplay);
-    } else if(deviceData.status=="joined"){
-      titleBar.show();
-      offersDiv.show();
-      welcomeDiv.hide();
-      joinerDiv.show();
-      deviceData.fullDisplay=false;
-      p5canvas.hide();
-      statusMessage.html("Status: joined to lobby   ID:"+deviceData.id);
-      button.show();
-      button.html('un-Join');
-      fsButton.hide();
-      connectionStatus=1;
-      attachButton.show();
-      detachButton.hide();
-      permitButton.hide();
-      //p5canvas.hide();
-      changeCanvas(deviceData.fullDisplay);
-    } else if(deviceData.status=="attached"){
-      titleBar.hide();
-      offersDiv.hide();
-      welcomeDiv.hide();
-      joinerDiv.hide();
-      deviceData.fullDisplay=true;
-      p5canvas.show();
-      statusMessage.html("Status: attached to ring   ID:"+deviceData.id);
-      button.hide();
-      fsButton.hide();
-      attachButton.hide();
-      detachButton.show();
-      permitButton.show();
-      //p5canvas.show();
-      changeCanvas(deviceData.fullDisplay);
-    } else {
-      titleBar.hide();
-      offersDiv.show();
-      welcomeDiv.hide();
-      joinerDiv.hide();
-      deviceData.fullDisplay=false;
-      p5canvas.show();
-      statusMessage.html("Status: I have no idea   ID:"+deviceData.id);
-      button.hide();
-      fsButton.hide();
-      attachButton.hide();
-      detachButton.hide();
-      permitButton.hide();
-      //p5canvas.hide();
-      changeCanvas(deviceData.fullDisplay);
-    }
-    // statusMessage.html=stat;
-  }
-
-  function refreshHTMLGeometry(){
-    var tempHTML="|pos: "+deviceData.geometry.position+ "   |startX: "+deviceData.geometry.startX+"   |endX: "+deviceData.geometry.endX+"   |width: "+deviceData.geometry.myWidth+"   |height: "+deviceData.geometry.myHeight;
-    geometry.html(tempHTML);
-  }
-
-function renderOffers(){
-  if(true) {//temp to make sure the render is updated even with no change
-  //if(deviceData.offersChanged){
-    deviceData.offersChanged=false;
-    if(!offersList){
-      console.log("create offers list");
-      offersList=createElement('ul');
-      offersList.addClass('simple-list');
-      offersList.parent(offersDiv);
-    }
-    var oListTemp=selectAll('li',offersList);
-    oListTemp.forEach(function(li){
-      li.remove();
-    });
-    offers.forEach(function (offer){
-      var offerString="  Between"+offer.prev+" and "+offer.next+" exp:"+(offer.expires-Date.now());
-      var li=createElement('li');
-      li.parent(offersList);
-      var el=createP(offerString);
-      var acceptOfferButton=createButton("Accept Offer");
-      li.child(acceptOfferButton);
-      li.child(el);
-      acceptOfferButton.mouseClicked(handleAcceptOffer);
-      acceptOfferButton.attribute("data-offer",offer.id);
-    });
-  } else {
-    //do not refresh, nothing has changed
-  }
-}
-
 
