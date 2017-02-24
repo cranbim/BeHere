@@ -5,6 +5,7 @@ var consoleid;
 var lobbyDiv;
 var buttonDiv;
 var buttonResetThemes;
+var buttonShowMeta;
 var lobbyUL, themeUL, narraUL;
 var ringDiv;
 var themeDiv;
@@ -18,6 +19,7 @@ var narrativeLive;
 
 var state={
   soundOn: false,
+  showMeta: false,
   narrative: null
 };
 
@@ -39,6 +41,7 @@ function setup() {
   buttonDiv=select('#button-bar');
   buttonResetThemes=select('#resetThemes');
   buttonResetThemes.mouseClicked(resetThemes);
+  var buttonShowMeta=createButton('showMeta');
   var soundButton=createButton('Turn Sound On');
   soundButton.parent(buttonDiv);
   soundButton.mouseClicked(function(){
@@ -46,6 +49,13 @@ function setup() {
     if(state.soundOn) soundButton.html('Turn Sound Off');
     else soundButton.html('Turn Sound On');
     socket.emit('soundControl', {soundOn: state.soundOn});
+  });
+  buttonShowMeta.parent(buttonDiv);
+  buttonShowMeta.mouseClicked(function(){
+    state.showMeta=!state.showMeta;
+    console.log("show Meta? "+state.showMeta);
+    buttonShowMeta.html(state.showMeta?'Hide Meta':'ShowMeta');
+    socket.emit('showMeta', {showMeta:state.showMeta});
   });
 }
 

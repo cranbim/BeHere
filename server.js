@@ -20,6 +20,7 @@ var nextAttachOffer=0;
 var heartbeat=1000;
 var consoleSession;
 var currentSoundControl=null;
+var currentShowMeta=false;
 
 //setup principle objects
 var themes=new themeRunner.ThemeRunner();
@@ -79,6 +80,7 @@ function newConnection(socket){
   socket.on('gimmeTheme', gimmeTheme);
   socket.on('getServerThemes', sendThemesToClient);
   socket.on('soundControl', soundControl);
+  socket.on('showMeta', showMeta);
   socket.on('resetThemes', resetThemes);
   socket.on('themeOnOff', themeOnOff);
   socket.on('themeDuration', themeDuration);
@@ -104,6 +106,11 @@ function newConnection(socket){
   function soundControl(data){
   	currentSoundControl=data;
   	io.sockets.emit('soundControl', data); 
+  }
+
+  function showMeta(data){
+  	currentShowMeta=data.showMeta;
+  	io.sockets.emit('showMeta', data); 
   }
 
   function gimmeTheme(data){

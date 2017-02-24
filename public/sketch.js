@@ -161,6 +161,7 @@ function connected(){
   socket.on('notifyDetached',notifyDetached);
   socket.on('themeSwitch',switchTheme);
   socket.on('soundControl',soundControl);
+  socket.on('showMeta',showMeta);
   socket.on('serverThemes',loadServerThemes);
 }
 
@@ -218,6 +219,12 @@ function setStartX(data){
 function soundControl(data){
   console.log(data);
   soundOn=data.soundOn;
+}
+
+function showMeta(data){
+  console.log(data);
+  hideMeta=!data.showMeta;
+  changeHTMLMetaDisplay();
 }
 
 function switchTheme(data){
