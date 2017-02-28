@@ -17,6 +17,7 @@ var metaULreq, metaULgrant, metaULoffer, metaBlobs;
 var ringCodeSpan;
 var narrativeChanging=true;
 var narrativeLive;
+var attachedDevices;
 
 
 var state={
@@ -65,6 +66,7 @@ function setup() {
     buttonShowMeta.html(state.showMeta?'Hide Meta':'ShowMeta');
     socket.emit('showMeta', {showMeta:state.showMeta});
   });
+  attachedDevices=new AttachedDevices();
   console.log("Console setup complete");
 }
 
@@ -134,16 +136,17 @@ function consoleData(data){
       el.parent(ringUL);
       ringUL.parent(ringDiv);
     }
-    var ringList=selectAll('li',ringUL);
-    ringList.forEach(function(li){
-      li.remove();
-    });
-    rd.data.forEach(function(dev,i){
-      devString=("00"+dev.position).slice(-2)+" "+dev.connection/*+" "+dev.socket*/;
-      //console.log(devString);
-      var el=createElement('li',devString);
-      el.parent(ringUL);
-    });
+    attachedDevices.refresh(rd.data);
+    // var ringList=selectAll('li',ringUL);
+    // ringList.forEach(function(li){
+    //   li.remove();
+    // });
+    // rd.data.forEach(function(dev,i){
+    //   devString=("00"+dev.position).slice(-2)+" "+dev.connection/*+" "+dev.socket*/;
+    //   //console.log(devString);
+    //   var el=createElement('li',devString);
+    //   el.parent(ringUL);
+    // });
   }
 
   function showRequestsMeta(md){
@@ -338,8 +341,42 @@ function AttachedDevices(){
   var activeDevs=[];
 
   this.refresh=function(ringData){
-
+    activeDevs=ringData;
+    console.log("refresh ring data");
+    var newRingUL=createElement('ul');
+    newRingUL.addClass('simple-list');
+    ringData.forEach(function(dev,i){
+      var liEl=createElement('li');
+      liEl.addClass('simple-list-item');
+      devString=("00"+dev.position).slice(-2)+" "+dev.connection/*+" "+dev.socket*/;
+      //console.log(devString);
+      var el=createElement('li',devString);
+      el.parent(liEl);
+      var b1=createButton('X');
+      b1.attribute('index',i);
+      b1.parent(liEl);
+      b1.mouseClicked(b1Clicked);
+      var b2=createButton('<>');
+      b2.attribute('index',i);
+      b2.parent(liEl);
+      b2.mouseClicked(b2Clicked);
+      liEl.parent(newRingUL);
+    });
+    ringUL.remove();
+    ringUL=newRingUL;
+    ringUL.parent(ringDiv);
   };
+
+  function b1Clicked(){
+    var b=this.attribute('index');
+    console.log("Button X "+b+" clicked "+activeDevs[b].connection);
+    socket.emit('consoleCommand',{command: 'disconnect', id: activeDevs[b].connection});
+  }
+
+  function b2Clicked(){
+    var b=this.attribute('index');
+    console.log("Button <> "+b+" clicked");
+  }
 
 }
 

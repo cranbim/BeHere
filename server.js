@@ -87,6 +87,14 @@ function newConnection(socket){
   socket.on('themeOnOff', themeOnOff);
   socket.on('themeDuration', themeDuration);
   socket.on('newRingCode', newRingCode);
+  socket.on('consoleCommand', consoleCommand);
+
+  function consoleCommand(data){
+  	if(data.command=="disconnect"){
+  		console.log("Detach dev "+data.id);
+  		ring.detacher(data);
+  	}
+  }
 
   function newRingCode(){
   	ringCode.generate();

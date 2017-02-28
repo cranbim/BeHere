@@ -64,6 +64,7 @@ button hover {
   /*list-style:none;*/
   padding-left:0;
   float:left;
+  width: 100%;
   color: orange;
 }
 

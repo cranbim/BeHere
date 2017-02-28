@@ -340,6 +340,11 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	}
 
 	this.detacher=function(data){
+		var ds=self.findShadow(data.id);
+		console.log('detacher');
+		console.log(data.id+" "+Number(data.id));
+		var	s=ds.session.socket;
+		s.emit('notifyDetached',{});
 		detachFromRing(data.id);
 	};
 
