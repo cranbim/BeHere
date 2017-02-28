@@ -138,7 +138,7 @@ function ThemeCountdown(w,h){
       if(attracting){
         rad=w/200;
       } else {
-        rad=c.r===255?w/80:w/80;
+        rad=c.r===255?w/80:w/40;
       }
       // var rad=c.r===255?w/200:w/40;
       push();

@@ -34,6 +34,7 @@ var ringDevs=1;
 var globalParams=[];
 var distances;
 var whenStarted;
+var subtleMeta;
 
 //noisefield vars - camn these be held elsewhere?
 var noisePerWorldPixel=0.005;
@@ -62,6 +63,7 @@ function setup() {
   statusBar=new StatusBar(devWidth,devHeight);
   logger=new Logger();
   deviceData=new DeviceData();
+  subtleMeta=new SubtleMeta(devWidth, devHeight);
   themeRunner=new ThemeRunner(canFullWidth, canFullHeight);
   //initialise socket
   socket=io.connect('/');
@@ -109,6 +111,9 @@ function draw() {
   statusBar.show();
   //Helper, debug stuff on the display
   drawMeta();
+  if(deviceData.status=="attached"){
+    subtleMeta.show(deviceData.geometry.position, deviceData.id);
+  }
   echoHeartBeat();
 }
 
@@ -148,6 +153,7 @@ function connected(){
   refreshHTMLStatus();
   refreshHTMLGeometry();
   socket.on('id',setID);
+  socket.on('joinApproved',joinApproved);
   socket.on('disconnect', disconnected);
   socket.on('heartbeat',beat);
   socket.on('rfpermit',requestForPermit);
@@ -430,13 +436,21 @@ function requestForPermit(){
   statusBar.trigger("permit",0,30);
 }
 
+function joinApproved(data){
+  if(data.approved){
+    console.log("Join request approved");
+    deviceData.status="joined";
+    refreshHTMLStatus();
+  } else {
+    console.log("Join request rejected");
+  }
+}
+
 function joinMe(){
   if(deviceData.status=="connected"){
     userNickName=select('#nickName').value();
     console.log("New user: "+userNickName);
     select('#myNickName').html(userNickName);
-    deviceData.status="joined";
-    refreshHTMLStatus();
     socket.emit('join',{id: id, width:myWidth, height:devHeight, nickName:userNickName});
     console.log("request join to unattached");
   }else if(deviceData.status=="joined"){

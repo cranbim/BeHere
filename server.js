@@ -6,6 +6,8 @@
 var express = require('express');
 var ringMod= require('./ring.js');
 var themeRunner= require ('./themeRunner.js');
+var ringJoiner= require('./ringJoiner.js');
+var ringCode= new ringJoiner.RingCode();
 
 var app=express();
 
@@ -84,6 +86,11 @@ function newConnection(socket){
   socket.on('resetThemes', resetThemes);
   socket.on('themeOnOff', themeOnOff);
   socket.on('themeDuration', themeDuration);
+  socket.on('newRingCode', newRingCode);
+
+  function newRingCode(){
+  	ringCode.generate();
+  }
 
   function themeDuration(data){
   	themes.themeDuration(data.index, data.duration);
@@ -150,10 +157,17 @@ function newConnection(socket){
   }
 
   function joiner(data){
-		var newUnAttached=new ringMod.DeviceShadow(session, data.id, data.width, data.height, data.nickName);
-		unattached.joinNewDevShadow(newUnAttached);
-		if(currentSoundControl){
-			 io.sockets.emit('soundControl', currentSoundControl);
+  	if(data.nickName.toLowerCase()===ringCode.ringCode){
+  		console.log("Device Joining with correct code");
+  		socket.emit('joinApproved',{approved:true});
+			var newUnAttached=new ringMod.DeviceShadow(session, data.id, data.width, data.height, data.nickName);
+			unattached.joinNewDevShadow(newUnAttached);
+			if(currentSoundControl){
+				 io.sockets.emit('soundControl', currentSoundControl);
+			}
+		} else {
+			console.log("Incorrect code, not joining");
+  		socket.emit('joinApproved',{approved:false});
 		}
 	}
 
@@ -191,7 +205,8 @@ function sendConsoleData(){
 			ringMeta: ring.buildJSONRingMeta(),
 			blobMeta: ring.buildJSONBlobMeta(),
 			// themeMeta: themes.buildMetaData(),
-			narrative: themes.buildNarrativeData()
+			narrative: themes.buildNarrativeData(),
+			ringCode: ringCode.ringCode
 		});
 	} else {
 		console.log("Can't send console data, no console connected");

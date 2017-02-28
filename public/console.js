@@ -6,6 +6,7 @@ var lobbyDiv;
 var buttonDiv;
 var buttonResetThemes;
 var buttonShowMeta;
+var buttonRingCode;
 var lobbyUL, themeUL, narraUL;
 var ringDiv;
 var themeDiv;
@@ -13,6 +14,7 @@ var narrDiv;
 var ringUL=null;
 var MetaDiv;
 var metaULreq, metaULgrant, metaULoffer, metaBlobs;
+var ringCodeSpan;
 var narrativeChanging=true;
 var narrativeLive;
 
@@ -27,7 +29,8 @@ function setup() {
   noCanvas();
   beatnum=select("#heartbeat");
   consoleid=select("#consoleid");
-  socket=io.connect('http://localhost:4000');
+  ringCodeSpan=select("#ringCode");
+  socket=io.connect('/');
   socket.on('connect', connected);
   socket.on('id',setID);
   socket.on('disconnect', function(){
@@ -43,6 +46,11 @@ function setup() {
   buttonResetThemes.mouseClicked(resetThemes);
   var buttonShowMeta=createButton('showMeta');
   var soundButton=createButton('Turn Sound On');
+  var buttonRingCode=createButton('New Ring Code');
+  buttonRingCode.parent(buttonDiv);
+  buttonRingCode.mouseClicked(function(){
+    socket.emit('newRingCode',{});
+  });
   soundButton.parent(buttonDiv);
   soundButton.mouseClicked(function(){
     state.soundOn=!state.soundOn;
@@ -57,6 +65,7 @@ function setup() {
     buttonShowMeta.html(state.showMeta?'Hide Meta':'ShowMeta');
     socket.emit('showMeta', {showMeta:state.showMeta});
   });
+  console.log("Console setup complete");
 }
 
 function resetThemes(){
@@ -83,6 +92,7 @@ function consoleData(data){
   var bd=data.blobMeta;
   var td=data.themeMeta;
   var nd=data.narrative;
+  showRingCode(data.ringCode);
   showLobbyData(ld);
   showRingData(rd);
   showRequestsMeta(md);
@@ -92,6 +102,10 @@ function consoleData(data){
   // showThemeMeta(td);
   showNarrative(nd);
 }
+
+  function showRingCode(rc){
+    ringCodeSpan.html(rc);
+  }
 
   function showLobbyData(ld){
     var devString;
@@ -319,3 +333,32 @@ function beat(data){
   beatnum.html(data.beat);
   console.log(data.beat);
 }
+
+function AttachedDevices(){
+  var activeDevs=[];
+
+  this.refresh=function(ringData){
+
+  };
+
+}
+
+// function showRingData(rd){
+//     var devString;
+//     if(!ringUL){
+//       ringUL=createElement('ul');
+//       var el=createElement('li',"something");
+//       el.parent(ringUL);
+//       ringUL.parent(ringDiv);
+//     }
+//     var ringList=selectAll('li',ringUL);
+//     ringList.forEach(function(li){
+//       li.remove();
+//     });
+//     rd.data.forEach(function(dev,i){
+//       devString=("00"+dev.position).slice(-2)+" "+dev.connection/*+" "+dev.socket*/;
+//       //console.log(devString);
+//       var el=createElement('li',devString);
+//       el.parent(ringUL);
+//     });
+//   }
