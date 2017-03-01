@@ -2,6 +2,13 @@ module.exports={
 	Parameters: Parameters
 };
 
+// three global parameters;
+// 1: [0] is a counter incremnting by 0.1 each cycle
+// 2: [1] increments by a random value %1
+// 3: [2] is an integer decrementing each cycle 
+// 	by 500. used to create a cursor cycling 
+// 	backwards through the ring  pixel space
+ 
 function Parameters(){
 	var numParams=2;
 	var params=[];
@@ -28,12 +35,25 @@ function Parameters(){
 	function Parameter(ind){
 		var value=0;
 		var steps=10;
-		var inc=ind/steps;
+		//var inc=ind/steps;
+		var incrementMe=getIncrementer();
 
 		this.run=function(ringLengthPixels){
-			value+=inc;
+			value+=incrementMe();//inc
 			if(value>1) value-=1;
 		};
+
+		function getIncrementer(){
+			if(ind===2) { 
+				return function(){
+					return Math.random();
+				};
+			}else { 
+				return function(){
+					return ind/steps;
+				};
+			}
+		}
 
 		this.get=function(){
 			return value;

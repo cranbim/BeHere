@@ -6,13 +6,16 @@
 function ThemeLandscape(w,h){
   var skyLines=[];
   var hillZ=0;
-  var hillZInc=0.05;
+  var hillZInc=0.1;
   var offInc=8;
   var skyAlpha=100;
   var hillMaxAng=0;
   var hillMaxAngInc=0.01;
   var hillMax;
   var numSkyLines=40;
+  var zBackDiv=50;
+  var nearZ=h/4*3;//300;
+  var farZ=nearZ/2;//150;
   
   var hillsOverCity=true;
   
@@ -27,12 +30,12 @@ function ThemeLandscape(w,h){
   
   
   this.run=function(){
-    background(130,220,255);
+    background(150);
     hillMaxAng+=hillMaxAngInc;
     hillMax=sin(hillMaxAng)*100+100;
     fill(150,250,255);
     noStroke();
-    rect(0,0,width,100);
+    rect(0,0,w,h/2);
     if(frameCount%20===0){
       if(skyLines.length<numSkyLines){
         if(hillsOverCity){
@@ -42,7 +45,8 @@ function ThemeLandscape(w,h){
             skyLines.push(new WaterLine(h/2,20));
           }
         } else {
-          if(random(10)<3){
+          if(globalParams[1].current<0.6){
+          // if(random(10)<3){
             skyLines.push(new SkyLine(h/2,20));
           } else {
             skyLines.push(new SubUrbanLine(h/2,30));
@@ -50,7 +54,9 @@ function ThemeLandscape(w,h){
           
         }
         // console.log(skyLines.length);
-        if(random(100)<20){
+        // console.log(">>>"+globalParams[1].current+" "+(globalParams[1].current<0.4));
+        if(globalParams[1].current<0.2){
+        // if(random(100)<20){
           hillsOverCity=!hillsOverCity;
         }
       }
@@ -83,7 +89,7 @@ function ThemeLandscape(w,h){
     var yScale=yScaleIn||1;
     var vertices=[];
     //var maxHeight=120;
-    var maxHeight=sin(hillMaxAng)*100+100;
+    var maxHeight=sin(hillMaxAng)*h/3+h/3;
     var ttl=500;
     var myOffX=0;
     var r=rIn||0;
@@ -94,8 +100,8 @@ function ThemeLandscape(w,h){
     var nOffInc=0.01;
     var step=w/numPoints;
     var baseY=y;
-    var nearZ=300;
-    var farZ=150;
+    // var nearZ=300;
+    // var farZ=150;
     var z=nearZ;
     var lerpSteps=50;
     
@@ -131,10 +137,10 @@ function ThemeLandscape(w,h){
     
     this.show=function(r,g,b, ttl, myOffX){
       push();
-      translate(w/2,baseY-200);
+      translate(w/2,baseY-h/2);
       scale(map(ttl,500,0,2,1));
       translate(-w/2+step/2,0);
-      z+=(farZ-z)/100;
+      z+=(farZ-z)/zBackDiv;
       translate(0,z);
       fill(130,220,255,map(ttl,500,0,0,skyAlpha));
       noStroke();
@@ -157,7 +163,7 @@ function ThemeLandscape(w,h){
   
   function WaterLine(y, numPoints){
     var vertices=[];
-    var maxHeight=10;
+    var maxHeight=h/40;
     var ttl=500;
     var myOffX=0;
     var c=random(100,200);
@@ -165,8 +171,8 @@ function ThemeLandscape(w,h){
     var nOffInc=0.1;
     var step=width/numPoints;
     var baseY=y;
-    var nearZ=300;
-    var farZ=150;
+    // var nearZ=300;
+    // var farZ=150;
     var z=nearZ;
     var lerpSteps=50;
     
@@ -195,10 +201,10 @@ function ThemeLandscape(w,h){
     
     this.show=function(c, ttl, myOffX){
       push();
-      translate(w/2,baseY-200);
+      translate(w/2,baseY-h/2);
       scale(map(ttl,500,0,2,1));
       translate(-w/2+step/2,0);
-      z+=(farZ-z)/100;
+      z+=(farZ-z)/zBackDiv;
       translate(0,z);
       fill(130,220,255,map(ttl,500,0,0,skyAlpha));
       noStroke();
@@ -225,9 +231,11 @@ function ThemeLandscape(w,h){
     var ttl=500;
     var myOffX=0;
     var c=random(40,180);
-      var nearZ=300;
-    var farZ=150;
+    //   var nearZ=300;
+    // var farZ=150;
     var z=nearZ;
+    var baseY=y;
+
     var ch=random(40,100);
     var myHill=new HillLine(h/2,150,0.5,ch,ch,ch );
   
@@ -237,7 +245,7 @@ function ThemeLandscape(w,h){
       var wid=(w-used)/(numBlocks-i);
       // console.log(used+" "+wid);
       var rWid=random(0.3,2);
-      var rH=random(10,100);
+      var rH=random(10,h/3);
       blocks[i]=new Block(used, y, wid*rWid, rH);
       used+=wid*rWid;
     }
@@ -259,11 +267,11 @@ function ThemeLandscape(w,h){
     
     this.show=function(){
       push();
-      translate(w/2,0);
+      translate(w/2,baseY-h/2);
       scale(map(ttl,500,0,2,1));
       translate(-w/2,0);
       // var myX=(oX+x)%w;
-      z+=(farZ-z)/100;
+      z+=(farZ-z)/zBackDiv;
       translate(0,z);
       fill(150,250,255,map(ttl,500,0,0,skyAlpha));
       noStroke();
@@ -276,19 +284,21 @@ function ThemeLandscape(w,h){
     var hNow=0;
     var bwa=bw-random(8);
     var ease=50;
-    var nearZ=300;
-    var farZ=150;
+    // var nearZ=300;
+    // var farZ=150;
     var z=nearZ;
+    var baseY=y;
+
   
     
     this.show=function(c,ttl, oX, myHillLine){
       push();
-      translate(w/2,0);
+      translate(w/2,baseY-h/2);
       scale(map(ttl,500,0,2,1));
       translate(-w/2,0);
       var myX=(oX+x)%w;
       var hillLineY=myHillLine.getHeightAt(x).y/2;
-      z+=(farZ-z)/100;
+      z+=(farZ-z)/zBackDiv;
       translate(myX,z+hillLineY);
       noStroke();
       fill(c);//,map(ttl,500,0,255,100));
@@ -306,9 +316,10 @@ function ThemeLandscape(w,h){
     var used=0;
     var ttl=500;
     var myOffX=0;
-      var nearZ=300;
-    var farZ=150;
+    //   var nearZ=300;
+    // var farZ=150;
     var z=nearZ;
+    var baseY=y;
     var c=random(100,200);
     var myHill=new HillLine(h/2,150,0.5,c,c,c );
     
@@ -318,7 +329,7 @@ function ThemeLandscape(w,h){
       var wid=(w-used)/(numBlocks-i);
       // console.log(used+" "+wid);
       var rWid=random(0.3,2);
-      var rH=random(8,25);
+      var rH=random(8,h/12);
       blocks[i]=new House (used, y, wid*rWid, rH);
       used+=wid*rWid;
     }
@@ -340,11 +351,11 @@ function ThemeLandscape(w,h){
     
     this.show=function(){
       push();
-      translate(w/2,0);
+      translate(w/2,baseY-h/2);
       scale(map(ttl,500,0,2,1));
       translate(-w/2,0);
       // var myX=(oX+x)%w;
-      z+=(farZ-z)/100;
+      z+=(farZ-z)/zBackDiv;
       translate(0,z);
       fill(150,250,255,map(ttl,500,0,0,skyAlpha));
       noStroke();
@@ -357,9 +368,10 @@ function ThemeLandscape(w,h){
     var hNow=0;
     var bwa=bw-random(8);
     var ease=50;
-    var nearZ=300;
-    var farZ=150;
+    // var nearZ=300;
+    // var farZ=150;
     var z=nearZ;
+    var baseY=y;
     var cr=random(100,200);
     var cg=random(50,150);
     var cb=100;
@@ -369,13 +381,13 @@ function ThemeLandscape(w,h){
     
     this.show=function(ttl, oX, myHillLine){
       push();
-      translate(w/2,0);
+      translate(w/2,baseY-h/2);
       scale(map(ttl,500,0,2,1));
       translate(-w/2,0);
       var myX=(oX+x)%w;
       var hillLineY=myHillLine.getHeightAt(x).y/2;
       //console.log(hillLineY);
-      z+=(farZ-z)/100;
+      z+=(farZ-z)/zBackDiv;
       translate(myX,z+hillLineY+10);
       noStroke();
       fill(cr,cg,cb);//,map(ttl,500,0,255,100));

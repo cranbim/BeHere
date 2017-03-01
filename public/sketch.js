@@ -481,6 +481,7 @@ function attachMe(){
 
 function handleParameters(data){
   var params=data.params;
+  //var paramString="Params ";
   params.params.forEach(function(p,i){
     if(globalParams[i]!==undefined){
       globalParams[i].last=globalParams[i].current;
@@ -501,8 +502,10 @@ function handleParameters(data){
         stepPerMS:0
       };
     }
+    //paramString+=(i+":"+p+", ");
   });
   // console.log(globalParams);
+  //console.log(paramString);
 }
 
 function processParams(){
