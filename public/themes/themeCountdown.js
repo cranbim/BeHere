@@ -10,7 +10,7 @@ function ThemeCountdown(w,h){
   var numParticles=500;
   var attracting=false;
   var osb;
-  var counterInit=10;
+  var counterInit=5;
   var counter=99;
   var myFCount;
   var changeCol=false;

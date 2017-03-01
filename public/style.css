@@ -72,6 +72,11 @@ button hover {
 	font-size: 3vw;
 }
 
+.spanh3 {
+	font-size: 4vw;
+	color: blue;
+}
+
 
 .clearfix::after {
     content: "";

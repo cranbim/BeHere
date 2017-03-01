@@ -169,6 +169,11 @@ function connected(){
   socket.on('soundControl',soundControl);
   socket.on('showMeta',showMeta);
   socket.on('serverThemes',loadServerThemes);
+  socket.on('issuePermit',issuePermit);
+}
+
+function issuePermit(){
+  permitAttacher();
 }
 
 function setID(data){
@@ -187,6 +192,7 @@ function disconnected(){
   deviceData.status="nothing";
   refreshHTMLStatus();
   refreshHTMLGeometry();
+  // window.location.href = "./disconnected.html";
 }
 
 function beat(data){

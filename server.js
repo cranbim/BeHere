@@ -90,18 +90,30 @@ function newConnection(socket){
   socket.on('consoleCommand', consoleCommand);
 
   function consoleCommand(data){
-  	if(data.command=="disconnect"){
-  		console.log("Detach dev "+data.id);
-  		ring.detacher(data);
-  	}
+		if(data.command=="detach"){
+			console.log("Detach dev "+data.id);
+			ring.detacher(data);
+		} else if(data.command=="disconnect"){
+			var sessionToEnd=findSession(data.id);
+			console.log("Disconnect dev "+data.id);
+			// clientDisconnect(sessionToEnd);
+		}else if(data.command=="permit"){
+			var sessionToPermit=findSession(data.id);
+			console.log("Send permit from dev "+data.id);
+			if(sessionToPermit){
+				if(sessionToPermit.socket){
+					sessionToPermit.socket.emit('issuePermit',{});
+				}
+			}
+		}
   }
 
   function newRingCode(){
-  	ringCode.generate();
+		ringCode.generate();
   }
 
   function themeDuration(data){
-  	themes.themeDuration(data.index, data.duration);
+		themes.themeDuration(data.index, data.duration);
   }
 
   function themeOnOff(data){
@@ -191,14 +203,22 @@ function newConnection(socket){
 
   function clientDisconnect(){
 	//need to handle the effect of disconnect on lobby and rings
-		var i=sessions.forEach(function(sesh,index){
-			if(sesh.id==session.id) return index;
-		});
-		sessions.splice(i,1);
-		console.log("Removed disconnected session: "+session.id+" socket:"+session.socket.id);
-		console.log("Num sessions:"+sessions.length);
-		ring.unjoinRing(session.id);
-		console.log("disconnected device unjoined from ring");
+		// var sessionToFind=false;
+		// if(thisSession){
+		// 	sessionToFind=thisSession;
+		// } else {
+		// 	sessionToFind=session;
+		// }
+		// if(sessionToFind.id){
+			var i=sessions.forEach(function(sesh,index){
+				if(sesh.id==session.id) return index;
+			});
+			sessions.splice(i,1);
+			console.log("Removed disconnected session: "+session.id+" socket:"+session.socket.id);
+			console.log("Num sessions:"+sessions.length);
+			ring.unjoinRing(session.id);
+			console.log("disconnected device unjoined from ring");
+		// }
 	}
 }
 

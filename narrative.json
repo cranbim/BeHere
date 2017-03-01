@@ -1,7 +1,8 @@
 {"narrative1":{
 		"sequence": [
-			{"on": true, "name": "ThemeCountdown", "duration": 15, "params":{"beat":true}},
+			{"on": true, "name": "ThemeCountdown", "duration": 25, "params":{"beat":true}},
 			{"on": true, "name": "ThemeCalmRings", "duration": 5, "params":{}},
+			{"on": true, "name": "ThemeLandscape", "duration": 20, "params": {}},
 			{"on": false, "name": "ThemeFlyThrough", "duration": 8, "params":{}},
 			{"on": false, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Life is Good... ", "test2"]}},
 			{"on": false, "name": "ThemeFlowDraw", "duration": 15, "params":{"seed":13}},

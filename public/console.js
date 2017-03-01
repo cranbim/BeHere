@@ -47,7 +47,7 @@ function setup() {
   buttonResetThemes.mouseClicked(resetThemes);
   var buttonShowMeta=createButton('showMeta');
   var soundButton=createButton('Turn Sound On');
-  var buttonRingCode=createButton('New Ring Code');
+  var buttonRingCode=createButton('New Join Code');
   buttonRingCode.parent(buttonDiv);
   buttonRingCode.mouseClicked(function(){
     socket.emit('newRingCode',{});
@@ -337,6 +337,11 @@ function beat(data){
   console.log(data.beat);
 }
 
+/*************************
+ Attached devices object
+ display and buttons
+***************************/
+
 function AttachedDevices(){
   var activeDevs=[];
 
@@ -352,7 +357,11 @@ function AttachedDevices(){
       //console.log(devString);
       var el=createElement('li',devString);
       el.parent(liEl);
-      var b1=createButton('X');
+      var b0=createButton('X');
+      b0.attribute('index',i);
+      b0.parent(liEl);
+      b0.mouseClicked(b0Clicked);
+      var b1=createButton('V');
       b1.attribute('index',i);
       b1.parent(liEl);
       b1.mouseClicked(b1Clicked);
@@ -367,15 +376,22 @@ function AttachedDevices(){
     ringUL.parent(ringDiv);
   };
 
+  function b0Clicked(){
+    var b=this.attribute('index');
+    console.log("Button X "+b+" clicked");
+    socket.emit('consoleCommand',{command: 'disconnect', id: activeDevs[b].connection});
+  }
+
   function b1Clicked(){
     var b=this.attribute('index');
-    console.log("Button X "+b+" clicked "+activeDevs[b].connection);
-    socket.emit('consoleCommand',{command: 'disconnect', id: activeDevs[b].connection});
+    console.log("Button V "+b+" clicked "+activeDevs[b].connection);
+    socket.emit('consoleCommand',{command: 'detach', id: activeDevs[b].connection});
   }
 
   function b2Clicked(){
     var b=this.attribute('index');
     console.log("Button <> "+b+" clicked");
+    socket.emit('consoleCommand',{command: 'permit', id: activeDevs[b].connection});
   }
 
 }

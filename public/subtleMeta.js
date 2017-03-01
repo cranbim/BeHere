@@ -1,6 +1,6 @@
 function SubtleMeta(w,h){
-	var maxBright=100;
-	var minBright=10;
+	var maxBright=120;
+	var minBright=50;
 	var fade=100;
 	var fadeA=0;
 	var fadeAInc=PI/100;
