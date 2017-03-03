@@ -105,6 +105,9 @@ function newConnection(socket){
 					sessionToPermit.socket.emit('issuePermit',{});
 				}
 			}
+		} else if(data.command=="clearBlobs"){
+			console.log("clear all blobs");
+			ring.clearBlobs();
 		}
   }
 
@@ -198,6 +201,7 @@ function newConnection(socket){
 
 	function setConsole(data){
 		consoleSession=findSession(data.consoleid);
+		ring.setConsole(consoleSession);
 		console.log("Console identified as: "+consoleSession.id);
 	}
 

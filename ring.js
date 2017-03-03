@@ -19,6 +19,7 @@ var nextRingID=0;
 function Ring(name, io, themes){ //have to pass io to have access to sockets object
 	var self=this; //to get around this context in functions
 	var unattached=null;
+	var consoleSession;
 	this.blobList=new blobList.BlobList();
 	this.ringID=nextRingID++;
 	this.name=name;
@@ -222,10 +223,16 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 						//retrieve id of requesting device
 						var requestingDev=requesters.getDevid(r);
 						var ds=unattached.findShadow(requestingDev);
-						console.log("Offer destined for device"+ds.id);
+						// console.log("Offer destined for device"+ds.id);
 						console.log("Issuing offer "+o+" to "+requestingDev);
 						//send offer to requesting device
 						ds.session.socket.emit('offer',{id: o, prev:pv, next:nx, expires:offers.getExpiry(o)});
+						// if(consoleSession){
+						// 	consoleSession.socket.emit('offer',{id: o, prev:pv, next:nx, offeredTo:requestingDev, expires:offers.getExpiry(o)});
+						// 	console.log("Sending offer data to "+consoleSession.id);
+						// }	else {
+						// 	console.log("could not find console "+consoleSession.id);
+						// }
 						//??? send offer info and to offering devices.
 						offers.linkRequester(o,r);
 					}
@@ -277,6 +284,10 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 			blobs: blobs
 		});
 		console.log("sendBlobData:"+blobs.length+" All?:"+allBlobs);
+	}
+
+	this.clearBlobs=function(){
+		self.blobList.clearAll();
 	}
 
 	function sendParamData(){
@@ -479,6 +490,11 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	/*****************************************
 	utilities
 	******************************************/
+
+	this.setConsole=function(session){
+		consoleSession=session;
+		console.log("Console (RIng) set to "+session.id);
+	};
 
 	this.joinNewDevShadow=function(shadow){
 		this.deviceShadows.push(shadow);

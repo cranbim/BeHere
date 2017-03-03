@@ -5,7 +5,7 @@
 var p5div,p5canvas;
 var soundOn=false;
 var pD;
-var lastTouch=0;
+var lastTouch=Date.now();
 
 
 //Core vars
@@ -200,6 +200,14 @@ function beat(data){
   deviceData.currentBeat=data.beat;
   themeRunner.checkThemes();
   dataRefreshPoll();
+  whenLastTouched();
+}
+
+function whenLastTouched(){
+  if(Date.now()>lastTouch+10000){ //no touches for 10 seconds
+    newClick(random(devWidth)+marginLeft+myStartX, random(devHeight));
+    lastTouch=Date.now();  
+  }
 }
 
 function updateRingPos(data){

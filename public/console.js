@@ -17,7 +17,7 @@ var metaULreq, metaULgrant, metaULoffer, metaBlobs;
 var ringCodeSpan;
 var narrativeChanging=true;
 var narrativeLive;
-var attachedDevices;
+var attachedDevices, lobbyDevices;
 
 
 var state={
@@ -48,6 +48,7 @@ function setup() {
   var buttonShowMeta=createButton('showMeta');
   var soundButton=createButton('Turn Sound On');
   var buttonRingCode=createButton('New Join Code');
+  var buttonClearBlobs=createButton('Clear Blobs');
   buttonRingCode.parent(buttonDiv);
   buttonRingCode.mouseClicked(function(){
     socket.emit('newRingCode',{});
@@ -59,6 +60,10 @@ function setup() {
     else soundButton.html('Turn Sound On');
     socket.emit('soundControl', {soundOn: state.soundOn});
   });
+  buttonClearBlobs.parent(buttonDiv);
+  buttonClearBlobs.mouseClicked(function(){
+    socket.emit('consoleCommand',{command: 'clearBlobs'});
+  });
   buttonShowMeta.parent(buttonDiv);
   buttonShowMeta.mouseClicked(function(){
     state.showMeta=!state.showMeta;
@@ -67,6 +72,7 @@ function setup() {
     socket.emit('showMeta', {showMeta:state.showMeta});
   });
   attachedDevices=new AttachedDevices();
+  lobbyDevices=new LobbyDevices();
   console.log("Console setup complete");
 }
 
@@ -83,8 +89,13 @@ function connected(data){
   consoleid.html(id);
   socket.on('heartbeat',beat);
   socket.on('consoleData',consoleData);
+  // socket.on('offer',offerReceived);
   sendSoundControl();
 }
+
+// function offerReceived(data){
+//   lobbyDevices.offerReceived(data);
+// }
 
 function consoleData(data){
   console.log(data);
@@ -117,15 +128,16 @@ function consoleData(data){
       el.parent(lobbyUL);
       lobbyUL.parent(lobbyDiv);
     }
-    var lobbyList=selectAll('li',lobbyUL);
-    lobbyList.forEach(function(li){
-      li.remove();
-    });
-    ld.data.forEach(function(dev,i){
-      devString=("00"+dev.position).slice(-3)+" "+dev.connection/*+" "+dev.socket*/;
-      var el=createElement('li',devString);
-      el.parent(lobbyUL);
-    });
+    lobbyDevices.refresh(ld.data);
+    // var lobbyList=selectAll('li',lobbyUL);
+    // lobbyList.forEach(function(li){
+    //   li.remove();
+    // });
+    // ld.data.forEach(function(dev,i){
+    //   devString=("00"+dev.position).slice(-3)+" "+dev.connection/*+" "+dev.socket*/;
+    //   var el=createElement('li',devString);
+    //   el.parent(lobbyUL);
+    // });
   }
 
   function showRingData(rd){
@@ -353,6 +365,7 @@ function AttachedDevices(){
     ringData.forEach(function(dev,i){
       var liEl=createElement('li');
       liEl.addClass('simple-list-item');
+      liEl.attribute('connection',dev.connection);
       devString=("00"+dev.position).slice(-2)+" "+dev.connection/*+" "+dev.socket*/;
       //console.log(devString);
       var el=createElement('li',devString);
@@ -376,6 +389,22 @@ function AttachedDevices(){
     ringUL.parent(ringDiv);
   };
 
+  // this.offerReceived=function(data){
+  //   console.log(data);
+  //   // find li with relevant connection attrbute
+  //   var liEls=selectAll('li',ringDiv);
+  //   console.log(liEls);
+  //   liEls.forEach(function(li, i){
+  //     if(li.attribute('connection')){
+  //       console.log(li.attribute('connection')+" "+data.offeredTo.toString());
+  //       if(li.attribute('connection')==data.offeredTo.toString()){
+  //         console.log("Offer matches li #"+i);
+  //         li.addClass('specialTest');
+  //       }
+  //     }
+  //   });
+  // };
+
   function b0Clicked(){
     var b=this.attribute('index');
     console.log("Button X "+b+" clicked");
@@ -396,22 +425,54 @@ function AttachedDevices(){
 
 }
 
-// function showRingData(rd){
-//     var devString;
-//     if(!ringUL){
-//       ringUL=createElement('ul');
-//       var el=createElement('li',"something");
-//       el.parent(ringUL);
-//       ringUL.parent(ringDiv);
-//     }
-//     var ringList=selectAll('li',ringUL);
-//     ringList.forEach(function(li){
-//       li.remove();
-//     });
-//     rd.data.forEach(function(dev,i){
-//       devString=("00"+dev.position).slice(-2)+" "+dev.connection/*+" "+dev.socket*/;
-//       //console.log(devString);
-//       var el=createElement('li',devString);
-//       el.parent(ringUL);
-//     });
-//   }
+function LobbyDevices(){
+  lobbyDevices=[];
+
+  this.refresh=function(lobbyData){
+    activeDevs=lobbyData;
+    console.log("refresh lobby data");
+    var newLobbyUL=createElement('ul');
+    newLobbyUL.addClass('simple-list');
+    lobbyData.forEach(function(dev,i){
+      var liEl=createElement('li');
+      liEl.addClass('simple-list-item');
+      liEl.attribute('connection',dev.connection);
+      devString=("00"+dev.position).slice(-3)+" "+dev.connection/*+" "+dev.socket*/;
+      var el=createElement('p',devString);
+      el.parent(liEl);
+      liEl.parent(newLobbyUL);
+    });
+    lobbyUL.remove();
+    lobbyUL=newLobbyUL;
+    lobbyUL.parent(lobbyDiv);
+  };
+
+  // this.offerReceived=function(data){
+  //   console.log(data);
+  //   // find li with relevant connection attrbute
+  //   var liEls=selectAll('li',lobbyDiv);
+  //   console.log(liEls);
+  //   liEls.forEach(function(li, i){
+  //     if(li.attribute('connection')){
+  //       console.log(li.attribute('connection')+" "+data.offeredTo.toString());
+  //       if(li.attribute('connection')==data.offeredTo.toString()){
+  //         console.log("Offer matches li #"+i);
+  //         var b0=createButton('O');
+  //         b0.attribute('index',i);
+  //         b0.parent(li);
+  //         b0.mouseClicked(b0Clicked);
+  //         var test=createElement('h1',"Test!!!");
+  //         test.parent(li);
+  //       }
+  //     }
+  //   });
+
+  //   function b0Clicked(){
+  //     var b=this.attribute('index');
+  //     console.log("Button O "+b+" clicked");
+  //     // socket.emit('consoleCommand',{command: 'disconnect', id: activeDevs[b].connection});
+  //   }
+  // };
+}
+
+ 

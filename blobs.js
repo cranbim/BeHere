@@ -6,6 +6,10 @@ function BlobList(){
 	var nextBlobID=1000;
 	var blobs=[];
 
+	this.clearAll=function(){
+		blobs=[];
+	};
+
 	this.updateBlob=function(id, x, y, vel, ttl, maxX){
 		//console.log("update blob "+id+" with x:"+x);
 		var b=this.findBlob(id);
