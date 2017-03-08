@@ -18,7 +18,7 @@ var ringCodeSpan;
 var narrativeChanging=true;
 var narrativeLive;
 var attachedDevices, lobbyDevices;
-
+var whenStarted;
 
 var state={
   soundOn: false,
@@ -86,6 +86,10 @@ function sendSoundControl(){
 
 function connected(data){
   console.log("Console connected");
+  if(whenStarted){
+    reloadPage();
+  }
+  whenStarted=Date.now();
   consoleid.html(id);
   socket.on('heartbeat',beat);
   socket.on('consoleData',consoleData);
@@ -347,6 +351,10 @@ function setID(data){
 function beat(data){
   beatnum.html(data.beat);
   console.log(data.beat);
+}
+
+function reloadPage(){
+  location.reload();
 }
 
 /*************************

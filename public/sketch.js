@@ -149,6 +149,10 @@ function echoHeartBeat(){
 
 function connected(){
   logger.log("f connected()", "Connected ("+socket.id+")");
+  if(whenStarted){
+    reloadPage();
+  }
+  whenStarted=Date.now();
   deviceData.status="connected";
   refreshHTMLStatus();
   refreshHTMLGeometry();
@@ -177,10 +181,10 @@ function issuePermit(){
 }
 
 function setID(data){
-  if(whenStarted){
-    reloadPage();
-  }
-  whenStarted=Date.now();
+  // if(whenStarted){
+  //   reloadPage();
+  // }
+  // whenStarted=Date.now();
   id=data.id;
   deviceData.id=id;
   refreshHTMLStatus();
