@@ -21,6 +21,7 @@ var nextAttachRequest=0;
 var nextAttachOffer=0;
 var heartbeat=1000;
 var consoleSession;
+var monitorSession;
 var currentSoundControl=null;
 var currentShowMeta=false;
 
@@ -74,6 +75,7 @@ function newConnection(socket){
   socket.on('permit',permitReceived);
   socket.on('offerAccepted',offerAccepted);
   socket.on('console',setConsole);
+  socket.on('monitor', setMonitor);
   socket.on('newBlob',blobFromClient);
   socket.on('blobUpdate',updateBlob);
   socket.on('detach', detacher);
@@ -205,6 +207,12 @@ function newConnection(socket){
 		console.log("Console identified as: "+consoleSession.id);
 	}
 
+	function setMonitor(data){
+		monitorSession=findSession(data.monitorid);
+		ring.setMonitor(monitorSession);
+		console.log("Monitor identified as: "+monitorSession.id);
+	}
+
   function clientDisconnect(){
 	//need to handle the effect of disconnect on lobby and rings
 		// var sessionToFind=false;
@@ -229,9 +237,7 @@ function newConnection(socket){
 
 
 function sendConsoleData(){
-	if(consoleSession){
-		console.log("Send console data");
-		consoleSession.socket.emit('consoleData',{
+	var consoleData={
 			lobby: buildJSONRing(unattached),
 			ring: buildJSONRing(ring),
 			ringMeta: ring.buildJSONRingMeta(),
@@ -239,9 +245,18 @@ function sendConsoleData(){
 			// themeMeta: themes.buildMetaData(),
 			narrative: themes.buildNarrativeData(),
 			ringCode: ringCode.ringCode
-		});
+		};
+	if(consoleSession){
+		console.log("Send data to console");
+		consoleSession.socket.emit('consoleData',consoleData);
 	} else {
 		console.log("Can't send console data, no console connected");
+	}
+	if(monitorSession){
+		console.log("Send data to monitor");
+		monitorSession.socket.emit('consoleData',consoleData);
+	} else {
+		console.log("Can't send monitor data, no monitor connected");
 	}
 }
 
@@ -260,7 +275,14 @@ function buildJSONRing(thisRing){
 			devices[i]={
 				position: i,
 				connection: ud.session.id,
-				socket: ud.session.socket.id
+				socket: ud.session.socket.id,
+				geometry: {
+					devWidth: ud.devWidth,
+					devHeight: ud.devHeight,
+					startX: ud.startX,
+					endX: ud.endX,
+					suspended: ud.suspended
+				}
 			};
 		});
 		ringData.name=thisRing.name;

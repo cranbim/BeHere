@@ -20,6 +20,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 	var self=this; //to get around this context in functions
 	var unattached=null;
 	var consoleSession;
+	var monitorSession;
 	this.blobList=new blobList.BlobList();
 	this.ringID=nextRingID++;
 	this.name=name;
@@ -88,7 +89,9 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		var themeStatus=themes.getCurrentTheme(this.heartbeat);
 		//send back to requesting device
 		var ds=findDevShadow(data.device);
-		ds.session.socket.emit("themeSwitch", themeStatus);
+		if(ds){
+			ds.session.socket.emit("themeSwitch", themeStatus);
+		}
 	};
 
 	this.themeKiller=function(data){
@@ -493,7 +496,12 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 
 	this.setConsole=function(session){
 		consoleSession=session;
-		console.log("Console (RIng) set to "+session.id);
+		console.log("Console (Ring) set to "+session.id);
+	};
+
+	this.setMonitor=function(session){
+		monitorSession=session;
+		console.log("Monitor (Ring) set to "+session.id);
 	};
 
 	this.joinNewDevShadow=function(shadow){

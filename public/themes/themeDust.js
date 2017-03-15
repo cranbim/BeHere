@@ -13,7 +13,7 @@
       dusts.forEach(function(d,i){
         d.run(blobPos[i]);
       });
-    }
+    };
   }
 
   function Dust(){

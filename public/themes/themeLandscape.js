@@ -197,7 +197,7 @@ function ThemeLandscape(w,h){
       myOffX+=oInc;
       if(myOffX<0) myOffX+=w;
       return ttl>0;
-    }
+    };
     
     this.show=function(c, ttl, myOffX){
       push();
@@ -222,7 +222,7 @@ function ThemeLandscape(w,h){
       vertex(w-step*2,0);
       endShape(CLOSE);
       pop();
-    }
+    };
   }
   
   function SkyLine(y, numBlocks){

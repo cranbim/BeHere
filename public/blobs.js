@@ -95,7 +95,7 @@ function MyBlobs(){
         blobs.splice(i,1);
       }
     }
-  }
+  };
 
   this.getPos=function(){
     bPos=[];
