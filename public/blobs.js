@@ -132,7 +132,7 @@ function MyBlobs(){
     var rr=0; var rg=255; var rb=150;
     var er=255; var eg=0; var eb=0;
     var drag=0.98;
-    var lim=20;
+    var lim=width/40;
     var steer=5;
     var maxTTL=1000;
 

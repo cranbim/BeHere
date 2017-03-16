@@ -291,7 +291,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 
 	this.clearBlobs=function(){
 		self.blobList.clearAll();
-	}
+	};
 
 	function sendParamData(){
 		io.sockets.emit("parameters", {

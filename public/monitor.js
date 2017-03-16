@@ -35,7 +35,7 @@ function setup(){
   socket.on('connect', connected);
   monitorid=select('#monitorid');
   beatnum=select('#beatnum');
-  themeRunner=new ThemeRunner(100,50);
+  themeRunner=new ThemeRunner(400,180);
   devices=new VirtualDevices();
   deviceData=new DeviceData();
 }
@@ -215,6 +215,8 @@ function VirtualDevices(){
             if(devList[j].connection==devices[i].id){
               console.log("match");
               matched=true;
+              devices[i].startX=devList[j].geometry.startX;
+              devices[i].endX=devList[j].geometry.endX;
               devList.splice(j,1);
             } else {
               console.log("no Match");
@@ -273,7 +275,7 @@ function VirtualDevices(){
       dev.blobs=[];
       blobs.forEach(function(blob){
         if(blob.x>=dev.startX && blob.x<dev.endX){
-          dev.blobs.push(new SimpleBlob(blob.x, blob.y, blob.vel));
+          dev.blobs.push(new SimpleBlob(blob.x-dev.startX, blob.y, blob.vel));
         }
       });
     });
@@ -288,7 +290,9 @@ function VirtualDevices(){
 function SimpleBlob(x,y,vel){
   this.x=x;
   this.y=y;
-  this.vel=vel;
+  this.vel=createVector(vel.x, vel.y);
+  this.vel.mult(0.7);
+  this.inside=true;
 }
 
 /*************************
@@ -297,6 +301,7 @@ function SimpleBlob(x,y,vel){
 
 
 function VDevice(id, geom){
+  var self=this;
   this.id=id;
   this.devWidth=geom.devWidth;
   this.devHeight=geom.devHeight;
@@ -304,14 +309,25 @@ function VDevice(id, geom){
   this.endX=geom.endX;
   this.suspended=geom.suspended;
   this.blobs=[];
+  console.log("New Dev X: "+geom.devWidth+" "+this.devWidth+" "+this.startX);
 
   this.run=function(scl){
+    scl=1;
     this.blobs.forEach(function(blob){
       blob.x+=blob.vel.x*scl;
       blob.y+=blob.vel.y*scl;
-      if(blob.x>this.endX) blob.x=this.endX;
-      if(blob.y>this.devHeight) blob.y=0;
-      if(blob.y<0) blob.y=this.devHeight;
+      if(blob.x>self.devWidth){
+        blob.inside=false;
+        blob.x=self.endX;
+      }
+      if(blob.y>self.devHeight){
+        // blob.inside=false;
+        blob.y=0;
+      }
+      if(blob.y<0) {
+        // blob.inside=false;
+        blob.y=self.devHeight;
+      }
     });
   };
 
@@ -329,9 +345,16 @@ function VDevice(id, geom){
     stroke(255);
     fill(200,0,100, 100);
     rect(0,0,this.devWidth, this.devHeight);
+    // console.log("Blobs for "+this.id);
+    // console.log(this.blobs);
     this.blobs.forEach(function(blob){
       stroke(255,0,0);
-      fill(255,0,0,100);
+      if(blob.inside){
+        fill(255);
+      } else {
+        noFill();
+      }
+      //fill(255,0,0,100);
       ellipse(blob.x, blob.y,15,15);
     });
     pop();
