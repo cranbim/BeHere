@@ -10,7 +10,7 @@ var deviceData; // store current contect data
 
 //properly my own variables
 var devices;
-var ringlengthPixels=1;
+var ringLengthPixels=1;
 
 //vars to mimick real device env
 var myWidth=100;
@@ -97,6 +97,7 @@ function draw(){
 	fill(120,20,5,100);
 	ellipse(width/2, height/2, height, height);
 	// runThemeAndBlobs([]);
+  devices.run();
   devices.showVDevices();
 }
 
@@ -201,55 +202,73 @@ function DeviceData(){
 
 function VirtualDevices(){
   var devices=[];
+  var dyingDevices=[];
   var spin=0;
-  var spinInc=PI/300;
+  var spinInc=PI/400;
+  var eases=new Eases();
+
+  this.run=function(){
+    eases.run();
+    // console.log("Eased ring length "+eases.ringLengthPixels);
+    // console.log("Ring length pixels "+ ringLengthPixels);
+  };
 
   this.refreshDevices=function(devList){
     console.log("devs "+devices.length+" "+devList.length);
     for(var i=devices.length-1; i>=0; i--){
-      console.log("loop "+i);
       var matched=false;
       if(devList){
         if(devList.length>0){
           for(var j=devList.length-1; j>=0; j--){
             if(devList[j].connection==devices[i].id){
-              console.log("match");
+              // console.log("match");
               matched=true;
               devices[i].startX=devList[j].geometry.startX;
               devices[i].endX=devList[j].geometry.endX;
               devList.splice(j,1);
             } else {
-              console.log("no Match");
+              // console.log("no Match");
             }
           }
           if(!matched){
-            console.log("remove dev "+devices[i].id);
-            ringlengthPixels-=devices[i].devWidth;
-            devices.splice(i,1);
+            if(devices[i].ease.easeDirIn){ //device is fully in
+              // console.log("ease out dev "+devices[i].id);
+              devices[i].ease.easeOut(); //start easing out
+            } else { //device already easing out.
+              if(devices[i].ease.done){
+                // console.log("remove dev "+devices[i].id);
+                ringLengthPixels-=devices[i].devWidth;
+                eases.removeEase(devices[i].ease.id);
+                devices.splice(i,1);
+              }
+            }            
           }
         } else {
-          console.log("zero devices "+devList.length);
+          // console.log("zero devices "+devList.length);
           devices=[];
-          ringlengthPixels=1;
+          eases.clear();
+          ringLengthPixels=1;
         }
       } else {
-        console.log("devList is null");
+        // console.log("devList is null");
       }
     }
-    console.log(devList);
+    // console.log(devList);
     devList.forEach(function(dev){
-      console.log("adding device "+dev.connection);
+      // console.log("adding device "+dev.connection);
+      var ease=eases.createEase(dev.geometry.devWidth, dev.geometry.devHeight);
       devices.push(new VDevice(
         dev.connection,
-        dev.geometry));
-      ringlengthPixels+=dev.geometry.devWidth;
+        dev.geometry,
+        ease));
+      ringLengthPixels+=dev.geometry.devWidth;
     });
-    console.log("devices: "+devices.length+" "+ringlengthPixels);
+    // console.log("devices: "+devices.length+" "+ringLengthPixels);
   };
 
   this.showVDevices=function(){
     // console.log("show devs");
-    var scl=(width/4)/(ringlengthPixels/PI);
+    var scl=(width/4)/(eases.ringLengthPixels/PI);
     var rot=0;
     var xOff=0;
     var yOff=0;
@@ -265,7 +284,7 @@ function VirtualDevices(){
         spinIncNow=spinInc;
       }
       dev.show(scl, 0, yOff, rot, spin);
-      rot+=(TWO_PI/ringlengthPixels)*dev.devWidth;
+      rot+=(TWO_PI/eases.ringLengthPixels)*dev.devWidth;
     });
     spin+=spinIncNow;
   };
@@ -300,7 +319,7 @@ function SimpleBlob(x,y,vel){
 **************************/
 
 
-function VDevice(id, geom){
+function VDevice(id, geom, ease){
   var self=this;
   this.id=id;
   this.devWidth=geom.devWidth;
@@ -309,6 +328,8 @@ function VDevice(id, geom){
   this.endX=geom.endX;
   this.suspended=geom.suspended;
   this.blobs=[];
+  this.ease=ease;
+  this.ending=false;
   console.log("New Dev X: "+geom.devWidth+" "+this.devWidth+" "+this.startX);
 
   this.run=function(scl){
@@ -340,7 +361,8 @@ function VDevice(id, geom){
     translate(0,yOff);
     //translate(xOff+gap, yOff);
     // console.log((xOff+gap)+", "+yOff+", "+this.devWidth+", "+this.devHeight);
-    scale(scl);
+    //scale(scl*this.ease.now, scl);//scl
+    scale(scl*this.ease.getEasedX(), scl*this.ease.getEasedY());
     translate(-this.devWidth/2, -this.devHeight/2);
     stroke(255);
     fill(200,0,100, 100);
@@ -359,5 +381,108 @@ function VDevice(id, geom){
     });
     pop();
     //return xOff+this.devWidth*scl;
+  };
+}
+
+/*************************
+  Object for Ease manager
+**************************/
+function Eases(){
+  this.easing=false;
+  this.devEases=[];
+  this.ringLengthPixels=0;
+  var nextEaseID=0;
+
+  this.createEase=function(devWidth, devHeight){
+    var e=new Ease(nextEaseID++, devWidth, devHeight, 60);
+    this.devEases.push(e);
+    return e;
+  };
+
+  this.clear=function(){
+    this.easing=false;
+    this.devEases=[];
+    this.ringLengthPixels=0;
+  };
+
+  this.removeEase=function(id){
+    for(var i=this.devEases.length-1; i>=0; i--){
+      if(this.devEases[i].id===id){
+        this.devEases.splice(i, 1);
+      }
+    }
+  };
+
+  this.run=function(){
+    if(this.devEases.length>0){
+      this.easing=true;
+      this.ringLengthPixels=0;
+      for(var i=this.devEases.length-1; i>=0; i--){
+        this.devEases[i].run();
+        this.ringLengthPixels+=this.devEases[i].getEasedWidth();
+      }
+    }
+    this.easing=this.devEases.length>0;
+    if(this.easing){
+
+    }
+  };
+}
+
+/*************************
+  Object for individual eases
+**************************/
+
+
+function Ease(id, devWidth, devHeight, dur){
+  this.id=id;
+  this.min=0;
+  this.max=1;
+  this.now=0;
+  this.devWidth=devWidth;
+  this.step=this.max/dur;
+  this.done=false;
+  this.easeDirIn=true;
+
+  this.run=function(){
+    if(!this.done){
+    this.now+=this.step;
+    // console.log("ease "+this.id+" "+this.now);
+      if(this.now<0 || this.now>this.max){
+        this.done=true;
+      }
+    }
+  };
+
+  this.easeOut=function(){
+    this.easeDirIn=false;
+    this.step*=-1;
+    this.done=false;
+  };
+
+
+  // this.getEasedHeight=function(){
+  //   var easedH;
+  //   if(this.now>0.5) easedH=this.devWidth;
+  //   else easedH=map(this.now, 0, 0.5, this.devHeight/20, this.devHeight);
+  //   // console.log(eased);
+  //   return easedH;
+  // }
+  this.getEasedX=function(){
+    var easedX;
+    if(this.now<0.5) easedX=0.05;
+    else easedX=map(this.now, 0.5, 1, 0.05, 1);
+    return easedX;
+  };
+
+  this.getEasedY=function(){
+    var easedY;
+    if(this.now>=0.5) easedY=1;
+    else easedY=map(this.now, 0, 0.5, 0.05, 1);
+    return easedY;
+  };
+
+  this.getEasedWidth=function(){
+    return map(this.now, 0, 1, 0, this.devWidth);
   };
 }
