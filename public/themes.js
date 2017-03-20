@@ -161,7 +161,7 @@ function ThemeRunner(w,h){
 function ThemeInstance(name, w, h, instantiator){
   this.id=nextThemeId++;
   this.name=name;
-  params={};
+  var params={};
   
   var instance;
 
@@ -176,6 +176,8 @@ function ThemeInstance(name, w, h, instantiator){
     // console.log(instantiator);
     instance=new instantiator(w,h);
     params=paramsIn;
+    console.log("!!!! Params");
+    console.log(params);
   }
 
   this.init=function(paramsIn){
@@ -188,9 +190,30 @@ function ThemeInstance(name, w, h, instantiator){
     }
   };
 
+  this.blobsByNarrative=function(blobPos){
+    if(params){
+      if(params.hasOwnProperty('blobs')){
+        if(params.blobs.hasOwnProperty('clientMin')){
+          if(params.blobs.clientMin>blobPos.length){
+            for(var i=blobPos.length; i<params.blobs.clientMin; i++){
+              //newClientBlob();
+              console.log("New blob from Narrative");
+            }
+          }
+          if(params.blobs.clientMax<blobPos.length){
+            console.log("Remove "+(blobPos.length-params.blobs.clientMax)+" blobs from Narrative");
+          }
+        }
+      }
+    }
+  };
+
   this.run=function(blobPos, soundOn){
+    this.blobsByNarrative(blobPos);
     return instance.run(blobPos, soundOn, params);
   };
+
+
 
 }
 

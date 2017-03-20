@@ -45,7 +45,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		//check devices are active
 		checkShadowHealth(heartbeat);
 		//run themes
-		var themeStatus=themes.run(heartbeat, parameters);
+		var themeStatus=themes.run(heartbeat, parameters, this.blobList, this.ringLengthPixels);
 		//themeStatus will contain new theme name iff theme is switching
 		if(themeStatus.index>-1){
 			io.sockets.emit("themeSwitch", themeStatus);

@@ -5,6 +5,7 @@ module.exports={
 function BlobList(){
 	var nextBlobID=1000;
 	var blobs=[];
+	this.test="Blob Test";
 
 	this.clearAll=function(){
 		blobs=[];
@@ -46,6 +47,21 @@ function BlobList(){
 			blobData.push(blob.getPos());
 		});
 		return blobData;
+	};
+
+	this.blobsByNarrative=function(minBlobs, maxBlobs, ringLengthPixels){
+		console.log("!!!! set blobs according to narrative");
+		//in here take the value of minBlobs and maxBlobs
+		//add or remove blobs as needed to comply
+		if(blobs.length<minBlobs){
+			for(var i=blobs.length; i<minBlobs; i++){
+				console.log("creating new narrative blob for dev 55555");
+				blobs.push(new Blob(Math.random()*ringLengthPixels, Math.random()*100, 55555));
+			}
+		}
+		if(blobs.length>maxBlobs){
+			blobs.splice(maxBlobs, blobs.length-maxBlobs);
+		}
 	};
 
 

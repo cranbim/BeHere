@@ -69,11 +69,11 @@ function ThemeRunner(){
     narrative=tm.narrative1.sequence;
     themesLoaded=true;
     if(firstLoad){
-    	firstLoad=false;
+			firstLoad=false;
     } else {
-	    nextTheme=0;
+      nextTheme=0;
 			actualTheme.endMe();
-		}		
+		}
 	}
 
 	function getThemeByName(name){
@@ -135,7 +135,7 @@ function ThemeRunner(){
 		changingTheme=false;
 	}
 
-	function runThemeParameters(heartbeat){
+	function runThemeParameters(heartbeat, ringblobs, ringLengthPixels){
 		//at start of counter theme life
 		if(nowTheme.params.hasOwnProperty('beat')){
 			if(nowTheme.params.beat===true) nowTheme.params.beat=heartbeat;
@@ -149,9 +149,15 @@ function ThemeRunner(){
 				//nowTheme.params.resetParamLoop=false;
 			}
 		}
+		if(nowTheme.params.hasOwnProperty('blobs')){
+			if(nowTheme.params.blobs.hasOwnProperty('totalMax') 
+			&& nowTheme.params.blobs.hasOwnProperty('totalMin')){
+				ringblobs.blobsByNarrative(nowTheme.params.blobs.totalMin, nowTheme.params.blobs.totalMax, ringLengthPixels);
+			}
+		}
 	}
 
-	this.run=function(heartbeat, parameters){
+	this.run=function(heartbeat, parameters, blobs, ringLengthPixels){
 		if(themesLoaded){ //can't run if no themes
 			if(!actualTheme){ //load a theme if none is active
 				switchTheme();
@@ -168,7 +174,7 @@ function ThemeRunner(){
 				while(!nowTheme.on && currentTheme!==preSwitch){
 					switchTheme();
 				}
-				runThemeParameters(heartbeat);
+				runThemeParameters(heartbeat, blobs, ringLengthPixels);
 				return {
 					index: currentTheme,
 					name: currentThemeName,

@@ -2,9 +2,23 @@
 		"sequence": [
 			{"on": true, "name": "ThemeCountdown", "duration": 25, "params":{"beat":true}},
 			{"on": true, "name": "ThemeTransition", "duration": 20, "params":{"cols":[[255,255,255],[0,0,0],[255,20,120]], "ttl": [200,100]}},
-			{"on": true, "name": "ThemeCalmRings", "duration": 8, "params":{}},
+			{"on": true, "name": "ThemeCalmRings", "duration": 8, "params":{"blobs":{
+        "display": true,
+        "totalMin":0,
+        "totalMax":10,
+        "clientMin":4,
+        "clientMax":5
+    }
+}},
 
-			{"on": true, "name": "ThemePsychaRing", "duration": 2, "params":{}},
+			{"on": true, "name": "ThemePsychaRing", "duration": 2, "params":{"blobs":{
+        "display": true,
+        "totalMin":2,
+        "totalMax":2,
+        "clientMin":0,
+        "clientMax":2
+    }
+}},
 			{"on": true, "name": "ThemeBounceRings", "duration": 2, "params": {}},
 			{"on": true, "name": "ThemeCalmRings", "duration": 2, "params":{}},
 			{"on": true, "name": "ThemeHairBall", "duration": 4, "params":{}},
