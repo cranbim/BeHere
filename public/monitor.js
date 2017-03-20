@@ -11,6 +11,8 @@ var deviceData; // store current contect data
 //properly my own variables
 var devices;
 var ringLengthPixels=1;
+var hideMeta=true;
+var renderedExistingDevs=false;
 
 //vars to mimick real device env
 var myWidth=100;
@@ -53,6 +55,7 @@ function connected(){
   socket.on('blobData', handleBlobData);
   socket.on('parameters',handleParameters);
   socket.on('consoleData',consoleData);
+  socket.on('showMeta',showMeta);
   socket.on('disconnect', function(){
 		console.log("Disconnected from server ("+socket.id+")");
 	});
@@ -70,6 +73,9 @@ function setID(data){
   monitorid.html(id);
 }
 
+function showMeta(data){
+  hideMeta=!data.showMeta;
+}
 
 function beat(data){
   beatnum.html(data.beat);
@@ -99,6 +105,12 @@ function draw(){
 	// runThemeAndBlobs([]);
   devices.run();
   devices.showVDevices();
+}
+
+function keyPressed(){
+  if(key=='h' || key=='H'){
+    hideMeta=!hideMeta;
+  }
 }
 
 function handleBlobData(data){
@@ -223,8 +235,11 @@ function VirtualDevices(){
             if(devList[j].connection==devices[i].id){
               // console.log("match");
               matched=true;
+              // console.log("Geometry");
+              // console.log(devList[j].geometry);
               devices[i].startX=devList[j].geometry.startX;
               devices[i].endX=devList[j].geometry.endX;
+              devices[i].position=devList[j].position;
               devList.splice(j,1);
             } else {
               // console.log("no Match");
@@ -257,11 +272,18 @@ function VirtualDevices(){
     devList.forEach(function(dev){
       // console.log("adding device "+dev.connection);
       var ease=eases.createEase(dev.geometry.devWidth, dev.geometry.devHeight);
-      devices.push(new VDevice(
+      // devices.push(new VDevice(
+      devices.splice(dev.position, 0, new VDevice(
         dev.connection,
         dev.geometry,
+        dev.position,
         ease));
-      ringLengthPixels+=dev.geometry.devWidth;
+      if(!renderedExistingDevs){
+        ease.skipEaseIn();
+        eases.run();
+        renderedExistingDevs=true;
+      }
+      //ringLengthPixels+=dev.geometry.devWidth;
     });
     // console.log("devices: "+devices.length+" "+ringLengthPixels);
   };
@@ -269,14 +291,16 @@ function VirtualDevices(){
   this.showVDevices=function(){
     // console.log("show devs");
     var scl=(width/4)/(eases.ringLengthPixels/PI);
+    scl=constrain(scl,0.001,0.5);
     var rot=0;
     var xOff=0;
     var yOff=0;
     var spinIncNow;
     devices.forEach(function(dev,i){
+      // console.log("index "+i+", position "+devices[i].position);
       dev.run(scl);
       if(devices.length===1){
-        yOff=0;
+        yOff=height/3;
         spinIncNow=0;
         spin=0;
       } else {
@@ -284,7 +308,7 @@ function VirtualDevices(){
         spinIncNow=spinInc;
       }
       dev.show(scl, 0, yOff, rot, spin);
-      rot+=(TWO_PI/eases.ringLengthPixels)*dev.devWidth;
+      rot-=(TWO_PI/eases.ringLengthPixels)*dev.ease.getEasedWidth();//dev.devWidth;
     });
     spin+=spinIncNow;
   };
@@ -319,13 +343,14 @@ function SimpleBlob(x,y,vel){
 **************************/
 
 
-function VDevice(id, geom, ease){
+function VDevice(id, geom, position, ease){
   var self=this;
   this.id=id;
   this.devWidth=geom.devWidth;
   this.devHeight=geom.devHeight;
   this.startX=geom.startX;
   this.endX=geom.endX;
+  this.position=position;
   this.suspended=geom.suspended;
   this.blobs=[];
   this.ease=ease;
@@ -367,6 +392,14 @@ function VDevice(id, geom, ease){
     stroke(255);
     fill(200,0,100, 100);
     rect(0,0,this.devWidth, this.devHeight);
+    if(!hideMeta){
+      fill(255);
+      noStroke();
+      textSize(20);
+      text("id:"+this.id, this.devWidth/8, this.devHeight/8);
+      text("sx:"+this.startX, this.devWidth/8, this.devHeight/4);
+      text("pos"+this.position, this.devWidth/8, this.devHeight*3/8);
+    }
     // console.log("Blobs for "+this.id);
     // console.log(this.blobs);
     this.blobs.forEach(function(blob){
@@ -452,6 +485,11 @@ function Ease(id, devWidth, devHeight, dur){
         this.done=true;
       }
     }
+  };
+
+  this.skipEaseIn=function(){
+    this.now=this.max;
+    this.done=true;
   };
 
   this.easeOut=function(){
