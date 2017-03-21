@@ -62,6 +62,16 @@ function AllBlobs(){
 function MyBlobs(){
   blobs=[];
 
+  this.test=function(){
+    console.log("!!!!!!! Blobs called from elsewhere in scope");
+  };
+
+  this.limit=function(max){
+    for(var i=max; i<blobs.length; i++){
+      blobs[i].kill();
+    }
+  };
+
   this.getBlobs=function(){
     return blobs;
   };
@@ -136,7 +146,9 @@ function MyBlobs(){
     var steer=5;
     var maxTTL=1000;
 
-
+    this.kill=function(){
+      this.ttl=0;
+    }
 
     this.oldshow=function(){
       push();

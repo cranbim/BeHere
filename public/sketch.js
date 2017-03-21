@@ -64,7 +64,7 @@ function setup() {
   logger=new Logger();
   deviceData=new DeviceData();
   subtleMeta=new SubtleMeta(devWidth, devHeight);
-  themeRunner=new ThemeRunner(canFullWidth, canFullHeight);
+  themeRunner=new ThemeRunner(canFullWidth, canFullHeight, deviceData);
   //initialise socket
   socket=io.connect('/');
   socket.on('connect', connected);
@@ -213,6 +213,7 @@ function whenLastTouched(){
     lastTouch=Date.now();  
   }
 }
+
 
 function updateRingPos(data){
   deviceData.geometry.position=data.pos;

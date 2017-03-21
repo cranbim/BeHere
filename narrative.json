@@ -6,17 +6,17 @@
         "display": true,
         "totalMin":0,
         "totalMax":10,
-        "clientMin":4,
-        "clientMax":5
+        "clientMin":8,
+        "clientMax":8
     }
 }},
 
 			{"on": true, "name": "ThemePsychaRing", "duration": 2, "params":{"blobs":{
         "display": true,
-        "totalMin":2,
-        "totalMax":2,
+        "totalMin":0,
+        "totalMax":10,
         "clientMin":0,
-        "clientMax":2
+        "clientMax":1
     }
 }},
 			{"on": true, "name": "ThemeBounceRings", "duration": 2, "params": {}},

@@ -7,7 +7,7 @@ var nextThemeId=0;
 var themesRingLength=0;
 
 //Object for client side running the themes and swicthing
-function ThemeRunner(w,h){
+function ThemeRunner(w,h,dd){
 	console.log("New theme runner "+w+" "+h);
 	var themes=[];
   var themesLoadedFromServer=false;
@@ -18,6 +18,7 @@ function ThemeRunner(w,h){
   var absParamPos=0;
 	var themeTTL=0;
   var isBlobController=false;
+  var deviceData=dd;
   this.themeRendersBackground=false;
 
 
@@ -52,7 +53,7 @@ function ThemeRunner(w,h){
     } else {
       themesArray.forEach(function(t){
         console.log("st>> "+t);
-        var themeInstance=new ThemeInstance(t, w, h, window[t]);
+        var themeInstance=new ThemeInstance(t, w, h, deviceData, window[t]);
         themes.push(themeInstance);// new ThemeInstance(t, w, h, t));
       });
       console.log("Server Themes Loaded");
@@ -63,7 +64,7 @@ function ThemeRunner(w,h){
 
   function loadThemes(w,h){
     themeArrayBase.forEach(function(t){
-      var themeInstance=new ThemeInstance(t, w, h, window[t]);
+      var themeInstance=new ThemeInstance(t, w, h, deviceData, window[t]);
       themes.push(themeInstance);// new ThemeInstance(t, w, h, t));
     });
     console.log("Default Theme Loaded");
@@ -158,9 +159,10 @@ function ThemeRunner(w,h){
 // Theme Instantiator
 //*****************************
 
-function ThemeInstance(name, w, h, instantiator){
+function ThemeInstance(name, w, h, dd, instantiator){
   this.id=nextThemeId++;
   this.name=name;
+  this.deviceData=dd;
   var params={};
   
   var instance;
@@ -176,8 +178,8 @@ function ThemeInstance(name, w, h, instantiator){
     // console.log(instantiator);
     instance=new instantiator(w,h);
     params=paramsIn;
-    console.log("!!!! Params");
-    console.log(params);
+    // console.log("!!!! Params");
+    // console.log(params);
   }
 
   this.init=function(paramsIn){
@@ -196,12 +198,19 @@ function ThemeInstance(name, w, h, instantiator){
         if(params.blobs.hasOwnProperty('clientMin')){
           if(params.blobs.clientMin>blobPos.length){
             for(var i=blobPos.length; i<params.blobs.clientMin; i++){
-              //newClientBlob();
+              // newClick(random(devWidth)+marginLeft+myStartX, random(devHeight));
+              console.log(dd.geometry.startX);
+              var x=random(w)+this.deviceData.geometry.startX+this.deviceData.geometry.marginLeft;
+              var y=random(h);
+              socket.emit("newBlob",{device:id, x:x, y:y});
               console.log("New blob from Narrative");
             }
           }
           if(params.blobs.clientMax<blobPos.length){
-            console.log("Remove "+(blobPos.length-params.blobs.clientMax)+" blobs from Narrative");
+            console.log("Remove "+(blobPos.length-params.blobs.clientMax)+" blobs, as per Narrative");
+            //a bit of a naughty call to an object defined at gobal scope
+            //and not passed down to themes explicitly
+            myBlobs.limit(params.blobs.clientMax);
           }
         }
       }
@@ -212,8 +221,6 @@ function ThemeInstance(name, w, h, instantiator){
     this.blobsByNarrative(blobPos);
     return instance.run(blobPos, soundOn, params);
   };
-
-
 
 }
 
