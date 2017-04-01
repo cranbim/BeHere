@@ -5,9 +5,11 @@
 
   function ThemeCracker(w,h){
   // function Cracker(){
+    
     var numSegs=100;
     var crack;
-    var count=0;
+    // var count=0;
+    var count=deviceData.geometry.position*-30;
     var countMax=500;
     
     var r1=255;
@@ -22,7 +24,9 @@
     crack=new Crack(0,height/2,numSegs);
 
     this.run=function(blobPos){
-      crack.show(count);
+      if(count>=0){
+        crack.show(count);
+      }
       count+=4;//!!!!
       if(count>numSegs-1){
         // count=0;
@@ -38,7 +42,7 @@
           crack.createFragments();
         }
       }
-      return (count>500);
+      return (count>600);
  
     };
     
@@ -51,7 +55,7 @@
       
       this.fragged=function(){
         return fragged;
-      }
+      };
       
       this.generate=function(){
         fragged=false;

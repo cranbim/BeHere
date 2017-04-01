@@ -7,6 +7,7 @@ var buttonDiv;
 var buttonResetThemes;
 var buttonShowMeta;
 var buttonRingCode;
+var buttonStopServer;
 var lobbyUL, themeUL, narraUL;
 var ringDiv;
 var themeDiv;
@@ -71,6 +72,12 @@ function setup() {
     buttonShowMeta.html(state.showMeta?'Hide Meta':'ShowMeta');
     socket.emit('showMeta', {showMeta:state.showMeta});
   });
+  buttonStopServer=createButton('stop server');
+  buttonStopServer.parent(buttonDiv);
+  buttonStopServer.mouseClicked(function(){
+    socket.emit('consoleCommand',{command: 'stopServer'});
+  });
+
   attachedDevices=new AttachedDevices();
   lobbyDevices=new LobbyDevices();
   console.log("Console setup complete");

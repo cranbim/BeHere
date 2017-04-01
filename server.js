@@ -1,6 +1,10 @@
 //Main node executable for PlasmaRIng
 //DJW, Cranbim, November 2016
 //
+console.log("\n\n************************************");
+console.log("BeHere Server starting");
+console.log(" at "+Date());
+console.log("************************************\n\n");
 
 //imports
 var express = require('express');
@@ -8,6 +12,8 @@ var ringMod= require('./ring.js');
 var themeRunner= require ('./themeRunner.js');
 var ringJoiner= require('./ringJoiner.js');
 var ringCode= new ringJoiner.RingCode();
+var statusBlinkt=require('./statusBlinkt.js');
+var statusLights=new statusBlinkt.StatusLights();
 
 var app=express();
 
@@ -110,6 +116,15 @@ function newConnection(socket){
 		} else if(data.command=="clearBlobs"){
 			console.log("clear all blobs");
 			ring.clearBlobs();
+		} else if(data.command=="stopServer"){
+			console.log("\n\n************************************");
+			console.log("Stopping server in 1s, initaiated from console");
+			console.log("************************************\n\n");
+			statusLights.clear();
+			setTimeout(function(){
+				statusLights.clear();
+				process.exit(1);
+			},1000);
 		}
   }
 
@@ -246,6 +261,7 @@ function sendConsoleData(){
 			narrative: themes.buildNarrativeData(),
 			ringCode: ringCode.ringCode
 		};
+	updateStatusLightCounts(consoleData.lobby.size, consoleData.ring.size);
 	if(consoleSession){
 		console.log("Send data to console");
 		consoleSession.socket.emit('consoleData',consoleData);
@@ -258,6 +274,10 @@ function sendConsoleData(){
 	} else {
 		console.log("Can't send monitor data, no monitor connected");
 	}
+}
+
+function updateStatusLightCounts(lobbyCount, ringCount){
+	statusLights.setCounts(lobbyCount, ringCount);
 }
 
 function findSession(devid){

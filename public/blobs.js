@@ -61,6 +61,11 @@ function AllBlobs(){
 
 function MyBlobs(){
   blobs=[];
+  var hideMyBlobs=false;
+
+  this.hideBlobs=function(hide){
+    hideMyBlobs=hide;
+  };
 
   this.test=function(){
     console.log("!!!!!!! Blobs called from elsewhere in scope");
@@ -177,7 +182,9 @@ function MyBlobs(){
         ra=255;
         ga=0;
       }
-      this.bloboid.run(ra,ga,rb, flicker, this.ttl);
+      if(!hideMyBlobs){
+        this.bloboid.run(ra,ga,rb, flicker, this.ttl);
+      }
     };
 
     this.update=function(){

@@ -178,6 +178,7 @@ function ThemeInstance(name, w, h, dd, instantiator){
     // console.log(instantiator);
     instance=new instantiator(w,h);
     params=paramsIn;
+    myBlobs.hideBlobs(true);
     // console.log("!!!! Params");
     // console.log(params);
   }
@@ -206,6 +207,8 @@ function ThemeInstance(name, w, h, dd, instantiator){
               console.log("New blob from Narrative");
             }
           }
+        }
+        if(params.blobs.hasOwnProperty('clientMax')){
           if(params.blobs.clientMax<blobPos.length){
             console.log("Remove "+(blobPos.length-params.blobs.clientMax)+" blobs, as per Narrative");
             //a bit of a naughty call to an object defined at gobal scope
@@ -213,6 +216,16 @@ function ThemeInstance(name, w, h, dd, instantiator){
             myBlobs.limit(params.blobs.clientMax);
           }
         }
+        if(params.blobs.hasOwnProperty('display')){
+          if(params.blobs.display===true){
+            myBlobs.hideBlobs(false);
+          } else {
+            myBlobs.hideBlobs(true);
+          }
+        } else {
+          myBlobs.hideBlobs(true);
+        }
+
       }
     }
   };
