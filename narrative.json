@@ -31,6 +31,15 @@
       	}
 			}},
 			{"on": false, "name": "ThemeSwisher", "duration": 8, "params":{}},
+			{"on": true, "name": "ThemeTheyGrowBack", "duration": 10, "params": {
+				"blobs":{
+	        "display": true,
+	        "totalMin":4,
+	        "totalMax":20,
+	        "clientMin":1,
+	        "clientMax":8
+	    		}
+				}},
 			{"on": true, "name": "ThemeStrings", "duration": 10, "params": {
 				"blobs":{
 				"display": false,
@@ -59,7 +68,7 @@
       	}
 			}},
 			{"on": true, "name": "ThemeTextScroller", "duration": 15, "params": {
-				"messages":["...she looked away,      hoping they couldn't see the thoughts she failed to suppress ... ", "test2"],
+				"messages":["... be grateful you don't know what's coming next... ", "test2"],
 				"blobs":{
         "display": false,
         "totalMin":0,
@@ -71,9 +80,9 @@
   		{"on": true, "name": "ThemePlasma1", "duration": 8, "params":{
   			"blobs":{
         "display": false,
-        "totalMin":0,
+        "totalMin":5,
         "totalMax":20,
-        "clientMin":0,
+        "clientMin":1,
         "clientMax":6
   			}
 			}},
@@ -215,7 +224,6 @@
 			{"on": false, "name": "ThemeSparker", "duration": 8, "params":{}},
 			{"on": true, "name": "ThemeHoneyCombLight", "duration": 10, "params":{}},
 			{"on": false, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Life is Good... ", "test2"]}},
-			{"on": false, "name": "ThemeTheyGrowBack", "duration": 10, "params": {}},
 			{"on": true, "name": "ThemeRepelWobble", "duration": 10, "params": {}}
 		]
 	}
