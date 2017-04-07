@@ -1,0 +1,47 @@
+{"narrative1":{
+		"sequence": [
+			{"on": true, "name": "ThemeCountdown", "duration": 25, "params":{
+				"beat":true,
+				"blobs":{
+	        "display": false,
+	        "totalMin":0,
+	        "totalMax":0,
+	        "clientMin":0,
+	        "clientMax":0
+	      }
+	    }},
+			{"on": true, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["am i really here? .......... where are you?", "test2"]}},
+
+			{"on": true, "name": "ThemeTransition", "duration": 20, "params":{
+				"cols":[[255,255,255],[0,0,0],[255,20,120]], 
+				"ttl": [100,50],
+				"blobs":{
+        "display": false,
+        "totalMin":0,
+        "totalMax":0,
+        "clientMin":0,
+        "clientMax":0
+  			}
+			}},
+			{"on": false, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Life is Good... ", "test2"]}},
+			{"on": true, "name": "ThemeFlowDraw", "duration": 25, "params":{"seed":13}},
+			{"on": false, "name": "ThemeLandscape", "duration": 25, "params": {}},
+			{"on": false, "name": "ThemePlasma1", "duration": 8, "params":{}},
+			{"on": true, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["am i really here? ......... where are you?", "test2"]}},
+			{"on": true, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["you don't know the real me ........ but you know enough to scare me", "test2"]}},
+			{"on": true, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["if i actually met you would i still like you?", "test2"]}},
+			{"on": false, "name": "ThemeSpark", "duration" : 8, "params": {}},
+			{"on": false, "name": "ThemeStrings", "duration": 8, "params": {}},
+			{"on": false, "name": "ThemeFlipper1", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeBounceChain", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeSparker", "duration": 8, "params":{}},
+			{"on": false, "name": "ThemeSwisher", "duration": 8, "params":{}},
+			{"on": true, "name": "ThemeHoneyCombLight", "duration": 10, "params":{}},
+			{"on": false, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Life is Good... ", "test2"]}},
+			{"on": false, "name": "ThemeTheyGrowBack", "duration": 10, "params": {}},
+			{"on": true, "name": "ThemeDust", "duration": 10, "params": {}},
+			{"on": true, "name": "ThemeNoise1", "duration": 10, "params": {}},
+			{"on": true, "name": "ThemeRepelWobble", "duration": 10, "params": {}}
+		]
+	}
+}

@@ -80,7 +80,7 @@ function setup() {
 
   attachedDevices=new AttachedDevices();
   lobbyDevices=new LobbyDevices();
-  console.log("Console setup complete");
+  console.log("Console setup complete ");
 }
 
 function resetThemes(){

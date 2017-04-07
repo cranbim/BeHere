@@ -32,8 +32,17 @@ function ThemeFlowDraw(w,h){
     this.renderBackground();
     // background(0,2);
     flowfield.update();
+    
+    if(random(100)<2){
+      touching=true;
+    }
     if(touching){
+      if(random(100)<3){
+        touching=false;
+      }
+    }
   //    flowfield.obstruct(mouseX, mouseY);
+    if(touching){
       flowfield.randomShift();
     }
     if(showField){
@@ -43,7 +52,7 @@ function ThemeFlowDraw(w,h){
       particles.forEach(function(p){
         p.follow(flowfield);
         p.show();
-      })
+      });
     }
     // fill(255);
     // text(floor(frameRate()),20,h-20);
@@ -212,11 +221,15 @@ function ThemeFlowDraw(w,h){
       noFill();
       if(special){
         strokeWeight(2);
-        stroke(250,0,0);
+        stroke(100,10,250);
         line(prev.x, prev.y, pos.x, pos.y);
       } else {
         strokeWeight(sw);
-        stroke(0,200,255,100);
+        if(touching){
+          stroke(180,40,120,100);
+        } else {
+          stroke(0,200,255,100);
+        }
         line(prev.x, prev.y, pos.x, pos.y);
       }
       // strokeWeight(3);

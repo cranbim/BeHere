@@ -21,6 +21,82 @@
         "clientMax":0
   			}
 			}},
+			{"on": true, "name": "ThemeDust", "duration": 15, "params": {
+				"blobs":{
+				"display": false,
+        "totalMin":0,
+        "totalMax":20,
+        "clientMin":1,
+        "clientMax":5
+      	}
+			}},
+			{"on": false, "name": "ThemeSwisher", "duration": 8, "params":{}},
+			{"on": true, "name": "ThemeStrings", "duration": 10, "params": {
+				"blobs":{
+				"display": false,
+        "totalMin":0,
+        "totalMax":20,
+        "clientMin":1,
+        "clientMax":3
+      	}
+			}},
+			{"on": true, "name": "ThemeFlipper1", "duration": 8, "params":{
+				"blobs":{
+				"display": false,
+        "totalMin":4,
+        "totalMax":20,
+        "clientMin":0,
+        "clientMax":2
+      	}
+			}},
+			{"on": true, "name": "ThemeNoise1", "duration": 15, "params": {
+				"blobs":{
+				"display": false,
+        "totalMin":4,
+        "totalMax":20,
+        "clientMin":0,
+        "clientMax":4
+      	}
+			}},
+			{"on": true, "name": "ThemeTextScroller", "duration": 15, "params": {
+				"messages":["...she looked away,      hoping they couldn't see the thoughts she failed to suppress ... ", "test2"],
+				"blobs":{
+        "display": false,
+        "totalMin":0,
+        "totalMax":0,
+        "clientMin":0,
+        "clientMax":0
+  			}
+  		}},
+  		{"on": true, "name": "ThemePlasma1", "duration": 8, "params":{
+  			"blobs":{
+        "display": false,
+        "totalMin":0,
+        "totalMax":20,
+        "clientMin":0,
+        "clientMax":6
+  			}
+			}},
+			
+
+			{"on": true, "name": "ThemeDotStripe", "duration": 20, "params":{
+				"blobs":{
+        "display": false,
+        "totalMin":0,
+        "totalMax":0,
+        "clientMin":0,
+        "clientMax":0
+  			}
+			}},
+			{"on": true, "name": "ThemeCalmBars", "duration": 10, "params":{
+				"blobs":{
+        "display": false,
+        "totalMin":4,
+        "totalMax":12,
+        "clientMin":0,
+        "clientMax":0
+  			}
+			}},
 			{"on": true, "name": "ThemeCracker", "duration": 10, "params": {
 				"blobs":{
         "display": false,
@@ -76,7 +152,7 @@
 	        "clientMax":8
 	    		}
 			}},
-			{"on": true, "name": "ThemeHairBall", "duration": 4, "params":{
+			{"on": true, "name": "ThemeHairBall", "duration": 8, "params":{
 				"blobs":{
 	        "display": false,
 	        "totalMin":0,
@@ -85,7 +161,7 @@
 	        "clientMax":8
 	    		}
 				}},
-			{"on": true, "name": "ThemePsychaRing", "duration": 2, "params":{
+			{"on": true, "name": "ThemePsychaRing", "duration": 4, "params":{
 				"blobs":{
 	        "display": false,
 	        "totalMin":0,
@@ -94,7 +170,7 @@
 	        "clientMax":8
 	    		}
 				}},
-			{"on": true, "name": "ThemeBounceRings", "duration": 2, "params": {
+			{"on": true, "name": "ThemeBounceRings", "duration": 4, "params": {
 				"blobs":{
 	        "display": false,
 	        "totalMin":4,
@@ -112,7 +188,7 @@
 	        "clientMax":8
 	    		}
 				}},
-			{"on": true, "name": "ThemeBounceRings", "duration": 2, "params": {
+			{"on": true, "name": "ThemeBounceRings", "duration": 4, "params": {
 				"blobs":{
 	        "display": false,
 	        "totalMin":4,
@@ -121,7 +197,7 @@
 	        "clientMax":6
     			}
 				}},
-			{"on": true, "name": "ThemeCalmRings", "duration": 3, "params":{
+			{"on": true, "name": "ThemeCalmRings", "duration": 6, "params":{
 				"blobs":{
 	        "display": false,
 	        "totalMin":0,
@@ -134,19 +210,12 @@
 			{"on": false, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Life is Good... ", "test2"]}},
 			{"on": true, "name": "ThemeFlowDraw", "duration": 15, "params":{"seed":13}},
 			{"on": true, "name": "ThemeLandscape", "duration": 25, "params": {}},
-			{"on": true, "name": "ThemePlasma1", "duration": 8, "params":{}},
-			{"on": true, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Save Me from Myself... ", "test2"]}},
 			{"on": false, "name": "ThemeSpark", "duration" : 8, "params": {}},
-			{"on": true, "name": "ThemeStrings", "duration": 8, "params": {}},
-			{"on": true, "name": "ThemeFlipper1", "duration": 8, "params":{}},
 			{"on": false, "name": "ThemeBounceChain", "duration": 8, "params":{}},
 			{"on": false, "name": "ThemeSparker", "duration": 8, "params":{}},
-			{"on": false, "name": "ThemeSwisher", "duration": 8, "params":{}},
 			{"on": true, "name": "ThemeHoneyCombLight", "duration": 10, "params":{}},
 			{"on": false, "name": "ThemeTextScroller", "duration": 10, "params": {"messages":["... ...Life is Good... ", "test2"]}},
 			{"on": false, "name": "ThemeTheyGrowBack", "duration": 10, "params": {}},
-			{"on": true, "name": "ThemeDust", "duration": 10, "params": {}},
-			{"on": true, "name": "ThemeNoise1", "duration": 10, "params": {}},
 			{"on": true, "name": "ThemeRepelWobble", "duration": 10, "params": {}}
 		]
 	}

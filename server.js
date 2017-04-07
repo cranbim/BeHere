@@ -117,15 +117,22 @@ function newConnection(socket){
 			console.log("clear all blobs");
 			ring.clearBlobs();
 		} else if(data.command=="stopServer"){
-			console.log("\n\n************************************");
-			console.log("Stopping server in 1s, initaiated from console");
-			console.log("************************************\n\n");
-			statusLights.clear();
-			setTimeout(function(){
-				statusLights.clear();
-				process.exit(1);
-			},1000);
+			stopServer();
 		}
+  }
+
+  function stopServer(){
+		console.log("\n\n************************************");
+		console.log("Stopping server in 1s, initaiated from console");
+		console.log("************************************\n\n");
+		statusLights.clear();
+		setTimeout(function(){
+			statusLights.clear();
+			console.log("\n\n************************************");
+			console.log("Stopping server now!");
+			console.log("************************************\n\n");
+			process.exit(1);
+		},1000);
   }
 
   function newRingCode(){
@@ -197,7 +204,7 @@ function newConnection(socket){
   }
 
   function joiner(data){
-  	if(data.nickName.toLowerCase()===ringCode.ringCode){
+  	if(true){//data.nickName.toLowerCase()===ringCode.ringCode){
   		console.log("Device Joining with correct code");
   		socket.emit('joinApproved',{approved:true});
 			var newUnAttached=new ringMod.DeviceShadow(session, data.id, data.width, data.height, data.nickName);

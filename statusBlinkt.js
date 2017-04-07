@@ -112,9 +112,13 @@ function StatusLights(){
 	}
 
 	function clear(){
-	  console.log("clear");
-	  leds.setAllPixels(0,0,0,0);
-	  leds.sendUpdate();
+		if(!moduleAvailable('node-blinkt')){
+			console.log("Not running on the Pi or Blinkt not available");
+		}else {
+	  	console.log("clear");
+	  	leds.setAllPixels(0,0,0,0);
+	  	leds.sendUpdate();
+		}
 	}
 
 	this.setCounts=function(c1, c2){

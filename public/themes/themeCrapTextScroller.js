@@ -51,6 +51,7 @@
       var scl=1;
       var myH=floor(h*scl);
       var myW=floor(w*scl);
+      textFont('monospace');
       textSize(300);//myH*0.7);
       var txtSize=floor(textWidth(myText));
       //console.log(txtSize+" "+myW);
@@ -60,8 +61,10 @@
       
       var buffer=createGraphics(buffSize, myH);
       buffer.background(0);
-      buffer.fill(255);
-      buffer.noStroke(0);
+      buffer.fill(100);
+      buffer.stroke(200,40,40);
+      buffer.strokeWeight(20);
+      buffer.textFont('monospace');
       buffer.textSize(300);//myH*0.7);
       buffer.text(myText,0,(myH-300)/2+300*0.7);
       

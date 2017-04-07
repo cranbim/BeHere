@@ -204,7 +204,7 @@ function beat(data){
   deviceData.currentBeat=data.beat;
   themeRunner.checkThemes();
   dataRefreshPoll();
-  whenLastTouched();
+  //whenLastTouched();
 }
 
 function whenLastTouched(){

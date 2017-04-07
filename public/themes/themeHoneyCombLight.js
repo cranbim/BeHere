@@ -76,7 +76,7 @@ function ThemeHoneyCombLight(ww, wh){
         alph=map(d, 0, ww, 255,100);
       // r*=rMult;
       
-    }
+    };
     
     this.update=function(blobPos){
       r=1;
@@ -91,7 +91,7 @@ function ThemeHoneyCombLight(ww, wh){
           r+=0;
         alph+=map(d, 0, ww, 255,100);
       });
-    }
+    };
     
     this.shift=function(shiftAngle, shiftDisplace, phaseInc){
       var d=dist(x,y,centre.x, centre.y);
@@ -109,6 +109,7 @@ function ThemeHoneyCombLight(ww, wh){
     
     this.show=function(){
       noStroke();
+      r/=2;
       fill(255,0,0,alph);
       ellipse(x+shiftX-5,y+shiftY+3,r,r);
       fill(0,255,0,alph);
