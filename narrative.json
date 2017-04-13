@@ -10,6 +10,17 @@
 	        "clientMax":0
 	      }
 	    }},
+			{"on": true, "name": "ThemeCalmRings", "duration": 8, "params":{
+				"blobs":{
+	        "display": false,
+	        "totalMin":0,
+	        "totalMax":10,
+	        "clientMin":0,
+	        "clientMax":8
+	    		}
+			}},
+
+			
 			{"on": true, "name": "ThemeTransition", "duration": 20, "params":{
 				"cols":[[255,255,255],[0,0,0],[255,20,120]], 
 				"ttl": [100,50],

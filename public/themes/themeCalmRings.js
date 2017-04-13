@@ -13,14 +13,19 @@ function ThemeCalmRings(w,h){
     rings[i]=new Ring(h/2+i*10);
   }
   ror=new RingOfRings(25);
+  var scrollX=w;
+  var scrollXInc=-w/100;
 
   this.run=function(){
     rings.forEach(function(ring){
-      ring.show();
+      ring.show(0);
+      ring.show(-w);
       ring.update();
     });
     ror.run();
-  }
+    scrollX+=scrollXInc;
+    if(scrollX<0) scrollX+=w;
+  };
 
   function RingOfRings(qtyR){
     var rot=TWO_PI/qtyR;
@@ -32,6 +37,7 @@ function ThemeCalmRings(w,h){
     
     
     this.run=function(){
+      // console.log("!!!ParamPo: "+paramPos);
       var miniMod=miniRad*2*cos(pulseA*2)+miniRad;
       var maxiMod=sin(pulseA)*maxiRad+maxiRad*2;
       // strokeWeight(miniMod*1.2);
@@ -39,14 +45,15 @@ function ThemeCalmRings(w,h){
       // ellipse(width/2,height/2,maxiMod*2, maxiMod*2);
   
       for(var i=0; i<qtyR; i++){
-        this.show(rot*i, pulseA, maxiMod, miniMod);
+        this.show(rot*i, pulseA, maxiMod, miniMod, 0);
+        this.show(rot*i, pulseA, maxiMod, miniMod, -w);
       }
       pulseA+=pulseAInc;
-    }
+    };
     
-    this.show=function(myRot, pulser,maxiMod, miniMod){
+    this.show=function(myRot, pulser,maxiMod, miniMod, offX){
       push();
-      translate(w/2, h/2);
+      translate(w/2+offX, h/2);
       rotate(myRot+pulser+sin(pulser)*PI/2);
       fill(miniMod*3+60,0,0);
       //strokeWeight(2);
@@ -59,7 +66,7 @@ function ThemeCalmRings(w,h){
       strokeWeight(miniMod/10);
       ellipse(maxiMod,0,miniMod*2*echoRingRad+miniMod, miniMod*2*echoRingRad+miniMod);
       pop();
-    }
+    };
     
   }
   
@@ -71,7 +78,9 @@ function ThemeCalmRings(w,h){
     var colr=floor(random(100,255));
     var colb=floor(random(0,colr));
     
-    this.show=function(){
+    this.show=function(offX){
+      push();
+      translate(scrollX+offX,0);
       noFill();
       stroke(colr,0,colb,150);
       strokeWeight(sw*1.2);
@@ -79,6 +88,7 @@ function ThemeCalmRings(w,h){
       stroke(colr,0,0);
       strokeWeight(sw);
       ellipse(w/2, h/2, rad*2, rad*2);
+      pop();
     }
     
     this.update=function(){
