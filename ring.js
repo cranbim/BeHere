@@ -145,7 +145,7 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 
 	function notifyAttached(devs){
 		devs.forEach(function(dev){
-			findDevShadow(dev).session.socket.emit('notifyAttached',{incoming: devs[0], prev: devs[1], next:devs[2]});
+			findDevShadow(dev).session.socket.emit('notifyAttached',{incoming: devs[1], prev: devs[0], next:devs[2]});
 		});
 	}
 
@@ -170,10 +170,12 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 						console.log("Only one existing devices so just join");
 						attachToRing(requester.requestingDev,0);
 						requester.requestBroadcastSent=true;
-					} else { //the ring is not empty
+					} else { //the ring has more than one device, just add
+						attachToRing(requester.requestingDev,self.deviceShadows[0].session.id,self.deviceShadows[1].session.id);
+						notifyAttached([self.deviceShadows[0].session.id,requester.requestingDev,self.deviceShadows[2].session.id]);
 						requester.requestBroadcastSent=true;
-						console.log("Just another request");
-						newRequests=true;
+						// console.log("Just another request");
+						// newRequests=true;
 					}
 				}
 			}

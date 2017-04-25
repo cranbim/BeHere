@@ -49,6 +49,7 @@ var themeRunner;
 
 //Parameter variable
 var paramPos;
+var paramPosLoop;
 var absParamPos;
 
 //need some sort of subfunction to setup some of these
@@ -371,7 +372,7 @@ function notifyAttached(data){
     statusBar.trigger('attachedMe',3,30);
   }
   // statusBar.trigger('attached',5,30);
-}  
+}
 
 function processOffer(data){
   var offerTemp={
