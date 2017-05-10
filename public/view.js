@@ -197,8 +197,8 @@ function DeviceData(){
       offersDiv.show();
       welcomeDiv.hide();
       joinerDiv.show();
-      deviceData.fullDisplay=false;
-      p5canvas.hide();
+      deviceData.fullDisplay=true;
+      p5canvas.show();
       statusMessage.html("Status: joined to lobby   ID:"+deviceData.id);
       button.show();
       button.html('un-Join');

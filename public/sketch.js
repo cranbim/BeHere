@@ -7,7 +7,6 @@ var soundOn=false;
 var pD;
 var lastTouch=Date.now();
 
-
 //Core vars
 var logger; //object to log to console of file
 var deviceData; // store current contect data
@@ -35,6 +34,7 @@ var globalParams=[];
 var distances;
 var whenStarted;
 var subtleMeta;
+var jcta; //Joined Call To Action sketch
 
 //noisefield vars - camn these be held elsewhere?
 var noisePerWorldPixel=0.005;
@@ -66,6 +66,7 @@ function setup() {
   deviceData=new DeviceData();
   subtleMeta=new SubtleMeta(devWidth, devHeight);
   themeRunner=new ThemeRunner(canFullWidth, canFullHeight, deviceData);
+  jcta=new JoinedCallToAction();
   //initialise socket
   socket=io.connect('/');
   socket.on('connect', connected);
@@ -74,6 +75,11 @@ function setup() {
   refreshHTMLStatus();
   refreshHTMLGeometry();
   frameRate(30);
+}
+
+function windowResized(){
+  //resizeCanvas(windowWidth, windowHeight);
+  jcta.windowChanged();
 }
 
 function setupCanvas(){
@@ -105,6 +111,9 @@ function draw() {
   }
   if(!backgroundRendered){
     background(40);
+  }
+  if(deviceData.status=="joined"){
+    jcta.run();
   }
   processParams();
   mapParamToRing();
@@ -175,6 +184,8 @@ function connected(){
   socket.on('showMeta',showMeta);
   socket.on('serverThemes',loadServerThemes);
   socket.on('issuePermit',issuePermit);
+  // Just join without a join click
+  joinMe();
 }
 
 function issuePermit(){
@@ -332,7 +343,12 @@ function touchEnded(){
     }
     lastTouch=Date.now();
   }
+  jcta.mouseClicked();
   //return false;
+}
+
+function mouseMoved(){
+  jcta.mouseCheck();
 }
 
 function mouseClicked(){
@@ -347,6 +363,7 @@ function mouseClicked(){
     }
     lastTouch=Date.now();
   }
+  jcta.mouseClicked();
 }
 
 function keyPressed(){
