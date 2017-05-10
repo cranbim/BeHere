@@ -10,8 +10,8 @@ function JoinedCallToAction(){
   var blobRing=new BlobRunner(10,20);
   var screenX=100;
   var screenY=60;
-  var aButton=new AttachButton(width/2, height*.75, width/8);
-  var poc=new PrintOnCircle(width/2, height*.75, 120, "Test Message...");  
+  var aButton=new AttachButton(width/2, height*0.75, width/8);
+  var poc=new PrintOnCircle(width/2, height*0.75, 120, "Test Message...");
   windowChanged();
   for(var i=0; i<numRects; i++){
     rp=new RectPersp(0,0,180,-PI/5*i+0.2,100,60, i*screenX, (i+1)*screenX-1);
@@ -26,23 +26,24 @@ function JoinedCallToAction(){
     viewCentreX=width/2;
     viewCentreY=height/3;
     viewerPos=createVector(width/2, 500 );
-    aButton.resize(width/2, height*.67, (width+height)/12);
+    aButton.resize(width/2, height*0.67, (width+height)/12);
     poc.resize(width/2, height*0.67, (width+height)/10);
     if(height>width){
       poc.newMessage("Turn your device to landscape!...");
     } else {
       poc.newMessage("Welcome to BeHere. Tap the circle to attach...");
-    }    
+    }
   }
   
   this.windowChanged=function(){
+    console.log("!!!!!!!!!!!!!!");
     windowChanged();
-  }
-  
+  };
+
   this.mouseCheck=function(){
     if(aButton.isOver(mouseX, mouseY)){
       //do something
-    }    
+    }
   };
   
   this.mouseClicked=function(){
@@ -69,12 +70,12 @@ function JoinedCallToAction(){
     if(rp.front){
       rp.show();
       rp.showImage();
-    } 
-    });  
+    }
+    });
     blobRing.run();
     aButton.show();
-    poc.show();    
-  }
+    poc.show();
+  };
 
 //****************************************
   
@@ -106,7 +107,7 @@ function JoinedCallToAction(){
       rVec.rotate(ang);
       lVecAbs=p5.Vector.add(centrePos, lVec);
       rVecAbs=p5.Vector.add(centrePos, rVec);
-    }
+    };
     
     this.update=function(){
       var lDistVec=p5.Vector.sub(lVecAbs,viewerPos);
@@ -126,7 +127,7 @@ function JoinedCallToAction(){
       } else {
         this.front=false;
       }
-    }
+    };
 
     
     this.showProjection2=function(){
@@ -143,7 +144,7 @@ function JoinedCallToAction(){
       ellipse(lX,0,5,5);
       ellipse(rX,0,5,5);
       pop();
-    }
+    };
     
     this.showProjectionVec=function(){
       push();
@@ -161,7 +162,7 @@ function JoinedCallToAction(){
       line(viewerPos.x, viewerPos.y ,lVecAbs.x, lVecAbs.y);
       line(viewerPos.x, viewerPos.y ,rVecAbs.x, rVecAbs.y);
       pop();
-    }
+    };
     
     this.show=function(){
       push();
@@ -186,8 +187,8 @@ function JoinedCallToAction(){
       // line(lX,-h/2*lScale,lX,h/2*lScale);
       // line(rX,-h/2*rScale,rX,h/2*rScale);
       pop();
-    }
-    
+    };
+
     this.showImage=function(){
       var margin=5;
       push();
@@ -224,7 +225,7 @@ function JoinedCallToAction(){
         ellipse(effX,effY,(i+2)/2*effScX,(i+2)/2*effScY);
       });
       pop();
-    }
+    };
   }
   
   function BlobRunner(numScreens, numBlobs){
@@ -251,7 +252,7 @@ function JoinedCallToAction(){
         // b.show(0,100, 0.6);
       });
       pop();
-    }
+    };
     
     this.getBlobs=function(sx,ex){
       matchBlobs=[];
@@ -262,7 +263,7 @@ function JoinedCallToAction(){
         }
       });
       return matchBlobs;
-    }
+    };
     
     function Blob(x,y){
       var pos=createVector(x,y);
@@ -278,17 +279,17 @@ function JoinedCallToAction(){
         vel.limit(5);
         pos.add(vel);
         this.edges();
-      }
+      };
       
       this.getPos=function(){
         return {x:pos.x, y:pos.y};
-      }
+      };
       
       this.edges=function(){
         var margin=5;
         if(pos.x<0) pos.x=ringLength;
         if(pos.x>ringLength) pos.x=0;
-        if(pos.y>screenY-margin){ 
+        if(pos.y>screenY-margin){
           vel.y*=-1;
           pos.y=screenY-margin;
         }
@@ -296,7 +297,7 @@ function JoinedCallToAction(){
           vel.y*=-1;
           pos.y=margin;
         }
-      }
+      };
       
       this.show=function(offX, offY){
         // stroke(0,200,200);
@@ -304,7 +305,7 @@ function JoinedCallToAction(){
         noStroke();
         fill(0);
         ellipse(pos.x+offX, pos.y+offY,4,4);
-      }
+      };
     }
   
   }
@@ -316,7 +317,8 @@ function JoinedCallToAction(){
     var rad=r;
     var radiansPerChar=TWO_PI/mLen;
     var pixPerChar=radiansPerChar*rad;
-    textSize(pixPerChar*2.5);
+    var ts=pixPerChar*2.5;
+    textSize(ts);
     var totalLen=textWidth(mess);
     var a=0;
     var aInc=PI/200;
@@ -330,12 +332,13 @@ function JoinedCallToAction(){
       mLen=messageChars.length;
       radiansPerChar=TWO_PI/mLen;
       pixPerChar=radiansPerChar*rad;
-      textSize(pixPerChar*2.5);
+      ts=pixPerChar*2.5;
+      textSize(ts);
       totalLen=textWidth(mess);
       a=0;
       startL=0;
-      endL=startL;    
-    }
+      endL=startL;
+    };
     
     this.resize=function(nx,ny,nr){
       x=nx;
@@ -344,9 +347,11 @@ function JoinedCallToAction(){
       pixPerChar=radiansPerChar*rad;
       textSize(pixPerChar*2.5);
       totalLen=textWidth(mess);
-    }
+    };
     
     this.show=function(){
+      push();
+      textSize(ts);
       if(true){
         //console.log(frameCount+" "+startL+" "+endL+" "+mLen);
         if(endL>=mLen-1){
@@ -397,8 +402,9 @@ function JoinedCallToAction(){
       }
       // });
       // console.log(a);
-    }
-  }  
+      pop();
+    };
+  }
   
     
     
@@ -412,12 +418,12 @@ function JoinedCallToAction(){
       x=nx;
       y=ny;
       r=nr;
-    }
+    };
     
     this.isOver=function(mx,my){
       hovered=dist(x,y,mx, my)<=r;
       return hovered;
-    }
+    };
     
     this.show=function(){
       noStroke();
@@ -448,6 +454,6 @@ function JoinedCallToAction(){
       stroke(col);
       line(0,i,width,i);
     }
-  }  
+  }
 
 }

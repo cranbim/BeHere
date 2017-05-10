@@ -77,10 +77,10 @@ function setup() {
   frameRate(30);
 }
 
-function windowResized(){
-  //resizeCanvas(windowWidth, windowHeight);
-  jcta.windowChanged();
-}
+//windowResized is in the view.js file
+// function windowResized(){
+//   //resizeCanvas(windowWidth, windowHeight);
+// }
 
 function setupCanvas(){
   devWidth=windowWidth;

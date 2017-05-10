@@ -67,6 +67,7 @@ function StatusBar(start, end){
   };
   
   this.show=function(){
+    push();
     if(running){
       if(pos>end){
         for(var i=0; i<w; i++){
@@ -110,6 +111,7 @@ function StatusBar(start, end){
         }
       }
     }
+    pop();
   }
   
   this.trigger=function(trigKey, count, dur){

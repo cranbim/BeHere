@@ -64,6 +64,7 @@ function windowResized(){
   canFullHeight=devHeight;
 
   changeCanvas(deviceData.fullDisplay);
+  jcta.windowChanged();
 }
 
 function switchFullScreen(){
@@ -207,6 +208,8 @@ function DeviceData(){
       attachButton.show();
       detachButton.hide();
       permitButton.hide();
+      setTimeout(jcta.windowChanged,500);
+      // jcta.windowChanged();
       //p5canvas.hide();
       changeCanvas(deviceData.fullDisplay);
     } else if(deviceData.status=="attached"){
