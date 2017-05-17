@@ -377,6 +377,17 @@ function Ring(name, io, themes){ //have to pass io to have access to sockets obj
 		//how to do this? send a message?
 	}
 
+	// this.updateRingGeometry=function(){
+	// 	var lengthInPixels=
+	// 	var endX=shadow.endX;
+	// 	for(var i=next+1; i<this.deviceShadows.length; i++){
+	// 		if(!this.deviceShadows[i].suspended){
+	// 			this.deviceShadows[i].setStartX(endX,i);
+	// 			endX=this.deviceShadows[i].endX;
+	// 		}
+	// 	}
+	// }
+
 	this.joinRing=function(devid, nextid){
 		var next;
 		var shadow=unattached.findShadow(devid);

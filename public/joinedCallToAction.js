@@ -12,6 +12,7 @@ function JoinedCallToAction(){
   var screenY=60;
   var aButton=new AttachButton(width/2, height*0.75, width/8);
   var poc=new PrintOnCircle(width/2, height*0.75, 120, "Test Message...");
+  // windowResized();
   windowChanged();
   for(var i=0; i<numRects; i++){
     rp=new RectPersp(0,0,180,-PI/5*i+0.2,100,60, i*screenX, (i+1)*screenX-1);
@@ -19,16 +20,19 @@ function JoinedCallToAction(){
   }
 
   function windowChanged(){
-    viewPlane=(height)*0.2+width*0.5;
-    centreX=width/2;
-    centreZ=height/4;
+    // resizeCanvas(windowWidth, windowHeight);
+    var tHeight=windowHeight;
+    var tWidth=windowWidth;
+    viewPlane=(tHeight)*0.2+tWidth*0.5;
+    centreX=tWidth/2;
+    centreZ=tHeight/4;
     centrePos=createVector(centreX, centreZ);
-    viewCentreX=width/2;
-    viewCentreY=height/3;
-    viewerPos=createVector(width/2, 500 );
-    aButton.resize(width/2, height*0.67, (width+height)/12);
-    poc.resize(width/2, height*0.67, (width+height)/10);
-    if(height>width){
+    viewCentreX=tWidth/2;
+    viewCentreY=tHeight/3;
+    viewerPos=createVector(tWidth/2, 500 );
+    aButton.resize(tWidth/2, tHeight*0.67, (tWidth+tHeight)/12);
+    poc.resize(tWidth/2, tHeight*0.67, (tWidth+tHeight)/10);
+    if(windowHeight>windowWidth){
       poc.newMessage("Turn your device to landscape!...");
     } else {
       poc.newMessage("Welcome to BeHere. Tap the circle to attach...");
@@ -36,7 +40,7 @@ function JoinedCallToAction(){
   }
   
   this.windowChanged=function(){
-    console.log("!!!!!!!!!!!!!!");
+    // console.log("!!!!!!!!!!!!!!");
     windowChanged();
   };
 
@@ -56,22 +60,24 @@ function JoinedCallToAction(){
   this.run=function(){
     backgroundFill();
     var frontDevs=[];
-    rps.forEach(function(rp,i){
-      rp.update();
-      if(!rp.front){
-        rp.show();
-        rp.showImage();
-      } else {
-        frontDevs.push(rp);
-      }
-      rp.rotateBy(PI/200);
-    });
-    frontDevs.forEach(function(rp,i){
-    if(rp.front){
-      rp.show();
-      rp.showImage();
+    if(width>height){
+      rps.forEach(function(rp,i){
+        rp.update();
+        if(!rp.front){
+          rp.show();
+          rp.showImage();
+        } else {
+          frontDevs.push(rp);
+        }
+        rp.rotateBy(PI/200);
+      });
+      frontDevs.forEach(function(rp,i){
+        if(rp.front){
+          rp.show();
+          rp.showImage();
+        }
+      });
     }
-    });
     blobRing.run();
     aButton.show();
     poc.show();
@@ -421,8 +427,12 @@ function JoinedCallToAction(){
     };
     
     this.isOver=function(mx,my){
-      hovered=dist(x,y,mx, my)<=r;
-      return hovered;
+      if(width>height){
+        hovered=dist(x,y,mx, my)<=r;
+        return hovered;
+      } else {
+        return false;
+      }
     };
     
     this.show=function(){

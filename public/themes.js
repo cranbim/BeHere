@@ -39,6 +39,11 @@ function ThemeRunner(w,h,dd){
     }
   };
 
+  this.setCanvasSize=function(newW, newH){
+    w=newW;
+    h=newH;
+  };
+
   this.loadServerThemes=function(data){
     console.log("Themes received from server");
     loadThemesFromServer(data.themes, w, h);
@@ -106,7 +111,7 @@ function ThemeRunner(w,h,dd){
     }
 		nowTheme=themes[i];
 		console.log("Current Theme: "+nowTheme.id+" "+nowTheme.name);
-		nowTheme.init();
+		nowTheme.init(null, w, h);
 	};
 
   this.themeControlsBlobs=function(){
@@ -129,7 +134,7 @@ function ThemeRunner(w,h,dd){
     this.themeRendersBackground=nowTheme.themeRendersBackground;
     console.log("Current Theme: "+nowTheme.id+" "+nowTheme.name);
     // console.log(params);
-    nowTheme.init(params);
+    nowTheme.init(params, w, h);
   };
 
 	this.run=function(blobs, ringLen, blobPos, soundOn){
@@ -167,13 +172,15 @@ function ThemeInstance(name, w, h, dd, instantiator){
   
   var instance;
 
-  initTheme();
+  initTheme(null, w, h);
   this.isBlobController=instance.hasOwnProperty('runBlobs');
   this.themeRendersBackground=instance.hasOwnProperty('renderBackground');
   console.log(this.name+" loaded");
   // console.log("renders background: "+this.themeRendersBackground);
 
-  function initTheme(paramsIn){
+  function initTheme(paramsIn, wNow, hNow){
+    w=wNow;
+    h=hNow;
     // console.log("!!!!");
     // console.log(instantiator);
     instance=new instantiator(w,h);
@@ -183,8 +190,8 @@ function ThemeInstance(name, w, h, dd, instantiator){
     // console.log(params);
   }
 
-  this.init=function(paramsIn){
-    initTheme(paramsIn);
+  this.init=function(paramsIn, wNow, hNow){
+    initTheme(paramsIn, wNow, hNow);
   };
 
   this.runBlobs=function(blobs){

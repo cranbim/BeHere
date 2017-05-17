@@ -75,6 +75,7 @@ function setup() {
   refreshHTMLStatus();
   refreshHTMLGeometry();
   frameRate(30);
+  // setTimeout(jcta.windowChanged, 1000);
 }
 
 //windowResized is in the view.js file
@@ -85,6 +86,10 @@ function setup() {
 function setupCanvas(){
   devWidth=windowWidth;
   devHeight=windowHeight;
+  if(devWidth<devHeight){
+  devWidth=windowHeight;
+  devHeight=windowWidth;
+  }
   myWidth=devWidth+marginLeft+marginRight;
   canFullWidth=devWidth;
   canSmallWidth=devWidth;
@@ -112,7 +117,7 @@ function draw() {
   if(!backgroundRendered){
     background(40);
   }
-  if(deviceData.status=="joined"){
+  if(deviceData.status=="joined" || height>width){
     jcta.run();
   }
   processParams();

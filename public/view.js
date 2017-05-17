@@ -26,7 +26,7 @@ var buttonBarHeight=25;
 
 function changeCanvas(full){
   if(full){
-    resizeCanvas(canFullWidth, canFullHeight-buttonBarHeight);
+    resizeCanvas(canFullWidth, canFullHeight);//-buttonBarHeight);
   } else {
     resizeCanvas(canSmallWidth, canSmallHeight);
   }
@@ -62,7 +62,7 @@ function windowResized(){
   canFullWidth=devWidth;
   canSmallWidth=devWidth;
   canFullHeight=devHeight;
-
+  themeRunner.setCanvasSize(canFullWidth, canFullHeight);
   changeCanvas(deviceData.fullDisplay);
   jcta.windowChanged();
 }
